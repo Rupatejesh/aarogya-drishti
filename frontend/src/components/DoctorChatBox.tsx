@@ -37,8 +37,8 @@ interface ChatMessage {
 export const DoctorChatBox: React.FC<DoctorChatBoxProps> = ({
   patientUidn,
   patientName,
-  doctorName = 'Dr. Swapna Devi, M.D.',
-  doctorHospital = 'Area Hospital Paderu (AH Paderu / District Hub)',
+  doctorName = 'Dr. Swapna Devi, MDS',
+  doctorHospital = 'PHC G. Madugula / GGH Paderu Tele-Lab Hub',
   prescription,
   lang
 }) => {
@@ -234,3 +234,4 @@ export const DoctorChatBox: React.FC<DoctorChatBoxProps> = ({
 };
 
 export default DoctorChatBox;
+

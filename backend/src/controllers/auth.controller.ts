@@ -23,7 +23,7 @@ export const patientQuickLogin = async (req: Request, res: Response): Promise<vo
         mandal: p.mandal,
         village: p.village,
         phone: p.phone,
-        condition: p.uidn === 'UIDN-ASR-2026-0001' ? 'Urgent Clinical Evaluation (Leukoplakia)' :
+        condition: (p.uidn === 'UIDN-ASR-2026-GM046' || p.uidn === 'UIDN-ASR-2026-0001') ? 'Serious Condition (Oral Leukoplakia - 92.4% Accuracy)' :
                    p.uidn === 'UIDN-ASR-2026-0002' ? 'Serious (Erythroplakia)' :
                    'Serious (OSMF Grade III)'
       }));
@@ -103,6 +103,14 @@ export const sendPhoneOtp = async (req: Request, res: Response): Promise<void> =
     }
 
     const cleanPhone = String(phone).replace(/\D/g, '');
+    if (cleanPhone.length !== 10) {
+      res.status(400).json({
+        success: false,
+        message: 'Invalid phone number: Phone must contain exactly 10 digits.'
+      });
+      return;
+    }
+
     const generatedOtp = '123456'; // Default demo OTP with live readiness
     otpCache.set(cleanPhone, {
       otp: generatedOtp,
@@ -198,8 +206,42 @@ export const registerPatient = async (req: Request, res: Response): Promise<void
       return;
     }
 
-    // Auto-calculate age from DOB
+    // Validate Phone (10 digits)
+    const cleanPhone = String(phone).replace(/\D/g, '');
+    if (cleanPhone.length !== 10) {
+      res.status(400).json({
+        success: false,
+        message: 'Invalid phone number: Phone must contain exactly 10 digits.'
+      });
+      return;
+    }
+
+    // Validate Aadhaar (12 digits)
+    const cleanAadhar = String(aadhar).replace(/\D/g, '');
+    if (cleanAadhar.length !== 12) {
+      res.status(400).json({
+        success: false,
+        message: 'Invalid Aadhaar number: Aadhaar must contain exactly 12 digits.'
+      });
+      return;
+    }
+    if (cleanAadhar.length !== 12) {
+      res.status(400).json({
+        success: false,
+        message: 'Invalid Aadhaar number: Aadhaar must contain exactly 12 digits.'
+      });
+      return;
+    }
+
+    // Auto-calculate age from DOB and validate
     const age = calculateAgeFromDob(dob);
+    if (isNaN(age) || age < 0 || age > 120) {
+      res.status(400).json({
+        success: false,
+        message: 'Invalid Date of Birth: Resulting age must be between 0 and 120 years.'
+      });
+      return;
+    }
 
     // Auto-generate UIDN: UIDN-ASR-2026-XXXX
     const allPatients = await store.findPatients();
@@ -266,6 +308,13 @@ export const aadharLogin = async (req: Request, res: Response): Promise<void> =>
     }
 
     const cleanAadhar = String(aadhar).replace(/\D/g, '');
+    if (cleanAadhar.length !== 12) {
+      res.status(400).json({
+        success: false,
+        message: 'Invalid Aadhaar number: Aadhaar must contain exactly 12 digits.'
+      });
+      return;
+    }
     const patients = await store.findPatients();
     const patient = patients.find(
       (p) => p.aadhar?.replace(/\D/g, '') === cleanAadhar || p.aadhar === aadhar

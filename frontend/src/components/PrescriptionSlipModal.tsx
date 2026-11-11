@@ -54,15 +54,15 @@ export const PrescriptionSlipModal: React.FC<PrescriptionSlipModalProps> = ({
       }
     ],
     biopsyRecommended: true,
-    biopsyProcedureDetails: 'Diagnostic 4mm punch biopsy of right buccal mucosal margin scheduled for 15-Nov-2026 at CHC G. Madugula surgical unit.',
+    biopsyProcedureDetails: 'Diagnostic 4mm punch biopsy of right buccal mucosa. Histopathology referral to GGH Paderu (Government General Hospital Paderu).',
     trackingStatus: 'Biopsy Scheduled',
-    printableBarcodeId: 'BAR-ASR-2026-90412-SOMANNA',
-    clinicalNotes: 'Strict tobacco and reverse smoking cessation mandated. Monitored under ITDA Tele-Oncology Tribal Care Protocol.'
+    printableBarcodeId: 'BAR-ASR-2026-GM046',
+    clinicalNotes: 'Biopsy order linked to UIDN-ASR-2026-GM046 with histopathology referral to GGH Paderu.'
   },
   doctor = {
-    name: 'Dr. Swapna Devi, M.D.',
+    name: 'Dr. Swapna Devi, MDS',
     designation: 'Chief Onco-Pathologist & Lead Tele-Consultant',
-    hospitalDuty: 'Area Hospital Paderu (AH Paderu / District Hub)',
+    hospitalDuty: 'PHC G. Madugula / GGH Paderu Tele-Lab Hub',
     abdmCode: 'ABDM-DOC-AP-7821'
   },
   lang
@@ -274,3 +274,4 @@ export const PrescriptionSlipModal: React.FC<PrescriptionSlipModalProps> = ({
 };
 
 export default PrescriptionSlipModal;
+

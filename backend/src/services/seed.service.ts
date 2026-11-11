@@ -161,14 +161,14 @@ export const seedDatabase = async (): Promise<void> => {
   const doctors = [
     {
       uidn: 'DOC-SWAPNA',
-      name: 'Dr. Swapna Devi, M.D.',
-      degreeCertificate: 'MD Oral & Maxillofacial Pathology - Andhra Medical College (2011)',
-      university: 'Andhra Medical College, Visakhapatnam',
+      name: 'Dr. Swapna Devi, MDS',
+      degreeCertificate: 'MDS Oral & Maxillofacial Pathology - AMC Vizag (2011)',
+      university: 'Andhra Medical College / Dr. NTR UHS',
       passingYear: 2011,
       relievingYear: 2014,
       experienceYears: 15,
       designation: 'Chief Onco-Pathologist & Lead Tele-Consultant',
-      hospitalDuty: 'Area Hospital Paderu (AH Paderu / District Hub)',
+      hospitalDuty: 'Area Hospital Paderu / GGH Paderu Tele-Lab Hub',
       activeStatus: true,
       consultationsCount: 142,
       abdmCode: 'ABDM-DOC-AP-7821',
@@ -226,7 +226,7 @@ export const seedDatabase = async (): Promise<void> => {
 
   // 3. SEED COMPULSORY HACKATHON PATIENT: K. SOMANNA
   const somanna = {
-    uidn: 'UIDN-ASR-2026-0001',
+    uidn: 'UIDN-ASR-2026-GM046',
     name: 'K. Somanna',
     dob: new Date('1980-04-12'),
     age: 46,
@@ -250,14 +250,14 @@ export const seedDatabase = async (): Promise<void> => {
     activeStatus: true
   });
 
-  // Seed K. Somanna Screening
+  // Seed K. Somanna Screening (Compulsory Evaluation Scenario)
   const somannaScreening = {
-    screeningId: 'SCR-ASR-2026-0001',
+    screeningId: 'SCR-ASR-2026-GM046',
     patientUidn: somanna.uidn,
     oralRegion: 'Right Buccal Mucosa',
     imageUrl: 'https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&q=80&w=600',
     symptomsChecklist: [
-      'Persistent non-scrapable white patch on right cheek mucosa (>3 weeks)',
+      'Persistent non-scrapable white cheek patch on right buccal mucosa (>3 weeks)',
       'Mild burning sensation upon spicy food intake',
       'Indurated and rough granular mucosal border'
     ],
@@ -267,43 +267,43 @@ export const seedDatabase = async (): Promise<void> => {
       reverseSmoking: true,
       areca: true,
       years: 18,
-      frequency: '6-8 times daily with indigenous cured tobacco'
+      frequency: '6-8 times daily with chewing tobacco'
     },
-    aiCondition: 'Urgent Clinical Evaluation',
-    aiConfidenceScore: 94.8,
-    aiLesionType: 'Homogeneous Leukoplakia with suspicious micro-ulceration',
+    aiCondition: 'Serious',
+    aiConfidenceScore: 92.4,
+    aiLesionType: 'Oral Leukoplakia',
     boundingBoxCoordinates: {
       xmin: 220,
       ymin: 160,
       xmax: 540,
       ymax: 480
     },
-    clinicalRemarks: 'High suspicion oral leukoplakia in right buccal pouch correlating with 18-year reverse smoking and chewable tobacco. Immediate punch biopsy recommended at CHC G. Madugula / AH Paderu.'
+    clinicalRemarks: 'AI Model predicts serious condition with 92.4% accuracy, flags Oral Leukoplakia on right buccal mucosa. Biopsy recommended immediately at PHC G. Madugula.'
   };
   await store.saveScreening(somannaScreening);
 
-  // Seed K. Somanna Appointment
+  // Seed K. Somanna Appointment (Saturday 10:30 AM at PHC G. Madugula approved by Dr. Swapna Devi)
   const somannaAppointment = {
-    appointmentId: 'APT-ASR-2026-0001',
+    appointmentId: 'APT-ASR-2026-GM046',
     patientUidn: somanna.uidn,
     doctorUidn: 'DOC-SWAPNA',
     mandal: 'G. Madugula',
-    hospitalName: 'Community Health Centre G. Madugula',
+    hospitalName: 'PHC G. Madugula',
     apptType: 'Biopsy Procedure Appointment',
-    appointmentDate: new Date('2026-11-15T10:00:00Z'),
-    dayOfWeek: 'Sunday',
-    timeSlot: '10:00 AM - 10:30 AM',
+    appointmentDate: new Date('2026-11-14T10:30:00Z'),
+    dayOfWeek: 'Saturday',
+    timeSlot: 'Saturday 10:30 AM',
     status: 'APPROVED',
-    doctorRemarks: 'Patient confirmed for 4mm punch biopsy under local anesthesia by Dr. Swapna Devi.'
+    doctorRemarks: 'Approved by Dr. Swapna Devi, MDS for Saturday 10:30 AM at PHC G. Madugula for 4mm punch biopsy procedure.'
   };
   await store.saveAppointment(somannaAppointment);
 
-  // Seed K. Somanna Prescription
+  // Seed K. Somanna Prescription & Biopsy Order (Histopathology referral to GGH Paderu)
   const somannaPrescription = {
-    rxId: 'RX-ASR-2026-0001',
+    rxId: 'RX-ASR-2026-GM046',
     patientUidn: somanna.uidn,
     doctorUidn: 'DOC-SWAPNA',
-    date: new Date('2026-11-10T11:00:00Z'),
+    date: new Date(Date.now() + 10000), // Ensures latest onco-referral slip is top
     medicines: [
       {
         name: 'Antioxidant & Lycopene Capsules (LycoRed 8mg)',
@@ -328,12 +328,19 @@ export const seedDatabase = async (): Promise<void> => {
       }
     ],
     biopsyRecommended: true,
-    biopsyProcedureDetails: 'Diagnostic 4mm punch biopsy of right buccal mucosal margin scheduled for 15-Nov-2026 at CHC G. Madugula surgical unit.',
+    biopsyProcedureDetails: 'Diagnostic 4mm punch biopsy of right buccal mucosa. Histopathology referral to GGH Paderu (Government General Hospital Paderu).',
     trackingStatus: 'Biopsy Scheduled',
-    printableBarcodeId: 'BAR-ASR-2026-90412-SOMANNA',
-    clinicalNotes: 'Strict tobacco and reverse smoking cessation mandated. Monitored under ITDA Tele-Oncology Tribal Care Protocol.'
+    printableBarcodeId: 'BAR-ASR-2026-GM046',
+    clinicalNotes: 'Biopsy order linked to UIDN-ASR-2026-GM046 with histopathology referral to GGH Paderu.'
   };
   await store.savePrescription(somannaPrescription);
+
+  // Backward compatibility alias: Somanna with UIDN-ASR-2026-0001
+  const somannaAlias = { ...somanna, uidn: 'UIDN-ASR-2026-0001' };
+  await store.savePatient(somannaAlias);
+  await store.saveScreening({ ...somannaScreening, screeningId: 'SCR-ASR-2026-0001', patientUidn: 'UIDN-ASR-2026-0001' });
+  await store.saveAppointment({ ...somannaAppointment, appointmentId: 'APT-ASR-2026-0001', patientUidn: 'UIDN-ASR-2026-0001' });
+  await store.savePrescription({ ...somannaPrescription, rxId: 'RX-ASR-2026-0001', patientUidn: 'UIDN-ASR-2026-0001' });
 
   // 4. SEED PATIENT 2: M. LAKSHMI
   const lakshmi = {

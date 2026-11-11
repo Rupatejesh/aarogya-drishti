@@ -254,12 +254,12 @@ export const PatientAuthModal: React.FC<PatientAuthModalProps> = ({
               </div>
 
               <div
-                onClick={() => handleRosterClick('UIDN-ASR-2026-0001')}
+                onClick={() => handleRosterClick('UIDN-ASR-2026-GM046')}
                 className="gold-card p-4 cursor-pointer hover:border-amber-500 hover:shadow-md transition-all flex justify-between items-center group"
               >
                 <div>
                   <span className="text-[10px] font-mono font-bold bg-amber-100 text-amber-900 px-2 py-0.5 rounded border border-amber-300">
-                    UIDN-ASR-2026-0001 • Compulsory Case
+                    UIDN-ASR-2026-GM046 • Compulsory Case
                   </span>
                   <div className="text-sm font-bold text-slate-900 mt-1 font-serif-royal">K. Somanna</div>
                   <div className="text-xs text-slate-600">46 Yrs • Male • Nurmati, G. Madugula</div>
@@ -552,3 +552,4 @@ export const PatientAuthModal: React.FC<PatientAuthModalProps> = ({
 };
 
 export default PatientAuthModal;
+

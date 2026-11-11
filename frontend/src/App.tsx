@@ -105,8 +105,8 @@ export default function App() {
         setRoster(rosterRes.roster);
       }
 
-      // 2. Default Login as Compulsory Hackathon Patient K. Somanna
-      const somannaLogin = await api.patientQuickLogin('UIDN-ASR-2026-0001');
+      // 2. Default Login as Compulsory Hackathon Patient K. Somanna (UIDN-ASR-2026-GM046)
+      const somannaLogin = await api.patientQuickLogin('UIDN-ASR-2026-GM046');
       if (somannaLogin.patient) {
         setPatient(somannaLogin.patient);
         setActivePrescription(somannaLogin.latestPrescription);
@@ -520,7 +520,7 @@ export default function App() {
 
                       <div className="pt-2 flex justify-between items-center text-xs font-bold text-amber-950 border-t border-amber-200/80">
                         <span>Biopsy Referral: Scheduled</span>
-                        <span className="text-emerald-700">CHC G. Madugula (Dr. Swapna Devi)</span>
+                        <span className="text-emerald-700">PHC G. Madugula (Dr. Swapna Devi, MDS)</span>
                       </div>
                     </div>
                   )}
@@ -645,8 +645,8 @@ export default function App() {
                 <DoctorChatBox
                   patientUidn={patient.uidn}
                   patientName={patient.name}
-                  doctorName="Dr. Swapna Devi, M.D."
-                  doctorHospital="Area Hospital Paderu (AH Paderu / District Hub)"
+                  doctorName="Dr. Swapna Devi, MDS"
+                  doctorHospital="PHC G. Madugula / Area Hospital Paderu Hub"
                   prescription={activePrescription}
                   lang={lang}
                 />
@@ -791,9 +791,9 @@ export default function App() {
         patient={patient}
         prescription={activePrescription}
         doctor={{
-          name: 'Dr. Swapna Devi, M.D.',
+          name: 'Dr. Swapna Devi, MDS',
           designation: 'Chief Onco-Pathologist & Lead Tele-Consultant',
-          hospitalDuty: 'Area Hospital Paderu (AH Paderu / District Hub)',
+          hospitalDuty: 'PHC G. Madugula / Area Hospital Paderu Tele-Lab',
           abdmCode: 'ABDM-DOC-AP-7821'
         }}
         lang={lang}
@@ -812,7 +812,7 @@ export default function App() {
               </button>
             </div>
             <LiveOralCamera
-              patientUidn={patient?.uidn || 'UIDN-ASR-2026-0001'}
+              patientUidn={patient?.uidn || 'UIDN-ASR-2026-GM046'}
               patientName={patient?.name || 'K. Somanna'}
               lang={lang}
               onAnalysisComplete={handleScreeningCompleted}
@@ -824,7 +824,7 @@ export default function App() {
       {/* 6. WEBRTC TELEMEDICINE ROOM MODAL */}
       {isTelemedicineOpen && (
         <WebRTCTelemedicineRoom
-          patient={patient || { name: 'K. Somanna', uidn: 'UIDN-ASR-2026-0001', mandal: 'G. Madugula', age: 46 }}
+          patient={patient || { name: 'K. Somanna', uidn: 'UIDN-ASR-2026-GM046', mandal: 'G. Madugula', age: 46 }}
           lang={lang}
           onClose={() => setIsTelemedicineOpen(false)}
           onPrescriptionCreated={(rx) => setActivePrescription(rx)}

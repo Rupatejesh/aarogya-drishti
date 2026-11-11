@@ -45,7 +45,7 @@ export const AppointmentRequestModal: React.FC<AppointmentRequestModalProps> = (
     setLoading(true);
     try {
       const payload = {
-        patientUidn: patient?.uidn || 'UIDN-ASR-2026-0001',
+        patientUidn: patient?.uidn || 'UIDN-ASR-2026-GM046',
         doctorUidn,
         mandal,
         hospitalName,
@@ -182,7 +182,7 @@ export const AppointmentRequestModal: React.FC<AppointmentRequestModalProps> = (
               onChange={(e) => setDoctorUidn(e.target.value)}
               className="w-full bg-[#FAF9F5] border border-amber-300 rounded-xl p-2.5 text-xs font-bold text-slate-800"
             >
-              <option value="DOC-SWAPNA">Dr. Swapna Devi, M.D. (Chief Onco-Pathologist - AH Paderu)</option>
+              <option value="DOC-SWAPNA">Dr. Swapna Devi, MDS (Chief Onco-Pathologist - AH / PHC G. Madugula)</option>
               <option value="DOC-RAJESH">Dr. K. Rajesh, MS ENT (Head & Neck Surgeon - Paderu Hub)</option>
               <option value="DOC-ANAND">Dr. Anand Kumar, MDS (Oral Medicine Lead - CHC G. Madugula)</option>
             </select>
@@ -241,3 +241,4 @@ export const AppointmentRequestModal: React.FC<AppointmentRequestModalProps> = (
 };
 
 export default AppointmentRequestModal;
+

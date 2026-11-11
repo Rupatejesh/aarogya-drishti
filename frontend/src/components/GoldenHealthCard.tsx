@@ -142,3 +142,4 @@ export const GoldenHealthCard: React.FC<GoldenHealthCardProps> = ({ patient, lan
 };
 
 export default GoldenHealthCard;
+

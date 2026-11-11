@@ -38,9 +38,9 @@ export const DoctorPortal: React.FC<DoctorPortalProps> = ({
   const [doctorPassword, setDoctorPassword] = useState('Aarogya@2026');
   const [activeDoctor, setActiveDoctor] = useState<any>({
     uidn: 'DOC-SWAPNA',
-    name: 'Dr. Swapna Devi, M.D.',
+    name: 'Dr. Swapna Devi, MDS',
     designation: 'Chief Onco-Pathologist & Lead Tele-Consultant',
-    hospitalDuty: 'Area Hospital Paderu (AH Paderu / District Hub)',
+    hospitalDuty: 'PHC G. Madugula / GGH Paderu Tele-Lab Hub',
     abdmCode: 'ABDM-DOC-AP-7821',
     email: 'dr.swapna@aarogyadrishti.org'
   });
@@ -114,7 +114,7 @@ export const DoctorPortal: React.FC<DoctorPortalProps> = ({
 
   const handleUpdateStatus = async (appointmentId: string, status: 'APPROVED' | 'REJECTED') => {
     try {
-      const remarks = status === 'APPROVED' ? 'Approved by Dr. Swapna Devi for clinical consultation.' : 'Rejected due to schedule conflict.';
+      const remarks = status === 'APPROVED' ? 'Approved by Dr. Swapna Devi, MDS for Saturday 10:30 AM at PHC G. Madugula.' : 'Rejected due to schedule conflict.';
       await api.updateAppointmentStatus(appointmentId, status, remarks);
       setIncomingQueue((prev) =>
         prev.map((a) => (a.appointmentId === appointmentId ? { ...a, status, doctorRemarks: remarks } : a))
@@ -182,7 +182,7 @@ export const DoctorPortal: React.FC<DoctorPortalProps> = ({
           type="text"
           value={searchUidn}
           onChange={(e) => setSearchUidn(e.target.value)}
-          placeholder="Lookup Patient Case History by UIDN (e.g. UIDN-ASR-2026-0001, Somanna)..."
+          placeholder="Lookup Patient Case History by UIDN (e.g. UIDN-ASR-2026-GM046, Somanna)..."
           className="flex-1 bg-transparent text-xs font-semibold focus:outline-none"
         />
         {searchUidn && (
@@ -432,3 +432,4 @@ export const DoctorPortal: React.FC<DoctorPortalProps> = ({
 };
 
 export default DoctorPortal;
+
