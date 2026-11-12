@@ -182,7 +182,37 @@ export default function App() {
 
   const handleLaunchTelemedicine = (targetPatient?: any, targetDoctor?: any) => {
     if (targetPatient) setPatient(targetPatient);
-    if (targetDoctor) setSelectedDoctorForCall(targetDoctor);
+    if (targetDoctor) {
+      setSelectedDoctorForCall(targetDoctor);
+    } else {
+      // Find the doctor from the patient's booked appointments
+      const bookedAppt =
+        patientAppointments.find((a: any) => a.status === 'APPROVED') ||
+        patientAppointments[0];
+
+      if (bookedAppt) {
+        const docCode = bookedAppt.doctorUidn || bookedAppt.doctorId || 'DOC-SWAPNA';
+        const docName =
+          bookedAppt.doctorName ||
+          (docCode === 'DOC-SWAPNA'
+            ? 'Dr. Swapna Devi, MDS'
+            : docCode === 'DOC-RAJESH'
+            ? 'Dr. K. Rajesh, MS ENT'
+            : 'Dr. Anand Kumar, MDS');
+
+        setSelectedDoctorForCall({
+          uidn: docCode,
+          name: docName,
+          designation: 'Assigned Tele-Consultant Specialist',
+          hospitalDuty: bookedAppt.hospitalName || 'PHC G. Madugula'
+        });
+      } else {
+        alert('Notice: Please book a tele-consultation appointment slot first. Once booked with your assigned specialist doctor, you can connect live with them here.');
+        const el = document.getElementById('patient-booking-card-section') || document.getElementById('patient-appointments-list-section');
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+        return;
+      }
+    }
     setIsTelemedicineOpen(true);
   };
 
@@ -1083,6 +1113,24 @@ export default function App() {
                               >
                                 {a.status}
                               </span>
+
+                              {a.status === 'APPROVED' && (
+                                <button
+                                  onClick={() => {
+                                    const docObj = {
+                                      uidn: a.doctorUidn || 'DOC-SWAPNA',
+                                      name: docDisplayName,
+                                      hospitalDuty: a.hospitalName,
+                                      designation: 'Approved Tele-Consultant'
+                                    };
+                                    handleLaunchTelemedicine(patient, docObj);
+                                  }}
+                                  className="mt-1 px-3 py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold flex items-center space-x-1 shadow-sm transition-all"
+                                >
+                                  <Video className="w-3 h-3" />
+                                  <span>Join Video Call</span>
+                                </button>
+                              )}
                             </div>
                           </div>
                         );

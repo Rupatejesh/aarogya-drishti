@@ -1,9 +1,22 @@
 import { Request, Response } from 'express';
 import store from '../services/store.service.js';
 
-export const getAllPrescriptions = async (_req: Request, res: Response): Promise<void> => {
+export const getAllPrescriptions = async (req: Request, res: Response): Promise<void> => {
   try {
-    const prescriptions = await store.findPrescriptions();
+    const { doctorId, doctorUidn } = req.query;
+    let query: Record<string, any> = {};
+
+    if (doctorId || doctorUidn) {
+      const docCode = String(doctorId || doctorUidn).trim();
+      query = {
+        $or: [
+          { doctorUidn: docCode },
+          { doctorId: docCode }
+        ]
+      };
+    }
+
+    const prescriptions = await store.findPrescriptions(query);
     res.status(200).json({
       success: true,
       prescriptions

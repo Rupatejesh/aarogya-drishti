@@ -1,11 +1,43 @@
 import { Request, Response } from 'express';
 import store from '../services/store.service.js';
 
-export const getAllAppointments = async (_req: Request, res: Response): Promise<void> => {
+export const getAllAppointments = async (req: Request, res: Response): Promise<void> => {
   try {
-    const appointments = await store.findAppointments();
+    const { doctorId, doctorUidn } = req.query;
+    let query: Record<string, any> = {};
+
+    if (doctorId || doctorUidn) {
+      const docCode = String(doctorId || doctorUidn).trim();
+      query = {
+        $or: [
+          { doctorUidn: docCode },
+          { doctorId: docCode }
+        ]
+      };
+    }
+
+    const appointments = await store.findAppointments(query);
     res.status(200).json({
       success: true,
+      appointments
+    });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const getAppointmentsByDoctor = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { doctorId } = req.params;
+    const appointments = await store.findAppointments({
+      $or: [
+        { doctorUidn: doctorId },
+        { doctorId: doctorId }
+      ]
+    });
+    res.status(200).json({
+      success: true,
+      doctorId,
       appointments
     });
   } catch (error: any) {

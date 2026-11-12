@@ -124,13 +124,17 @@ export const api = {
     return res.data;
   },
 
-  getAllAppointments: async () => {
-    const res = await apiClient.get('/appointments');
+  getAllAppointments: async (doctorId?: string) => {
+    const res = await apiClient.get('/appointments', {
+      params: doctorId ? { doctorId } : {}
+    });
     return res.data;
   },
 
-  getAllPrescriptions: async () => {
-    const res = await apiClient.get('/prescriptions');
+  getAllPrescriptions: async (doctorId?: string) => {
+    const res = await apiClient.get('/prescriptions', {
+      params: doctorId ? { doctorId } : {}
+    });
     return res.data;
   },
 

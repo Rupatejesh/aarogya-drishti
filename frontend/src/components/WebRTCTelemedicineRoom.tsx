@@ -56,8 +56,10 @@ export const WebRTCTelemedicineRoom: React.FC<WebRTCTelemedicineRoomProps> = ({
   const socketRef = useRef<Socket | null>(null);
   const localStreamRef = useRef<MediaStream | null>(null);
 
-  // Room & Connection States
-  const [roomId, setRoomId] = useState(`room-${patient?.uidn || 'UIDN-ASR-2026-GM046'}`);
+  // Room & Connection States - strictly scoped to Patient & Booked Doctor
+  const docUid = (doctor?.uidn || doctor?.doctorId || 'DOC-SWAPNA').replace(/[^a-zA-Z0-9_-]/g, '_');
+  const patUid = (patient?.uidn || 'UIDN-ASR-2026-GM046').replace(/[^a-zA-Z0-9_-]/g, '_');
+  const [roomId, setRoomId] = useState(`telecall-${patUid}-${docUid}`);
   const [copiedLink, setCopiedLink] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);

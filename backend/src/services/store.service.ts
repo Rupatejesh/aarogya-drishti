@@ -401,7 +401,14 @@ export class ResilientStore {
       }
     }
     return this.data.appointments.filter((a) => {
+      if (query.$or && Array.isArray(query.$or)) {
+        const matchesOr = query.$or.some((subQuery: any) => {
+          return Object.keys(subQuery).every((k) => a[k] === subQuery[k]);
+        });
+        if (!matchesOr) return false;
+      }
       for (const key of Object.keys(query)) {
+        if (key === '$or') continue;
         if (key === 'patientUidn' && isSomanna) {
           if (a.patientUidn !== 'UIDN-ASR-2026-GM046' && a.patientUidn !== 'UIDN-ASR-2026-0001') return false;
         } else if (a[key] !== query[key]) {
@@ -490,7 +497,14 @@ export class ResilientStore {
       }
     }
     return this.data.prescriptions.filter((p) => {
+      if (query.$or && Array.isArray(query.$or)) {
+        const matchesOr = query.$or.some((subQuery: any) => {
+          return Object.keys(subQuery).every((k) => p[k] === subQuery[k]);
+        });
+        if (!matchesOr) return false;
+      }
       for (const key of Object.keys(query)) {
+        if (key === '$or') continue;
         if (key === 'patientUidn' && isSomanna) {
           if (p.patientUidn !== 'UIDN-ASR-2026-GM046' && p.patientUidn !== 'UIDN-ASR-2026-0001') return false;
         } else if (p[key] !== query[key]) {
