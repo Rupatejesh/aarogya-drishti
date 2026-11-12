@@ -549,6 +549,32 @@ export const seedDatabase = async (): Promise<void> => {
   await store.savePrescription(ramuPrescription);
 
   // 6. SEED SYSTEM ADMIN & HOSPITAL MANAGER USERS
+  const adminPasswordHash = await bcrypt.hash('admin123', 10);
+
+  await store.saveUser({
+    email: 'admin@aarogyadrishti.in',
+    phone: '9848099990',
+    role: 'admin',
+    passwordHash: adminPasswordHash,
+    activeStatus: true
+  });
+
+  await store.saveUser({
+    email: 'admin@aarogyadrishti.demo',
+    phone: '9848099991',
+    role: 'admin',
+    passwordHash: adminPasswordHash,
+    activeStatus: true
+  });
+
+  await store.saveUser({
+    email: 'admin@itdapaderu.gov.in',
+    phone: '9848099992',
+    role: 'admin',
+    passwordHash: adminPasswordHash,
+    activeStatus: true
+  });
+
   await store.saveUser({
     email: 'admin@aarogyadrishti.org',
     phone: '9848099999',

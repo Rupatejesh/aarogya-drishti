@@ -20,6 +20,7 @@ router.post('/aadhar-login', aadharLogin);
 router.post('/doctor-login', doctorLogin);
 router.post('/doctor-reset-password', doctorResetPassword);
 router.post('/admin-login', adminLogin);
+router.post('/login', adminLogin);
 
 export default router;
 
