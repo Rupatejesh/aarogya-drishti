@@ -133,7 +133,7 @@ export const WebRTCTelemedicineRoom: React.FC<WebRTCTelemedicineRoomProps> = ({
         }
 
         // 2. Connect to Socket.io Signaling Engine
-        const socketUrl = (import.meta as any).env?.VITE_SOCKET_URL || 'https://aarogya-drishti-9g70.onrender.com';
+        const socketUrl = 'https://aarogya-drishti-9g70.onrender.com';
         const socket = io(socketUrl, {
           transports: ['websocket', 'polling'],
           reconnectionAttempts: 5

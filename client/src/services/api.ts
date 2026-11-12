@@ -8,25 +8,10 @@ const localHostname =
     : 'localhost'
 
 const resolveApiBaseUrl = (): string => {
-  const configured = import.meta.env.VITE_API_URL?.trim()
-  if (!configured) {
-    return `http://${localHostname}:5000/api`
-  }
-  try {
-    const parsed = new URL(configured)
-    if (
-      (parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1') &&
-      (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-    ) {
-      parsed.hostname = window.location.hostname
-    }
-    return parsed.toString().replace(/\/$/, '')
-  } catch {
-    return configured
-  }
-}
+  return 'https://aarogya-drishti-9g70.onrender.com/api';
+};
 
-const API_BASE_URL = resolveApiBaseUrl()
+const API_BASE_URL = 'https://aarogya-drishti-9g70.onrender.com/api';
 
 const readCookie = (name: string): string | undefined => {
   if (typeof document === 'undefined') return undefined
