@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   UserCheck,
   CreditCard,
@@ -7,7 +7,6 @@ import {
   KeyRound,
   CheckCircle,
   X,
-  Sparkles,
   Calendar,
   MapPin,
   AlertTriangle
@@ -20,36 +19,42 @@ interface PatientAuthModalProps {
   onClose: () => void;
   lang: Language;
   onAuthenticated: (patient: any) => void;
+  defaultMode?: 'login' | 'register';
 }
 
 export const PatientAuthModal: React.FC<PatientAuthModalProps> = ({
   isOpen,
   onClose,
   lang,
-  onAuthenticated
+  onAuthenticated,
+  defaultMode = 'login'
 }) => {
   const t = translations[lang];
 
-  const [authMethod, setAuthMethod] = useState<'roster' | 'aadhar' | 'phone' | 'register'>('roster');
+  const [authMethod, setAuthMethod] = useState<'login' | 'register'>(defaultMode);
 
-  // Aadhaar State
-  const [aadharNumber, setAadharNumber] = useState('6543-8901-2345');
+  useEffect(() => {
+    if (defaultMode) {
+      setAuthMethod(defaultMode);
+    }
+  }, [defaultMode, isOpen]);
 
-  // Phone & OTP State
-  const [phoneNumber, setPhoneNumber] = useState('9490123451');
-  const [otpValue, setOtpValue] = useState('123456');
+  // Login credentials
+  const [loginIdentifier, setLoginIdentifier] = useState(''); // Phone / UIDN / Aadhaar
+  const [loginMethod, setLoginMethod] = useState<'phone' | 'aadhar'>('phone');
+  const [otpValue, setOtpValue] = useState('');
   const [otpSent, setOtpSent] = useState(false);
 
-  // Registration State
-  const [regName, setRegName] = useState('G. Appa Rao');
-  const [regDob, setRegDob] = useState('1984-06-15');
+  // Registration State (Clean, no demo data prefilled)
+  const [regName, setRegName] = useState('');
+  const [regDob, setRegDob] = useState('');
   const [regGender, setRegGender] = useState<'MALE' | 'FEMALE' | 'OTHER'>('MALE');
-  const [regBloodGroup, setRegBloodGroup] = useState('B+');
-  const [regPhone, setRegPhone] = useState('9490123499');
-  const [regAadhar, setRegAadhar] = useState('4567-8901-2345');
-  const [regMandal, setRegMandal] = useState('Hukumpeta');
-  const [regVillage, setRegVillage] = useState('Bakuru');
-  const [regHabitation, setRegHabitation] = useState('Hukumpeta Hills');
+  const [regBloodGroup, setRegBloodGroup] = useState('O+');
+  const [regPhone, setRegPhone] = useState('');
+  const [regAadhar, setRegAadhar] = useState('');
+  const [regMandal, setRegMandal] = useState('Paderu');
+  const [regVillage, setRegVillage] = useState('');
+  const [regHabitation, setRegHabitation] = useState('');
 
   const [loading, setLoading] = useState(false);
   const [statusMsg, setStatusMsg] = useState<string | null>(null);
@@ -71,49 +76,42 @@ export const PatientAuthModal: React.FC<PatientAuthModalProps> = ({
 
   const calculatedAge = calculateAge(regDob);
 
-  // 1-Click Roster Login
-  const handleRosterClick = async (uidn: string) => {
-    setLoading(true);
-    setStatusMsg(null);
-    try {
-      const res = await api.patientQuickLogin(uidn);
-      onAuthenticated(res.patient);
-      onClose();
-    } catch (err: any) {
-      setStatusMsg(err.message || 'Login failed');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Aadhaar Login
-  const handleAadharSubmit = async (e: React.FormEvent) => {
+  // Direct Aadhaar or UIDN Login
+  const handleAadharOrUidnSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!loginIdentifier.trim()) {
+      setStatusMsg('Please enter your Aadhaar number or UIDN');
+      return;
+    }
     setLoading(true);
     setStatusMsg(null);
     try {
-      const res = await api.aadharLogin(aadharNumber);
-      onAuthenticated(res.patient);
-      onClose();
+      const res = await api.aadharLogin(loginIdentifier.trim());
+      if (res.patient) {
+        onAuthenticated(res.patient);
+        onClose();
+      } else {
+        setStatusMsg('Patient record not found. Please register as a new patient.');
+      }
     } catch (err: any) {
-      setStatusMsg(err.response?.data?.message || err.message || 'Aadhaar lookup failed');
+      setStatusMsg(err.response?.data?.message || err.message || 'Lookup failed');
     } finally {
       setLoading(false);
     }
   };
 
-  // Send Demo OTP
+  // Send Phone OTP
   const handleSendOtp = async () => {
-    if (!phoneNumber || phoneNumber.length < 10) {
+    if (!loginIdentifier || loginIdentifier.trim().length < 10) {
       setStatusMsg('Please enter a valid 10-digit mobile number');
       return;
     }
     setLoading(true);
     setStatusMsg(null);
     try {
-      const res = await api.sendPhoneOtp(phoneNumber);
+      const res = await api.sendPhoneOtp(loginIdentifier.trim());
       setOtpSent(true);
-      setStatusMsg(`Demo OTP sent to +91-${phoneNumber}. Code: ${res.demoOtp || '123456'}`);
+      setStatusMsg(`OTP sent to +91-${loginIdentifier.trim()}. Code: ${res.demoOtp || '123456'}`);
     } catch (err: any) {
       setStatusMsg(err.response?.data?.message || err.message || 'OTP delivery failed');
     } finally {
@@ -124,17 +122,21 @@ export const PatientAuthModal: React.FC<PatientAuthModalProps> = ({
   // Verify Phone OTP
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!otpValue) {
+      setStatusMsg('Please enter the OTP');
+      return;
+    }
     setLoading(true);
     setStatusMsg(null);
     try {
-      const res = await api.verifyPhoneOtp(phoneNumber, otpValue);
+      const res = await api.verifyPhoneOtp(loginIdentifier.trim(), otpValue.trim());
       if (res.patient) {
         onAuthenticated(res.patient);
         onClose();
       } else {
         setAuthMethod('register');
-        setRegPhone(phoneNumber);
-        setStatusMsg('New mobile verified. Please finish one-time registration profile below.');
+        setRegPhone(loginIdentifier.trim());
+        setStatusMsg('Mobile verified. Please finish one-time patient registration below.');
       }
     } catch (err: any) {
       setStatusMsg(err.response?.data?.message || err.message || 'OTP verification failed');
@@ -146,25 +148,31 @@ export const PatientAuthModal: React.FC<PatientAuthModalProps> = ({
   // Register New Patient
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!regName.trim() || !regPhone.trim()) {
+      setStatusMsg('Please enter full name and phone number');
+      return;
+    }
     setLoading(true);
     setStatusMsg(null);
     try {
       const payload = {
-        name: regName,
-        age: calculatedAge,
-        dob: regDob,
+        name: regName.trim(),
+        age: calculatedAge || 30,
+        dob: regDob || '1990-01-01',
         gender: regGender,
         bloodGroup: regBloodGroup,
-        phone: regPhone,
-        aadhar: regAadhar,
+        phone: regPhone.trim(),
+        aadhar: regAadhar.trim() || 'Not Provided',
         mandal: regMandal,
-        village: regVillage,
-        habitation: regHabitation
+        village: regVillage.trim() || 'Headquarters',
+        habitation: regHabitation.trim() || 'Central'
       };
       const res = await api.registerPatient(payload);
-      onAuthenticated(res.patient);
-      alert(`Patient successfully registered with auto-assigned UIDN: ${res.patient.uidn}`);
-      onClose();
+      if (res.patient) {
+        onAuthenticated(res.patient);
+        alert(`Patient registered successfully! Assigned UIDN: ${res.patient.uidn}`);
+        onClose();
+      }
     } catch (err: any) {
       setStatusMsg(err.response?.data?.message || err.message || 'Registration failed');
     } finally {
@@ -174,7 +182,7 @@ export const PatientAuthModal: React.FC<PatientAuthModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
-      <div className="bg-white max-w-xl w-full rounded-3xl border border-slate-200 shadow-2xl overflow-hidden">
+      <div className="bg-white max-w-xl w-full rounded-3xl border border-slate-200 shadow-2xl overflow-hidden my-8">
         {/* Header (Royal Blue) */}
         <div className="bg-royal-700 text-white p-5 flex items-center justify-between border-b border-royal-800">
           <div className="flex items-center space-x-3">
@@ -182,7 +190,9 @@ export const PatientAuthModal: React.FC<PatientAuthModalProps> = ({
               <UserCheck className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h3 className="font-extrabold text-base tracking-wide">PATIENT AUTHENTICATION</h3>
+              <h3 className="font-extrabold text-base tracking-wide">
+                {authMethod === 'register' ? 'NEW PATIENT REGISTRATION' : 'PATIENT LOGIN'}
+              </h3>
               <p className="text-[11px] text-blue-100">ITDA Paderu Alluri District Care Access</p>
             </div>
           </div>
@@ -192,53 +202,35 @@ export const PatientAuthModal: React.FC<PatientAuthModalProps> = ({
         </div>
 
         {/* Auth Method Navigation Tabs */}
-        <div className="p-3 bg-slate-50 border-b border-slate-200 flex flex-wrap gap-1.5 text-xs font-bold">
+        <div className="p-3 bg-slate-50 border-b border-slate-200 flex gap-2 text-xs font-bold">
           <button
-            onClick={() => setAuthMethod('roster')}
-            className={`px-3 py-1.5 rounded-xl transition-all flex items-center space-x-1.5 ${
-              authMethod === 'roster'
+            onClick={() => {
+              setAuthMethod('login');
+              setStatusMsg(null);
+            }}
+            className={`flex-1 py-2 rounded-xl transition-all flex items-center justify-center space-x-1.5 ${
+              authMethod === 'login'
                 ? 'bg-royal-600 text-white shadow-sm'
                 : 'text-slate-600 hover:bg-slate-200'
             }`}
           >
-            <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-            <span>1-Click Roster</span>
+            <UserCheck className="w-4 h-4" />
+            <span>Patient Login</span>
           </button>
 
           <button
-            onClick={() => setAuthMethod('aadhar')}
-            className={`px-3 py-1.5 rounded-xl transition-all flex items-center space-x-1.5 ${
-              authMethod === 'aadhar'
-                ? 'bg-royal-600 text-white shadow-sm'
-                : 'text-slate-600 hover:bg-slate-200'
-            }`}
-          >
-            <CreditCard className="w-3.5 h-3.5" />
-            <span>12-Digit Aadhaar</span>
-          </button>
-
-          <button
-            onClick={() => setAuthMethod('phone')}
-            className={`px-3 py-1.5 rounded-xl transition-all flex items-center space-x-1.5 ${
-              authMethod === 'phone'
-                ? 'bg-royal-600 text-white shadow-sm'
-                : 'text-slate-600 hover:bg-slate-200'
-            }`}
-          >
-            <Phone className="w-3.5 h-3.5" />
-            <span>Phone OTP</span>
-          </button>
-
-          <button
-            onClick={() => setAuthMethod('register')}
-            className={`px-3 py-1.5 rounded-xl transition-all flex items-center space-x-1.5 ${
+            onClick={() => {
+              setAuthMethod('register');
+              setStatusMsg(null);
+            }}
+            className={`flex-1 py-2 rounded-xl transition-all flex items-center justify-center space-x-1.5 ${
               authMethod === 'register'
                 ? 'bg-royal-600 text-white shadow-sm'
                 : 'text-slate-600 hover:bg-slate-200'
             }`}
           >
-            <UserPlus className="w-3.5 h-3.5" />
-            <span>New Patient</span>
+            <UserPlus className="w-4 h-4" />
+            <span>New Patient Registration</span>
           </button>
         </div>
 
@@ -251,222 +243,195 @@ export const PatientAuthModal: React.FC<PatientAuthModalProps> = ({
             </div>
           )}
 
-          {/* TAB 1: 1-Click Roster */}
-          {authMethod === 'roster' && (
-            <div className="space-y-3">
-              <div className="text-xs font-semibold text-slate-600 mb-2">
-                Select a compulsory Hackathon case for instant 1-click test fill:
-              </div>
-
-              <div
-                onClick={() => handleRosterClick('UIDN-ASR-2026-GM046')}
-                className="bg-white border border-slate-200 p-4 rounded-2xl cursor-pointer hover:border-royal-500 hover:shadow-md transition-all flex justify-between items-center group"
-              >
-                <div>
-                  <span className="text-[10px] font-mono font-bold bg-blue-100 text-royal-800 px-2 py-0.5 rounded border border-blue-200">
-                    UIDN-ASR-2026-GM046 • Compulsory Case
-                  </span>
-                  <div className="text-sm font-bold text-slate-900 mt-1">K. Somanna</div>
-                  <div className="text-xs text-slate-600">46 Yrs • Male • Nurmati, G. Madugula</div>
-                  <div className="text-[11px] text-royal-700 font-semibold mt-1">
-                    Persistent white patch • 18-Yr Reverse Tobacco
-                  </div>
-                </div>
-                <button className="px-3 py-1.5 bg-royal-600 group-hover:bg-royal-700 text-white rounded-xl text-xs font-bold transition-colors">
-                  Login
+          {/* TAB 1: Patient Login */}
+          {authMethod === 'login' && (
+            <div className="space-y-4">
+              <div className="flex border-b border-slate-200 pb-2 mb-2 gap-4 text-xs font-semibold">
+                <button
+                  type="button"
+                  onClick={() => setLoginMethod('phone')}
+                  className={`pb-1 border-b-2 transition-all ${
+                    loginMethod === 'phone'
+                      ? 'border-royal-600 text-royal-600 font-bold'
+                      : 'border-transparent text-slate-500 hover:text-slate-800'
+                  }`}
+                >
+                  Phone Number & OTP
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setLoginMethod('aadhar')}
+                  className={`pb-1 border-b-2 transition-all ${
+                    loginMethod === 'aadhar'
+                      ? 'border-royal-600 text-royal-600 font-bold'
+                      : 'border-transparent text-slate-500 hover:text-slate-800'
+                  }`}
+                >
+                  Aadhaar / UIDN Lookup
                 </button>
               </div>
 
-              <div
-                onClick={() => handleRosterClick('UIDN-ASR-2026-0002')}
-                className="bg-white border border-slate-200 p-4 rounded-2xl cursor-pointer hover:border-royal-500 hover:shadow-md transition-all flex justify-between items-center group"
-              >
-                <div>
-                  <span className="text-[10px] font-mono font-bold bg-slate-100 text-slate-800 px-2 py-0.5 rounded border border-slate-300">
-                    UIDN-ASR-2026-0002
-                  </span>
-                  <div className="text-sm font-bold text-slate-900 mt-1">M. Lakshmi</div>
-                  <div className="text-xs text-slate-600">32 Yrs • Female • Padmapuram, Araku Valley</div>
-                  <div className="text-[11px] text-royal-700 font-semibold mt-1">
-                    Erythroplakia • Betel Quid & Burning Mucosa
+              {loginMethod === 'phone' ? (
+                <form onSubmit={handleVerifyOtp} className="space-y-3">
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">
+                      10-Digit Mobile Number
+                    </label>
+                    <div className="flex space-x-2">
+                      <div className="relative flex-1">
+                        <Phone className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
+                        <input
+                          type="tel"
+                          value={loginIdentifier}
+                          onChange={(e) => setLoginIdentifier(e.target.value)}
+                          placeholder="e.g. 9490123456"
+                          maxLength={10}
+                          className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono font-semibold text-slate-900 focus:ring-2 focus:ring-royal-500 focus:outline-none"
+                          required
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleSendOtp}
+                        disabled={loading || !loginIdentifier}
+                        className="px-4 py-2 bg-royal-100 hover:bg-royal-200 text-royal-700 rounded-xl text-xs font-bold transition-all disabled:opacity-50"
+                      >
+                        {loading ? 'Sending...' : 'Send OTP'}
+                      </button>
+                    </div>
                   </div>
-                </div>
-                <button className="px-3 py-1.5 bg-royal-600 group-hover:bg-royal-700 text-white rounded-xl text-xs font-bold transition-colors">
-                  Login
-                </button>
-              </div>
 
-              <div
-                onClick={() => handleRosterClick('UIDN-ASR-2026-0003')}
-                className="bg-white border border-slate-200 p-4 rounded-2xl cursor-pointer hover:border-royal-500 hover:shadow-md transition-all flex justify-between items-center group"
-              >
-                <div>
-                  <span className="text-[10px] font-mono font-bold bg-slate-100 text-slate-800 px-2 py-0.5 rounded border border-slate-300">
-                    UIDN-ASR-2026-0003
-                  </span>
-                  <div className="text-sm font-bold text-slate-900 mt-1">P. Ramu</div>
-                  <div className="text-xs text-slate-600">58 Yrs • Male • Paderu Tribal Hamlet, Paderu</div>
-                  <div className="text-[11px] text-royal-700 font-semibold mt-1">
-                    Oral Submucous Fibrosis (OSMF) • Trismus
+                  {otpSent && (
+                    <div>
+                      <label className="text-xs font-bold text-slate-700 block mb-1">
+                        Enter 6-Digit OTP
+                      </label>
+                      <input
+                        type="text"
+                        value={otpValue}
+                        onChange={(e) => setOtpValue(e.target.value)}
+                        placeholder="123456"
+                        maxLength={6}
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono font-bold tracking-widest text-center focus:ring-2 focus:ring-royal-500 focus:outline-none"
+                        required
+                      />
+                    </div>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={loading || !otpSent}
+                    className="w-full py-3 bg-royal-600 hover:bg-royal-700 text-white font-bold text-xs rounded-xl shadow-blue-card transition-all disabled:opacity-50 flex items-center justify-center space-x-2"
+                  >
+                    <KeyRound className="w-4 h-4" />
+                    <span>{loading ? 'Verifying...' : 'Verify OTP & Login'}</span>
+                  </button>
+                </form>
+              ) : (
+                <form onSubmit={handleAadharOrUidnSubmit} className="space-y-3">
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">
+                      12-Digit Aadhaar or Patient UIDN
+                    </label>
+                    <div className="relative">
+                      <CreditCard className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
+                      <input
+                        type="text"
+                        value={loginIdentifier}
+                        onChange={(e) => setLoginIdentifier(e.target.value)}
+                        placeholder="e.g. 6543-8901-2345 or UIDN-ASR-..."
+                        className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono font-semibold text-slate-900 focus:ring-2 focus:ring-royal-500 focus:outline-none"
+                        required
+                      />
+                    </div>
                   </div>
-                </div>
-                <button className="px-3 py-1.5 bg-royal-600 group-hover:bg-royal-700 text-white rounded-xl text-xs font-bold transition-colors">
-                  Login
+
+                  <button
+                    type="submit"
+                    disabled={loading || !loginIdentifier}
+                    className="w-full py-3 bg-royal-600 hover:bg-royal-700 text-white font-bold text-xs rounded-xl shadow-blue-card transition-all disabled:opacity-50 flex items-center justify-center space-x-2"
+                  >
+                    <UserCheck className="w-4 h-4" />
+                    <span>{loading ? 'Searching...' : 'Login with Aadhaar / UIDN'}</span>
+                  </button>
+                </form>
+              )}
+
+              <div className="pt-3 text-center border-t border-slate-100">
+                <span className="text-xs text-slate-500">Don't have an account yet? </span>
+                <button
+                  type="button"
+                  onClick={() => setAuthMethod('register')}
+                  className="text-xs font-bold text-royal-600 hover:underline"
+                >
+                  Register as New Patient
                 </button>
               </div>
             </div>
           )}
 
-          {/* TAB 2: 12-Digit Aadhaar Login */}
-          {authMethod === 'aadhar' && (
-            <form onSubmit={handleAadharSubmit} className="space-y-4">
-              <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1">
-                  12-Digit Aadhaar Card Number
-                </label>
-                <div className="relative">
-                  <CreditCard className="w-4 h-4 text-royal-600 absolute left-3 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="text"
-                    value={aadharNumber}
-                    onChange={(e) => setAadharNumber(e.target.value)}
-                    placeholder="XXXX-XXXX-XXXX"
-                    className="w-full bg-slate-50 border border-slate-300 rounded-xl pl-9 pr-4 py-2.5 text-xs font-mono font-bold tracking-widest text-slate-900 focus:ring-2 focus:ring-royal-500"
-                    required
-                  />
-                </div>
-                <span className="text-[11px] text-slate-500 mt-1 block">
-                  Demo Aadhaar cards: 6543-8901-2345 (Somanna), 7812-3456-7890 (Lakshmi), 8923-4567-8901 (Ramu)
-                </span>
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-3 rounded-xl bg-gradient-to-r from-royal-600 to-royal-700 text-white font-bold text-xs shadow-blue-card hover:brightness-110 transition-all"
-              >
-                {loading ? 'Authenticating Aadhaar...' : 'Sign In with Aadhaar'}
-              </button>
-            </form>
-          )}
-
-          {/* TAB 3: Phone OTP Login */}
-          {authMethod === 'phone' && (
-            <form onSubmit={handleVerifyOtp} className="space-y-4">
-              <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1">
-                  Mobile Phone Number
-                </label>
-                <div className="flex space-x-2">
-                  <div className="relative flex-1">
-                    <Phone className="w-4 h-4 text-royal-600 absolute left-3 top-1/2 -translate-y-1/2" />
-                    <input
-                      type="tel"
-                      value={phoneNumber}
-                      onChange={(e) => setPhoneNumber(e.target.value)}
-                      placeholder="10-digit mobile number"
-                      className="w-full bg-slate-50 border border-slate-300 rounded-xl pl-9 pr-4 py-2 text-xs font-mono font-bold text-slate-900"
-                      required
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleSendOtp}
-                    disabled={loading}
-                    className="px-4 py-2 bg-royal-700 text-white rounded-xl text-xs font-bold hover:bg-royal-800 transition-colors whitespace-nowrap"
-                  >
-                    Send OTP
-                  </button>
-                </div>
-              </div>
-
-              <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1">
-                  Instant Demo OTP Code (Use: 123456)
-                </label>
-                <div className="relative">
-                  <KeyRound className="w-4 h-4 text-royal-600 absolute left-3 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="text"
-                    value={otpValue}
-                    onChange={(e) => setOtpValue(e.target.value)}
-                    placeholder="123456"
-                    className="w-full bg-slate-50 border border-slate-300 rounded-xl pl-9 pr-4 py-2 text-xs font-mono font-bold tracking-widest text-slate-900"
-                    required
-                  />
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-3 rounded-xl bg-gradient-to-r from-royal-600 to-royal-700 text-white font-bold text-xs shadow-blue-card hover:brightness-110 transition-all"
-              >
-                {loading ? 'Verifying OTP...' : 'Verify OTP & Enter Portal'}
-              </button>
-            </form>
-          )}
-
-          {/* TAB 4: New Patient Registration */}
+          {/* TAB 2: New Patient Registration */}
           {authMethod === 'register' && (
-            <form onSubmit={handleRegister} className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
+            <form onSubmit={handleRegister} className="space-y-3 max-h-[60vh] overflow-y-auto pr-1">
+              <div>
+                <label className="text-xs font-bold text-slate-700 block mb-1">
+                  Full Name (Tribal Citizen) *
+                </label>
+                <input
+                  type="text"
+                  value={regName}
+                  onChange={(e) => setRegName(e.target.value)}
+                  placeholder="Enter full name"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium focus:ring-2 focus:ring-royal-500 focus:outline-none"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="text-[11px] font-bold text-slate-700 block mb-0.5">Full Name</label>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">
+                    Date of Birth *
+                  </label>
                   <input
-                    type="text"
-                    value={regName}
-                    onChange={(e) => setRegName(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-xs text-slate-900 font-medium"
+                    type="date"
+                    value={regDob}
+                    onChange={(e) => setRegDob(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium focus:ring-2 focus:ring-royal-500 focus:outline-none"
                     required
                   />
                 </div>
-
                 <div>
-                  <label className="text-[11px] font-bold text-slate-700 block mb-0.5">Gender</label>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">
+                    Calculated Age
+                  </label>
+                  <input
+                    type="text"
+                    readOnly
+                    value={`${calculatedAge} Years`}
+                    className="w-full px-3 py-2 bg-slate-100 border border-slate-300 rounded-xl text-xs font-bold text-slate-700"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">Gender</label>
                   <select
                     value={regGender}
                     onChange={(e: any) => setRegGender(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-xs text-slate-900"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium focus:ring-2 focus:ring-royal-500 focus:outline-none"
                   >
                     <option value="MALE">Male</option>
                     <option value="FEMALE">Female</option>
                     <option value="OTHER">Other</option>
                   </select>
                 </div>
-              </div>
-
-              {/* DOB with Automatic Age Calculation */}
-              <div className="grid grid-cols-2 gap-3 bg-blue-50/60 p-2.5 rounded-xl border border-blue-200">
                 <div>
-                  <label className="text-[11px] font-bold text-royal-950 block mb-0.5 flex items-center space-x-1">
-                    <Calendar className="w-3 h-3 text-royal-600" />
-                    <span>Date of Birth</span>
-                  </label>
-                  <input
-                    type="date"
-                    value={regDob}
-                    onChange={(e) => setRegDob(e.target.value)}
-                    className="w-full bg-white border border-blue-200 rounded-lg p-1.5 text-xs font-mono text-slate-900"
-                    required
-                  />
-                </div>
-
-                <div className="flex flex-col justify-center">
-                  <span className="text-[10px] text-slate-500 uppercase font-bold">Auto-Calculated Age</span>
-                  <span className="text-base font-extrabold text-royal-900">
-                    {calculatedAge} <span className="text-xs font-normal">Years Old</span>
-                  </span>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-[11px] font-bold text-slate-700 block mb-0.5">Blood Group (Optional)</label>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">Blood Group</label>
                   <select
                     value={regBloodGroup}
                     onChange={(e) => setRegBloodGroup(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-xs text-slate-900"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium focus:ring-2 focus:ring-royal-500 focus:outline-none"
                   >
                     <option value="A+">A+</option>
                     <option value="A-">A-</option>
@@ -478,76 +443,108 @@ export const PatientAuthModal: React.FC<PatientAuthModalProps> = ({
                     <option value="AB-">AB-</option>
                   </select>
                 </div>
-
-                <div>
-                  <label className="text-[11px] font-bold text-slate-700 block mb-0.5">11 Mandals Picker</label>
-                  <select
-                    value={regMandal}
-                    onChange={(e) => setRegMandal(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-xs font-bold text-slate-900"
-                  >
-                    <option value="G. Madugula">G. Madugula</option>
-                    <option value="Paderu">Paderu</option>
-                    <option value="Araku Valley">Araku Valley</option>
-                    <option value="Chintapalle">Chintapalle</option>
-                    <option value="Ananthagiri">Ananthagiri</option>
-                    <option value="Dumbriguda">Dumbriguda</option>
-                    <option value="Hukumpeta">Hukumpeta</option>
-                    <option value="G.K. Veedhi">G.K. Veedhi</option>
-                    <option value="Koyyuru">Koyyuru</option>
-                    <option value="Munchingi Puttu">Munchingi Puttu</option>
-                    <option value="Pedabayalu">Pedabayalu</option>
-                  </select>
-                </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="text-[11px] font-bold text-slate-700 block mb-0.5">Village / Hamlet</label>
-                  <input
-                    type="text"
-                    value={regVillage}
-                    onChange={(e) => setRegVillage(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-xs text-slate-900"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="text-[11px] font-bold text-slate-700 block mb-0.5">Mobile Phone</label>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">
+                    Mobile Phone *
+                  </label>
                   <input
                     type="tel"
                     value={regPhone}
                     onChange={(e) => setRegPhone(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-xs font-mono text-slate-900"
+                    placeholder="9490123456"
+                    maxLength={10}
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium focus:ring-2 focus:ring-royal-500 focus:outline-none"
                     required
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">
+                    Aadhaar Number
+                  </label>
+                  <input
+                    type="text"
+                    value={regAadhar}
+                    onChange={(e) => setRegAadhar(e.target.value)}
+                    placeholder="xxxx-xxxx-xxxx"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium focus:ring-2 focus:ring-royal-500 focus:outline-none"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-[11px] font-bold text-slate-700 block mb-0.5">12-Digit Aadhaar Card</label>
-                <input
-                  type="text"
-                  value={regAadhar}
-                  onChange={(e) => setRegAadhar(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-xs font-mono text-slate-900"
-                  required
-                />
+                <label className="text-xs font-bold text-slate-700 block mb-1">
+                  ITDA Paderu Agency Mandal *
+                </label>
+                <select
+                  value={regMandal}
+                  onChange={(e) => setRegMandal(e.target.value)}
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold text-royal-900 focus:ring-2 focus:ring-royal-500 focus:outline-none"
+                >
+                  {[
+                    'Paderu',
+                    'Araku Valley',
+                    'Ananthagiri',
+                    'Dumbriguda',
+                    'Hukumpeta',
+                    'Pedabayalu',
+                    'Munchingiputtu',
+                    'G. Madugula',
+                    'Chintapalli',
+                    'G.K. Veedhi',
+                    'Koyyuru'
+                  ].map((m) => (
+                    <option key={m} value={m}>
+                      {m} Mandal
+                    </option>
+                  ))}
+                </select>
               </div>
 
-              <div className="p-2.5 bg-blue-50 rounded-xl border border-blue-200 text-[11px] text-royal-900 flex items-center space-x-2">
-                <CheckCircle className="w-4 h-4 text-royal-600 flex-shrink-0" />
-                <span>An official unique identifier (UIDN-ASR-2026-XXXX) will be automatically assigned.</span>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">Village Name</label>
+                  <input
+                    type="text"
+                    value={regVillage}
+                    onChange={(e) => setRegVillage(e.target.value)}
+                    placeholder="e.g. Nurmati"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium focus:ring-2 focus:ring-royal-500 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">Habitation / Gudem</label>
+                  <input
+                    type="text"
+                    value={regHabitation}
+                    onChange={(e) => setRegHabitation(e.target.value)}
+                    placeholder="e.g. Hill Top Colony"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium focus:ring-2 focus:ring-royal-500 focus:outline-none"
+                  />
+                </div>
               </div>
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 rounded-xl bg-gradient-to-r from-royal-600 to-royal-700 text-white font-bold text-xs shadow-blue-card hover:brightness-110 transition-all"
+                className="w-full py-3 bg-royal-600 hover:bg-royal-700 text-white font-bold text-xs rounded-xl shadow-blue-card transition-all flex items-center justify-center space-x-2 mt-4"
               >
-                {loading ? 'Creating Patient Profile...' : 'Complete Registration & Generate UIDN'}
+                <UserPlus className="w-4 h-4" />
+                <span>{loading ? 'Registering Citizen...' : 'Register Citizen & Generate UIDN'}</span>
               </button>
+
+              <div className="pt-2 text-center">
+                <span className="text-xs text-slate-500">Already registered? </span>
+                <button
+                  type="button"
+                  onClick={() => setAuthMethod('login')}
+                  className="text-xs font-bold text-royal-600 hover:underline"
+                >
+                  Go to Patient Login
+                </button>
+              </div>
             </form>
           )}
         </div>

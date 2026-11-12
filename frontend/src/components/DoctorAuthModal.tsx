@@ -7,9 +7,7 @@ import {
   CheckCircle,
   X,
   AlertTriangle,
-  ArrowRight,
-  ShieldCheck,
-  Sparkles
+  ArrowRight
 } from 'lucide-react';
 import api from '../services/api.ts';
 import { Language, translations } from '../i18n/translations.ts';
@@ -29,16 +27,16 @@ export const DoctorAuthModal: React.FC<DoctorAuthModalProps> = ({
 }) => {
   const t = translations[lang];
 
-  // Form states
-  const [doctorIdOrEmail, setDoctorIdOrEmail] = useState('DOC-SWAPNA');
-  const [password, setPassword] = useState('Aarogya@2026');
+  // Clean Form states (Zero demo defaults)
+  const [doctorIdOrEmail, setDoctorIdOrEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
   // Forgot password modal state
   const [isForgotOpen, setIsForgotOpen] = useState(false);
-  const [forgotDocId, setForgotDocId] = useState('DOC-SWAPNA');
-  const [forgotSecurityCode, setForgotSecurityCode] = useState('ASR-DOC-2026');
+  const [forgotDocId, setForgotDocId] = useState('');
+  const [forgotSecurityCode, setForgotSecurityCode] = useState('');
   const [forgotNewPass, setForgotNewPass] = useState('');
   const [forgotSuccess, setForgotSuccess] = useState(false);
 
@@ -49,7 +47,7 @@ export const DoctorAuthModal: React.FC<DoctorAuthModalProps> = ({
     setLoading(true);
     setErrorMsg('');
     try {
-      const res = await api.doctorLogin(doctorIdOrEmail, password);
+      const res = await api.doctorLogin(doctorIdOrEmail.trim(), password.trim());
       if (res.doctor) {
         onAuthenticated(res.doctor);
         onClose();
@@ -61,20 +59,15 @@ export const DoctorAuthModal: React.FC<DoctorAuthModalProps> = ({
     }
   };
 
-  const handleQuickFill = (docId: string, email: string) => {
-    setDoctorIdOrEmail(docId);
-    setPassword('Aarogya@2026');
-  };
-
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await api.doctorResetPassword(forgotDocId, forgotSecurityCode, forgotNewPass);
+      await api.doctorResetPassword(forgotDocId.trim(), forgotSecurityCode.trim(), forgotNewPass.trim());
       setForgotSuccess(true);
       setTimeout(() => {
         setIsForgotOpen(false);
         setForgotSuccess(false);
-        setDoctorIdOrEmail(forgotDocId);
+        setDoctorIdOrEmail(forgotDocId.trim());
       }, 1500);
     } catch (err: any) {
       alert(`Reset failed: ${err.response?.data?.message || err.message}`);
@@ -110,36 +103,6 @@ export const DoctorAuthModal: React.FC<DoctorAuthModalProps> = ({
           </button>
         </div>
 
-        {/* Demo Fast-Track Card for Evaluators */}
-        <div className="bg-blue-50/80 border border-blue-200 rounded-2xl p-3.5 space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-royal-950 flex items-center space-x-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-royal-600" />
-              <span>Hackathon Evaluator 1-Click Credentials</span>
-            </span>
-          </div>
-
-          <div className="grid grid-cols-2 gap-2 pt-1">
-            <button
-              type="button"
-              onClick={() => handleQuickFill('DOC-SWAPNA', 'dr.swapna@aarogyadrishti.org')}
-              className="p-2 rounded-xl bg-white border border-blue-200 hover:border-royal-500 text-left transition-all"
-            >
-              <div className="text-[11px] font-extrabold text-slate-900">Dr. Swapna Devi, MDS</div>
-              <div className="text-[10px] text-royal-700 font-mono">DOC-SWAPNA</div>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleQuickFill('DOC-RAJESH', 'dr.rajesh@aarogyadrishti.org')}
-              className="p-2 rounded-xl bg-white border border-blue-200 hover:border-royal-500 text-left transition-all"
-            >
-              <div className="text-[11px] font-extrabold text-slate-900">Dr. K. Rajesh, MS</div>
-              <div className="text-[10px] text-royal-700 font-mono">DOC-RAJESH</div>
-            </button>
-          </div>
-        </div>
-
         {/* Error Alert */}
         {errorMsg && (
           <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 flex items-center space-x-2">
@@ -161,7 +124,7 @@ export const DoctorAuthModal: React.FC<DoctorAuthModalProps> = ({
                 value={doctorIdOrEmail}
                 autoComplete="username"
                 onChange={(e) => setDoctorIdOrEmail(e.target.value)}
-                placeholder="DOC-SWAPNA or doctor@aarogyadrishti.org"
+                placeholder="Enter Doctor ID or official email"
                 className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:ring-2 focus:ring-royal-500 focus:outline-none"
                 required
               />
@@ -243,19 +206,19 @@ export const DoctorAuthModal: React.FC<DoctorAuthModalProps> = ({
                       type="text"
                       value={forgotDocId}
                       onChange={(e) => setForgotDocId(e.target.value)}
+                      placeholder="e.g. DOC-..."
                       className="w-full p-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono font-bold"
                       required
                     />
                   </div>
                   <div>
-                    <label className="text-[11px] font-bold text-slate-700 block mb-0.5">
-                      Security Code (Demo: ASR-DOC-2026)
-                    </label>
+                    <label className="text-[11px] font-bold text-slate-700 block mb-0.5">Security Auth Code</label>
                     <input
                       type="text"
                       value={forgotSecurityCode}
                       onChange={(e) => setForgotSecurityCode(e.target.value)}
-                      className="w-full p-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono"
+                      placeholder="e.g. ASR-DOC-2026"
+                      className="w-full p-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono font-bold"
                       required
                     />
                   </div>
@@ -264,18 +227,17 @@ export const DoctorAuthModal: React.FC<DoctorAuthModalProps> = ({
                     <input
                       type="password"
                       value={forgotNewPass}
-                      autoComplete="new-password"
                       onChange={(e) => setForgotNewPass(e.target.value)}
-                      placeholder="Enter new password"
+                      placeholder="Min 6 characters"
                       className="w-full p-2 bg-slate-50 border border-slate-300 rounded-xl text-xs"
                       required
                     />
                   </div>
                   <button
                     type="submit"
-                    className="w-full py-2.5 bg-royal-600 hover:bg-royal-700 text-white rounded-xl text-xs font-bold transition-all"
+                    className="w-full py-2 bg-royal-600 text-white rounded-xl text-xs font-bold hover:bg-royal-700 transition-all mt-2"
                   >
-                    Confirm Password Reset
+                    Confirm & Update Password
                   </button>
                 </form>
               )}

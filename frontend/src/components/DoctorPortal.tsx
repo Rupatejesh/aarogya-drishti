@@ -37,8 +37,6 @@ export const DoctorPortal: React.FC<DoctorPortalProps> = ({
 
   // Auth States
   const [isAuthenticated, setIsAuthenticated] = useState(true);
-  const [doctorIdInput, setDoctorIdInput] = useState('DOC-SWAPNA');
-  const [doctorPassword, setDoctorPassword] = useState('Aarogya@2026');
   const [activeDoctor, setActiveDoctor] = useState<any>(
     initialDoctor || {
       uidn: 'DOC-SWAPNA',
@@ -49,6 +47,8 @@ export const DoctorPortal: React.FC<DoctorPortalProps> = ({
       email: 'dr.swapna@aarogyadrishti.org'
     }
   );
+  const [doctorIdInput, setDoctorIdInput] = useState(initialDoctor?.uidn || '');
+  const [doctorPassword, setDoctorPassword] = useState('Aarogya@2026');
 
   useEffect(() => {
     if (initialDoctor) {
@@ -148,7 +148,10 @@ export const DoctorPortal: React.FC<DoctorPortalProps> = ({
 
   const handleUpdateStatus = async (appointmentId: string, status: 'APPROVED' | 'REJECTED') => {
     try {
-      const remarks = status === 'APPROVED' ? 'Approved by Dr. Swapna Devi, MDS for Saturday 10:30 AM at PHC G. Madugula.' : 'Rejected due to slot availability.';
+      const remarks =
+        status === 'APPROVED'
+          ? `Approved by ${activeDoctor?.name || 'Medical Officer'} for consultation at ${activeDoctor?.hospitalDuty || 'Hospital'}.`
+          : 'Rejected due to slot availability.';
       await api.updateAppointmentStatus(appointmentId, status, remarks);
       setIncomingQueue((prev) =>
         prev.map((a) => (a.appointmentId === appointmentId ? { ...a, status, doctorRemarks: remarks } : a))
@@ -164,8 +167,8 @@ export const DoctorPortal: React.FC<DoctorPortalProps> = ({
     try {
       const rxPayload = {
         patientUidn: newRxPatientUidn,
-        doctorUidn: activeDoctor.uidn || 'DOC-SWAPNA',
-        doctorName: activeDoctor.name || 'Dr. Swapna Devi, MDS',
+        doctorUidn: activeDoctor.uidn || 'DOC-ONLINE',
+        doctorName: activeDoctor.name || 'Medical Officer',
         facilityName: activeDoctor.hospitalDuty || 'PHC G. Madugula',
         medicines: newRxMedicines.split(',').map((m) => ({ name: m.trim(), dosage: '1 unit', duration: '14 days' })),
         instructions: newRxInstructions,
