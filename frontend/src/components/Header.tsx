@@ -154,7 +154,7 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               onClick={() => onLanguageChange('en')}
               className={`px-2.5 py-1 rounded-lg transition-all duration-200 hover:-translate-y-0.5 active:scale-95 ${
-                lang === 'en' ? 'bg-royal-600 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-200'
+                lang === 'en' ? 'bg-blue-700 text-white font-bold shadow-sm' : 'text-slate-600 hover:bg-slate-200'
               }`}
             >
               EN
@@ -162,7 +162,7 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               onClick={() => onLanguageChange('te')}
               className={`px-2.5 py-1 rounded-lg transition-all duration-200 hover:-translate-y-0.5 active:scale-95 ${
-                lang === 'te' ? 'bg-royal-600 text-white font-medium shadow-sm' : 'text-slate-600 hover:bg-slate-200'
+                lang === 'te' ? 'bg-blue-700 text-white font-bold shadow-sm' : 'text-slate-600 hover:bg-slate-200'
               }`}
             >
               తెలుగు
@@ -170,7 +170,7 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               onClick={() => onLanguageChange('hi')}
               className={`px-2.5 py-1 rounded-lg transition-all duration-200 hover:-translate-y-0.5 active:scale-95 ${
-                lang === 'hi' ? 'bg-royal-600 text-white font-medium shadow-sm' : 'text-slate-600 hover:bg-slate-200'
+                lang === 'hi' ? 'bg-blue-700 text-white font-bold shadow-sm' : 'text-slate-600 hover:bg-slate-200'
               }`}
             >
               हिंदी
@@ -181,7 +181,7 @@ export const Header: React.FC<HeaderProps> = ({
           {currentRole === 'patient' && onOpenAiArogya && (
             <button
               onClick={onOpenAiArogya}
-              className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-royal-600 via-royal-700 to-royal-800 text-white font-extrabold text-xs shadow-blue-glow hover:brightness-110 hover:-translate-y-0.5 active:scale-95 transition-all duration-200 flex items-center space-x-1.5 border border-royal-500 animate-pulse"
+              className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-blue-700 via-blue-800 to-indigo-900 text-white font-extrabold text-xs shadow-md hover:brightness-110 hover:-translate-y-0.5 active:scale-95 transition-all duration-200 flex items-center space-x-1.5 border border-blue-600"
             >
               <Sparkles className="w-3.5 h-3.5 text-yellow-300" />
               <span>AI AROGYA</span>

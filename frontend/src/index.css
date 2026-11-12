@@ -56,6 +56,19 @@ body {
   box-shadow: 0 10px 25px -5px rgba(29, 78, 216, 0.1);
 }
 
+/* Explicit Safety Fallbacks: Prevent any transparent / white button or text rendering */
+.bg-royal-600 { background-color: #2563EB !important; color: #FFFFFF !important; }
+.bg-royal-700 { background-color: #1D4ED8 !important; color: #FFFFFF !important; }
+.bg-royal-800 { background-color: #1E40AF !important; color: #FFFFFF !important; }
+.bg-royal-900 { background-color: #1E3A8A !important; color: #FFFFFF !important; }
+.text-royal-600 { color: #2563EB !important; }
+.text-royal-700 { color: #1D4ED8 !important; }
+.text-royal-800 { color: #1E40AF !important; }
+.text-royal-900 { color: #1E3A8A !important; }
+.border-royal-500 { border-color: #3B82F6 !important; }
+.border-royal-600 { border-color: #2563EB !important; }
+.border-royal-700 { border-color: #1D4ED8 !important; }
+
 /* Crisp Clean Medical Scrollbar */
 ::-webkit-scrollbar {
   width: 7px;

@@ -164,7 +164,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ lang }) => {
   return (
     <div className="space-y-8">
       {/* 1. Administrative Overview Header (Royal Blue & Crisp Slate) */}
-      <div className="bg-royal-700 text-white rounded-3xl p-6 sm:p-8 border border-royal-800 shadow-xl flex flex-wrap items-center justify-between gap-6">
+      <div className="bg-gradient-to-r from-blue-900 to-blue-700 text-white rounded-3xl p-6 sm:p-8 border border-blue-950 shadow-xl flex flex-wrap items-center justify-between gap-6">
         <div className="space-y-2">
           <div className="flex items-center space-x-2">
             <span className="bg-white/20 text-white text-xs font-bold px-3 py-0.5 rounded-full border border-white/30">
@@ -174,10 +174,10 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ lang }) => {
               Alluri Sitharama Raju District
             </span>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+          <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
             11 Mandals Healthcare Command & Registry Portal
           </h2>
-          <p className="text-xs text-blue-100 max-w-2xl leading-relaxed">
+          <p className="text-xs text-blue-100 max-w-2xl leading-relaxed font-medium">
             Autonomous district surveillance tracking PHCs, CHCs, Area Hospitals, onco-pathologists, biopsy punch kits, blood banks, and ambulance units across Alluri Sitharama Raju agency.
           </p>
         </div>
@@ -185,9 +185,9 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ lang }) => {
         <div className="flex items-center space-x-3">
           <button
             onClick={() => setIsAddDoctorModalOpen(true)}
-            className="px-4 py-2.5 bg-white text-royal-700 hover:bg-blue-50 font-bold text-xs rounded-xl shadow-md transition-all flex items-center space-x-1.5"
+            className="px-4 py-2.5 bg-amber-400 hover:bg-amber-500 text-slate-950 font-bold text-xs rounded-xl shadow-md transition-all flex items-center space-x-1.5 active:scale-95 cursor-pointer"
           >
-            <UserPlus className="w-4 h-4 text-royal-600" />
+            <UserPlus className="w-4 h-4 text-slate-950" />
             <span>Generate Doctor Credentials</span>
           </button>
         </div>
@@ -238,7 +238,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ lang }) => {
           onClick={() => setAdminTab('doctors')}
           className={`px-5 py-3 text-xs font-bold rounded-2xl flex items-center space-x-2 transition-all ${
             adminTab === 'doctors'
-              ? 'bg-royal-600 text-white shadow-md'
+              ? 'bg-blue-700 text-white font-semibold shadow-md'
               : 'text-slate-600 hover:bg-slate-100'
           }`}
         >
@@ -250,7 +250,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ lang }) => {
           onClick={() => setAdminTab('hospitals')}
           className={`px-5 py-3 text-xs font-bold rounded-2xl flex items-center space-x-2 transition-all ${
             adminTab === 'hospitals'
-              ? 'bg-royal-600 text-white shadow-md'
+              ? 'bg-blue-700 text-white font-semibold shadow-md'
               : 'text-slate-600 hover:bg-slate-100'
           }`}
         >
@@ -265,13 +265,13 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ lang }) => {
           {/* Controls: Search and Mandal Filter */}
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex flex-wrap items-center gap-3">
-              <div className="flex items-center space-x-2 bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs">
-                <Filter className="w-3.5 h-3.5 text-royal-600" />
-                <span className="font-bold text-slate-700">Mandal Filter:</span>
+              <div className="flex items-center space-x-2 bg-blue-700 text-white font-semibold rounded-xl px-3 py-2 text-xs shadow-sm">
+                <Filter className="w-3.5 h-3.5 text-white" />
+                <span className="font-bold text-white">Mandal Filter:</span>
                 <select
                   value={selectedMandalFilter}
                   onChange={(e) => setSelectedMandalFilter(e.target.value)}
-                  className="bg-transparent font-bold text-slate-900 focus:outline-none cursor-pointer"
+                  className="bg-blue-800 text-white font-bold rounded px-1.5 py-0.5 focus:outline-none cursor-pointer"
                 >
                   {mandalList.map((m) => (
                     <option key={m} value={m}>
@@ -418,10 +418,10 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ lang }) => {
 
             <button
               onClick={() => setIsAddDoctorModalOpen(true)}
-              className="px-4 py-2.5 bg-royal-600 hover:bg-royal-700 text-white rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 shadow-sm"
+              className="px-4 py-2.5 bg-blue-700 hover:bg-blue-800 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center space-x-1.5 active:scale-95 cursor-pointer"
             >
-              <Plus className="w-4 h-4" />
-              <span>Create Doctor Credentials</span>
+              <Plus className="w-4 h-4 text-white" />
+              <span>+ Add Specialist Doctor</span>
             </button>
           </div>
 

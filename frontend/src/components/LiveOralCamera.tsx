@@ -385,10 +385,10 @@ export const LiveOralCamera: React.FC<LiveOralCameraProps> = ({
               <button
                 onClick={handleCapture}
                 disabled={!cameraActive}
-                className="w-full sm:w-auto flex-1 px-6 py-3 rounded-2xl bg-royal-600 hover:bg-royal-700 text-white font-extrabold text-xs shadow-md active:scale-95 transition-all duration-200 flex items-center justify-center space-x-2"
+                className="w-full sm:w-auto flex-1 px-6 py-3 rounded-2xl bg-amber-400 hover:bg-amber-500 text-slate-950 font-bold text-xs shadow-md active:scale-95 transition-all duration-200 flex items-center justify-center space-x-2 cursor-pointer"
               >
-                <Camera className="w-4 h-4" />
-                <span>{t.freezeCapture}</span>
+                <Camera className="w-4 h-4 text-slate-950" />
+                <span>📸 CAPTURE ORAL PHOTO</span>
               </button>
             )}
 

@@ -534,8 +534,8 @@ export default function App() {
                 {/* 1. CITIZEN / PATIENT PORTAL CARD */}
                 <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-7 shadow-sm flex flex-col justify-between hover:border-royal-400 hover:shadow-md transition-all duration-300 group">
                   <div className="space-y-4">
-                    <div className="w-14 h-14 rounded-2xl bg-royal-600 text-white flex items-center justify-center shadow-md group-hover:scale-105 transition-transform">
-                      <UserCheck className="w-7 h-7" />
+                    <div className="w-14 h-14 rounded-2xl bg-blue-700 text-white flex items-center justify-center shadow-md group-hover:scale-105 transition-transform">
+                      <UserCheck className="w-7 h-7 text-white" />
                     </div>
 
                     <div>
@@ -569,10 +569,10 @@ export default function App() {
                   <div className="pt-6 space-y-2.5">
                     <button
                       onClick={() => handlePatientQuickLogin('UIDN-ASR-2026-GM046')}
-                      className="w-full py-3 rounded-2xl bg-royal-600 hover:bg-royal-700 text-white font-extrabold text-xs shadow-sm active:scale-95 transition-all flex items-center justify-center space-x-2"
+                      className="w-full py-3 rounded-2xl bg-blue-700 hover:bg-blue-800 text-white font-bold text-xs shadow-md active:scale-95 transition-all flex items-center justify-center space-x-2"
                     >
-                      <Sparkles className="w-4 h-4" />
-                      <span>Enter as K. Somanna (Evaluation Demo)</span>
+                      <Sparkles className="w-4 h-4 text-white" />
+                      <span>Instant 1-Click Login as K. Somanna</span>
                     </button>
 
                     <button

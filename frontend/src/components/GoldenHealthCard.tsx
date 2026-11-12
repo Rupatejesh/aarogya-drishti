@@ -329,7 +329,7 @@ export const GoldenHealthCard: React.FC<GoldenHealthCardProps> = ({ patient, lan
         <div className="flex items-center space-x-2">
           <button
             onClick={handlePrintCard}
-            className="px-3.5 py-2 bg-royal-600 hover:bg-royal-700 text-white rounded-xl text-xs font-bold transition-all duration-200 hover:-translate-y-0.5 shadow-sm flex items-center space-x-1.5"
+            className="px-3.5 py-2 bg-blue-700 hover:bg-blue-800 text-white font-semibold rounded-xl text-xs transition-all duration-200 hover:-translate-y-0.5 shadow-sm flex items-center space-x-1.5 cursor-pointer"
             title="Print or Save as 1-Page PDF (Zero Extra Pages)"
           >
             <Printer className="w-3.5 h-3.5" />
@@ -337,7 +337,7 @@ export const GoldenHealthCard: React.FC<GoldenHealthCardProps> = ({ patient, lan
           </button>
           <button
             onClick={handleDownloadImage}
-            className="px-3.5 py-2 bg-white hover:bg-blue-50 text-royal-700 border border-royal-300 rounded-xl text-xs font-bold transition-all duration-200 hover:-translate-y-0.5 shadow-sm flex items-center space-x-1.5"
+            className="px-3.5 py-2 bg-white hover:bg-blue-50 text-blue-700 border border-blue-300 rounded-xl text-xs font-bold transition-all duration-200 hover:-translate-y-0.5 shadow-sm flex items-center space-x-1.5 cursor-pointer"
             title="Download Official Health Card Image"
           >
             <Download className="w-3.5 h-3.5" />
@@ -362,11 +362,11 @@ export const GoldenHealthCard: React.FC<GoldenHealthCardProps> = ({ patient, lan
         {/* Card Header */}
         <div className="relative z-10 flex justify-between items-start border-b border-slate-200 pb-3">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-royal-600 to-royal-800 flex items-center justify-center text-white shadow-md">
+            <div className="w-10 h-10 rounded-xl bg-blue-700 flex items-center justify-center text-white font-bold shadow-md">
               <Activity className="w-6 h-6 stroke-[2.4]" />
             </div>
             <div>
-              <div className="text-[10px] font-extrabold tracking-widest text-royal-800 uppercase">
+              <div className="text-[10px] font-extrabold tracking-widest text-blue-900 uppercase">
                 GOVERNMENT OF ANDHRA PRADESH • ITDA PADERU
               </div>
               <div className="text-base font-extrabold text-slate-900 tracking-tight">
@@ -387,7 +387,7 @@ export const GoldenHealthCard: React.FC<GoldenHealthCardProps> = ({ patient, lan
         <div className="relative z-10 my-4 flex items-center justify-between gap-4">
           <div className="flex items-center space-x-4">
             {/* Patient Photo Avatar */}
-            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-royal-50 border-2 border-royal-500 overflow-hidden shadow-md flex-shrink-0 flex items-center justify-center bg-gradient-to-br from-royal-600 to-royal-800 text-white font-black text-3xl">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-blue-700 text-white font-bold border-2 border-blue-800 overflow-hidden shadow-md flex-shrink-0 flex items-center justify-center text-3xl">
               {patient.name.charAt(0)}
             </div>
 
@@ -430,7 +430,7 @@ export const GoldenHealthCard: React.FC<GoldenHealthCardProps> = ({ patient, lan
               <PhoneCall className="w-2.5 h-2.5" />
               <span>108 SOS</span>
             </span>
-            <span className="bg-royal-800 text-white px-2 py-0.5 rounded-full">
+            <span className="bg-amber-400 text-slate-950 font-bold px-2.5 py-0.5 rounded-full shadow-sm">
               104 Mobile Van
             </span>
           </div>

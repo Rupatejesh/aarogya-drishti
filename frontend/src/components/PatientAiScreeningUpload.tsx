@@ -557,9 +557,9 @@ export const PatientAiScreeningUpload: React.FC<PatientAiScreeningUploadProps> =
                       <button
                         type="button"
                         onClick={handleCaptureFromCamera}
-                        className="px-6 py-2.5 bg-royal-600 hover:bg-royal-700 active:scale-95 text-white font-black text-xs rounded-xl shadow-md transition-all flex items-center space-x-2 hover:-translate-y-0.5"
+                        className="px-6 py-2.5 bg-amber-400 hover:bg-amber-500 active:scale-95 text-slate-950 font-bold text-xs rounded-xl shadow-md transition-all flex items-center space-x-2 hover:-translate-y-0.5 cursor-pointer"
                       >
-                        <Camera className="w-4 h-4 text-yellow-300" />
+                        <Camera className="w-4 h-4 text-slate-950" />
                         <span>📸 CAPTURE ORAL PHOTO</span>
                       </button>
                     </div>

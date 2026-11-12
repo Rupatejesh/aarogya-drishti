@@ -172,22 +172,22 @@ export const DoctorPortal: React.FC<DoctorPortalProps> = ({
   return (
     <div className="space-y-8">
       {/* Doctor Header Banner (Royal Blue) */}
-      <div className="bg-royal-700 text-white rounded-3xl p-6 sm:p-8 border border-royal-800 shadow-xl flex flex-wrap items-center justify-between gap-6">
+      <div className="bg-gradient-to-r from-blue-800 to-blue-700 text-white rounded-3xl p-6 sm:p-8 border border-blue-900 shadow-xl flex flex-wrap items-center justify-between gap-6">
         <div className="flex items-center space-x-4">
           <div className="w-16 h-16 rounded-2xl bg-white/20 flex items-center justify-center text-white font-black text-2xl shadow-md">
             <Stethoscope className="w-8 h-8 text-white" />
           </div>
           <div>
             <div className="flex items-center space-x-3">
-              <h2 className="text-2xl font-extrabold">{activeDoctor.name}</h2>
+              <h2 className="text-2xl font-extrabold text-white">{activeDoctor.name}</h2>
               <span className="text-xs font-bold bg-white/20 text-white px-3 py-0.5 rounded-full border border-white/30">
                 {activeDoctor.uidn}
               </span>
             </div>
-            <p className="text-xs text-blue-100 mt-1">
+            <p className="text-xs text-blue-100 mt-1 font-medium">
               {activeDoctor.designation} • {activeDoctor.hospitalDuty}
             </p>
-            <div className="text-[11px] text-blue-200 font-mono mt-0.5">
+            <div className="text-[11px] text-blue-200 font-mono mt-0.5 font-semibold">
               ABDM Provider: {activeDoctor.abdmCode}
             </div>
           </div>
@@ -218,7 +218,7 @@ export const DoctorPortal: React.FC<DoctorPortalProps> = ({
 
           <button
             onClick={loadDoctorData}
-            className="px-3.5 py-2 bg-white text-royal-700 hover:bg-blue-50 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 shadow-sm"
+            className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 shadow-sm cursor-pointer"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             <span>Refresh Queue</span>
@@ -341,10 +341,10 @@ export const DoctorPortal: React.FC<DoctorPortalProps> = ({
               <div className="pt-2 border-t border-slate-200 flex gap-2">
                 <button
                   onClick={() => onLaunchTelemedicine(pat, activeDoctor)}
-                  className="flex-1 py-2.5 bg-royal-600 hover:bg-royal-700 text-white font-bold text-xs rounded-xl flex items-center justify-center space-x-1.5 shadow-sm transition-all"
+                  className="flex-1 py-2.5 bg-blue-700 hover:bg-blue-800 text-white font-bold text-xs rounded-xl flex items-center justify-center space-x-1.5 shadow-md active:scale-95 transition-all cursor-pointer"
                 >
-                  <Video className="w-3.5 h-3.5" />
-                  <span>Start WebRTC Call</span>
+                  <Video className="w-3.5 h-3.5 text-white" />
+                  <span>Launch WebRTC Call</span>
                 </button>
 
                 <button
