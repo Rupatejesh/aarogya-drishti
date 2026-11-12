@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Sparkles,
   Send,
@@ -132,13 +132,51 @@ export const AiArogyaDrawer: React.FC<AiArogyaDrawerProps> = ({
       sender: 'ai',
       text:
         lang === 'te'
-          ? 'నమస్కారం! నేను మీ "ఏఐ ఆరోగ్యా" డిజిటల్ సహాయకుడిని. అల్లూరి సీతారామరాజు జిల్లా గిరిజన ప్రాంతాల్లో నోటి క్యాన్సర్, అడ్డాపొగ అలవాట్ల మాన్పు మరియు చికిత్సపై మీ సందేహాలను అడగండి.'
+          ? 'నమస్కారం! నేను మీ "ఏఐ ఆరోగ్యా" డిజిటల్ సహాయకురాలిని. అల్లూరి సీతారామరాజు జిల్లా గిరిజన ప్రాంతాల్లో నోటి క్యాన్సర్, అడ్డాపొగ అలవాట్ల మాన్పు మరియు చికిత్సపై మీ సందేహాలను అడగండి.'
           : lang === 'hi'
           ? 'नमस्ते! मैं आपका "एआई आरोग्या" सहायक हूँ। अल्लूरी सीताराम राजू जिले में मुख कैंसर जांच, तंबाकू मुक्ति और उपचार पर अपने प्रश्न पूछें।'
           : 'Namaste! I am AI Arogya, your multilingual oral oncology clinical assistant for ITDA Paderu (ASR District). Ask me any question about oral lesions, reverse smoking risks, or biopsy facilities.',
-      time: 'Just now'
+      time: lang === 'te' ? 'ఇప్పుడే' : lang === 'hi' ? 'अभी' : 'Just now'
     }
   ]);
+
+  // Sync greeting message when language changes
+  useEffect(() => {
+    setMessages([
+      {
+        sender: 'ai',
+        text:
+          lang === 'te'
+            ? 'నమస్కారం! నేను మీ "ఏఐ ఆరోగ్యా" డిజిటల్ సహాయకురాలిని. అల్లూరి సీతారామరాజు జిల్లా గిరిజన ప్రాంతాల్లో నోటి క్యాన్సర్, అడ్డాపొగ అలవాట్ల మాన్పు మరియు చికిత్సపై మీ సందేహాలను అడగండి.'
+            : lang === 'hi'
+            ? 'नमस्ते! मैं आपका "एआई आरोग्या" सहायक हूँ। अल्लूरी सीताराम राजू जिले में मुख कैंसर जांच, तंबाकू मुक्ति और उपचार पर अपने प्रश्न पूछें।'
+            : 'Namaste! I am AI Arogya, your multilingual oral oncology clinical assistant for ITDA Paderu (ASR District). Ask me any question about oral lesions, reverse smoking risks, or biopsy facilities.',
+        time: lang === 'te' ? 'ఇప్పుడే' : lang === 'hi' ? 'अभी' : 'Just now'
+      }
+    ]);
+  }, [lang]);
+
+  const samplePrompts =
+    lang === 'te'
+      ? [
+          'నా నోటిలో తెల్లటి మచ్చ ఉంది, ప్రమాదకరమా?',
+          'అడ్డాపొగ (రివర్స్ స్మోకింగ్) వల్ల వచ్చే క్యాన్సర్ ముప్పు ఏమిటి?',
+          'అల్లూరి జిల్లాలో దగ్గర్లోని బయాప్సీ కేంద్రం ఎక్కడ ఉంది?',
+          'నోరు తెరవడం కష్టంగా ఉంది, ఇది OSMF లక్షణమా?'
+        ]
+      : lang === 'hi'
+      ? [
+          'मेरे मुंह में सफेद धब्बा है, क्या यह खतरनाक है?',
+          'रिवर्स स्मोकिंग (अड्डा पोगा) के क्या खतरे हैं?',
+          'अल्लूरी जिले में निकटतम बायोप्सी सुविधा कहाँ है?',
+          'मुंह खोलने में कठिनाई हो रही है, क्या यह ओएसएमएफ है?'
+        ]
+      : [
+          'Is white patch in mouth dangerous?',
+          'What are the health risks of Adda Poga (Reverse Smoking)?',
+          'Where is the nearest punch biopsy facility in ASR District?',
+          'Difficulty opening mouth (What are OSMF symptoms?)'
+        ];
 
   const [input, setInput] = useState('');
   const [typing, setTyping] = useState(false);
@@ -283,7 +321,13 @@ export const AiArogyaDrawer: React.FC<AiArogyaDrawerProps> = ({
             </div>
             <div>
               <h3 className="font-extrabold text-sm">{t.aiArogyaTitle}</h3>
-              <p className="text-[10px] text-blue-100">Trilingual Oral Oncology Assistant</p>
+              <p className="text-[10px] text-blue-100">
+                {lang === 'te'
+                  ? 'తెలుగు, ఇంగ్లీష్, హిందీ నోటి క్యాన్సర్ ఏఐ సహాయకుడు'
+                  : lang === 'hi'
+                  ? 'मुख कैंसर एआई सहायक'
+                  : 'Trilingual Oral Oncology Assistant'}
+              </p>
             </div>
           </div>
           <button
@@ -298,22 +342,36 @@ export const AiArogyaDrawer: React.FC<AiArogyaDrawerProps> = ({
         <div className="p-2.5 bg-blue-50 border-b border-blue-200 flex items-center justify-between">
           <span className="text-[11px] font-bold text-royal-900 flex items-center space-x-1.5">
             <Headphones className="w-3.5 h-3.5 text-royal-600" />
-            <span>Oral Health Awareness Speeches</span>
+            <span>
+              {lang === 'te'
+                ? 'నోటి ఆరోగ్య అవగాహన ప్రసంగాలు'
+                : lang === 'hi'
+                ? 'मुख स्वास्थ्य जागरूकता भाषण'
+                : 'Oral Health Awareness Speeches'}
+            </span>
           </span>
           <button
             onClick={handlePlayAwareness}
             className="px-2.5 py-1 bg-royal-600 hover:bg-royal-700 text-white rounded-lg text-[10px] font-bold transition-all flex items-center space-x-1 active:scale-95 shadow-sm"
           >
             <Volume2 className="w-3 h-3" />
-            <span>Listen Aloud</span>
+            <span>{lang === 'te' ? 'వినండి' : lang === 'hi' ? 'सुनें' : 'Listen Aloud'}</span>
           </button>
         </div>
 
         {/* Spoken Step-by-Step Interactive Guides Carousel */}
         <div className="p-2.5 bg-slate-50 border-b border-slate-200 space-y-1.5">
           <div className="text-[10px] font-extrabold uppercase text-slate-500 tracking-wider flex items-center justify-between">
-            <span>Spoken Step-by-Step Guides (Click to Listen)</span>
-            <span className="text-[9px] bg-royal-100 text-royal-800 px-1.5 py-0.2 rounded font-mono">8 Flows</span>
+            <span>
+              {lang === 'te'
+                ? 'ఆడియో మార్గదర్శకాలు (వినడానికి క్లిక్ చేయండి)'
+                : lang === 'hi'
+                ? 'ऑडियो मार्गदर्शिका (सुनने के लिए क्लिक करें)'
+                : 'Spoken Step-by-Step Guides (Click to Listen)'}
+            </span>
+            <span className="text-[9px] bg-royal-100 text-royal-800 px-1.5 py-0.2 rounded font-mono">
+              {lang === 'te' ? '8 గైడ్‌లు' : lang === 'hi' ? '8 गाइड' : '8 Flows'}
+            </span>
           </div>
           <div className="flex space-x-1.5 overflow-x-auto pb-1 scrollbar-thin">
             {SPOKEN_GUIDES.map((g) => (
@@ -366,7 +424,13 @@ export const AiArogyaDrawer: React.FC<AiArogyaDrawerProps> = ({
                     <div className="text-[10px] text-slate-600">{m.attachment.details}</div>
                     <div className="text-[9px] font-bold text-emerald-700 flex items-center space-x-1 pt-0.5">
                       <CheckCircle className="w-3 h-3 text-emerald-600" />
-                      <span>Transmitted to Doctor Clinical Workspace</span>
+                      <span>
+                        {lang === 'te'
+                          ? 'వైద్యుని క్లినికల్ వర్క్‌స్పేస్‌కు పంపబడింది'
+                          : lang === 'hi'
+                          ? 'डॉक्टर को भेजा गया'
+                          : 'Transmitted to Doctor Clinical Workspace'}
+                      </span>
                     </div>
                   </div>
                 )}
@@ -385,7 +449,13 @@ export const AiArogyaDrawer: React.FC<AiArogyaDrawerProps> = ({
           {typing && (
             <div className="flex items-center space-x-2 text-slate-400 text-xs italic">
               <Bot className="w-4 h-4 text-royal-600 animate-spin" />
-              <span>AI Arogya is reasoning...</span>
+              <span>
+                {lang === 'te'
+                  ? 'ఏఐ సమాధానం సిద్ధం చేస్తోంది...'
+                  : lang === 'hi'
+                  ? 'एआई विचार कर रहा है...'
+                  : 'AI Arogya is reasoning...'}
+              </span>
             </div>
           )}
         </div>
@@ -393,7 +463,7 @@ export const AiArogyaDrawer: React.FC<AiArogyaDrawerProps> = ({
         {/* Quick Suggestion Pills */}
         <div className="px-4 py-2 border-t border-slate-200 bg-white overflow-x-auto">
           <div className="flex space-x-1.5 whitespace-nowrap">
-            {SAMPLE_PROMPTS.map((prompt, i) => (
+            {samplePrompts.map((prompt, i) => (
               <button
                 key={i}
                 onClick={() => handleSend(prompt)}

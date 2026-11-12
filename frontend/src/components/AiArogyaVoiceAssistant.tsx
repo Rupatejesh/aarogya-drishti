@@ -300,14 +300,22 @@ export const AiArogyaVoiceAssistant: React.FC<AiArogyaVoiceAssistantProps> = ({
           <div>
             <div className="flex items-center space-x-2">
               <h3 className="text-xl font-extrabold text-slate-900 tracking-tight">
-                AI Arogya Trilingual Voice Assistant
+                {lang === 'te'
+                  ? 'ఏఐ ఆరోగ్యా వాయిస్ అసిస్టెంట్'
+                  : lang === 'hi'
+                  ? 'एआई आरोग्या वॉइस सहायक'
+                  : 'AI Arogya Trilingual Voice Assistant'}
               </h3>
               <span className="text-[10px] font-bold bg-blue-100 text-royal-800 px-2.5 py-0.5 rounded-full border border-blue-200">
                 te-IN • hi-IN • en-IN
               </span>
             </div>
             <p className="text-xs text-slate-500 mt-0.5">
-              Spoken voice assistance & oral cancer awareness designed for low-literacy agency citizens
+              {lang === 'te'
+                ? 'గిరిజన ప్రజల కోసం నోటి క్యాన్సర్ అవగాహన మరియు వాయిస్ సహాయం'
+                : lang === 'hi'
+                ? 'जनजातीय नागरिकों हेतु मुख कैंसर जागरूकता एवं वॉइस सहायता'
+                : 'Spoken voice assistance & oral cancer awareness designed for low-literacy agency citizens'}
             </p>
           </div>
         </div>
@@ -323,7 +331,13 @@ export const AiArogyaVoiceAssistant: React.FC<AiArogyaVoiceAssistantProps> = ({
             }`}
           >
             <Headphones className="w-4 h-4" />
-            <span>Oral Health Related Awareness Speeches</span>
+            <span>
+              {lang === 'te'
+                ? 'నోటి ఆరోగ్య అవగాహన ప్రసంగాలు వినండి'
+                : lang === 'hi'
+                ? 'मुख स्वास्थ्य जागरूकता भाषण सुनें'
+                : 'Oral Health Related Awareness Speeches'}
+            </span>
           </button>
 
           {/* Voice Language Buttons */}
@@ -370,7 +384,7 @@ export const AiArogyaVoiceAssistant: React.FC<AiArogyaVoiceAssistantProps> = ({
               className="px-3 py-1.5 bg-red-600 hover:bg-red-500 text-white rounded-xl text-xs font-bold transition-all flex items-center space-x-1 shadow-sm"
             >
               <VolumeX className="w-3.5 h-3.5" />
-              <span>Stop Voice</span>
+              <span>{lang === 'te' ? 'వాయిస్ ఆపు ⏹️' : lang === 'hi' ? 'आवाज रोकें ⏹️' : 'Stop Voice'}</span>
             </button>
           )}
         </div>
@@ -392,10 +406,25 @@ export const AiArogyaVoiceAssistant: React.FC<AiArogyaVoiceAssistantProps> = ({
           </button>
           <div>
             <div className="text-xs font-bold text-slate-900">
-              {isListening ? 'Listening to your voice...' : 'Tap microphone to speak in your language'}
+              {isListening
+                ? lang === 'te'
+                  ? 'మీ వాయిస్ వింటోంది...'
+                  : lang === 'hi'
+                  ? 'आपकी आवाज सुन रहा है...'
+                  : 'Listening to your voice...'
+                : lang === 'te'
+                ? 'మీ భాషలో మాట్లాడటానికి మైక్ క్లిక్ చేయండి'
+                : lang === 'hi'
+                ? 'अपनी भाषा में बोलने के लिए माइक दबाएं'
+                : 'Tap microphone to speak in your language'}
             </div>
             <div className="text-[11px] text-slate-500">
-              {spokenTranscript || 'Speak your symptoms, questions about white patch, or how to book doctor'}
+              {spokenTranscript ||
+                (lang === 'te'
+                  ? 'లక్షణాలు, తెల్లటి మచ్చ లేదా డాక్టర్ అపాయింట్‌మెంట్ గురించి అడగండి'
+                  : lang === 'hi'
+                  ? 'लक्षण, सफेद धब्बा या डॉक्टर अपॉइंटमेंट के बारे में बोलें'
+                  : 'Speak your symptoms, questions about white patch, or how to book doctor')}
             </div>
           </div>
         </div>
@@ -408,7 +437,7 @@ export const AiArogyaVoiceAssistant: React.FC<AiArogyaVoiceAssistantProps> = ({
             }}
             className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm"
           >
-            Process Query
+            {lang === 'te' ? 'ప్రశ్నను ప్రాసెస్ చేయండి' : lang === 'hi' ? 'प्रश्न प्रोसेस करें' : 'Process Query'}
           </button>
         )}
       </div>
@@ -473,12 +502,12 @@ export const AiArogyaVoiceAssistant: React.FC<AiArogyaVoiceAssistantProps> = ({
                 {isCurrentActive ? (
                   <>
                     <Pause className="w-3.5 h-3.5" />
-                    <span>Stop</span>
+                    <span>{lang === 'te' ? 'ఆపు' : lang === 'hi' ? 'रोकें' : 'Stop'}</span>
                   </>
                 ) : (
                   <>
                     <Volume2 className="w-3.5 h-3.5" />
-                    <span>Listen Aloud</span>
+                    <span>{lang === 'te' ? 'వాయిస్ వినండి' : lang === 'hi' ? 'आवाज सुनें' : 'Listen Aloud'}</span>
                   </>
                 )}
               </button>

@@ -108,7 +108,7 @@ export const Header: React.FC<HeaderProps> = ({
                 AAROHAN 2026
               </span>
             </div>
-            <p className="text-[11px] text-slate-500 font-medium notranslate">
+            <p className="text-[11px] text-slate-500 font-medium">
               <span key={`header-sub-${currentRole}`}>{getRoleSubtitle()}</span>
             </p>
           </div>

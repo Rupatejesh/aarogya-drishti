@@ -111,11 +111,11 @@
       "phone": "9490123488",
       "aadhar": "1234-5678-9012",
       "role": "patient",
-      "uidn": "UIDN-ASR-2026-0048",
+      "uidn": "UIDN-ASR-2026-0049",
       "activeStatus": true,
       "_id": "usr_1794441102645_8sq4id",
       "createdAt": "2026-11-11T23:51:42.645Z",
-      "updatedAt": "2026-11-12T10:50:46.722Z"
+      "updatedAt": "2026-11-12T11:03:13.448Z"
     },
     {
       "email": "admin@aarogyadrishti.in",
@@ -922,6 +922,26 @@
       "_id": "pat_1794480646639_7eyieh",
       "createdAt": "2026-11-12T10:50:46.639Z",
       "updatedAt": "2026-11-12T10:50:46.639Z"
+    },
+    {
+      "uidn": "UIDN-ASR-2026-0049",
+      "name": "G. Appa Rao",
+      "dob": "1984-06-15T00:00:00.000Z",
+      "age": 42,
+      "gender": "MALE",
+      "bloodGroup": "B+",
+      "phone": "9490123488",
+      "aadhar": "1234-5678-9012",
+      "mandal": "Hukumpeta",
+      "village": "Mattam",
+      "habitation": "Mattam",
+      "photoUrl": "/uploads/default_patient.png",
+      "cloudinaryPhotoId": null,
+      "consentTimestamp": "2026-11-12T11:03:13.289Z",
+      "patientId": "UIDN-ASR-2026-0049",
+      "_id": "pat_1794481393370_j06e07",
+      "createdAt": "2026-11-12T11:03:13.370Z",
+      "updatedAt": "2026-11-12T11:03:13.370Z"
     }
   ],
   "doctors": [
@@ -3167,6 +3187,37 @@
       "createdAt": "2026-11-12T10:50:45.827Z",
       "_id": "scr_1794480645827_2wk3r",
       "updatedAt": "2026-11-12T10:50:45.827Z"
+    },
+    {
+      "screeningId": "SCR-ASR-2026-2369",
+      "patientUidn": "UIDN-ASR-2026-GM046",
+      "oralRegion": "Right Buccal Mucosa",
+      "imageUrl": "https://res.cloudinary.com/pj03iwwd/image/upload/v1794481389/aarogya_drishti/oral_scans/scan_UIDN-ASR-2026-GM046_1794481386254.jpg",
+      "cloudinaryPublicId": "aarogya_drishti/oral_scans/scan_UIDN-ASR-2026-GM046_1794481386254",
+      "cloudinarySecureUrl": "https://res.cloudinary.com/pj03iwwd/image/upload/v1794481389/aarogya_drishti/oral_scans/scan_UIDN-ASR-2026-GM046_1794481386254.jpg",
+      "symptomsChecklist": [
+        "Persistent non-scrapable white cheek patch on right buccal mucosa (>3 weeks)",
+        "Burning sensation"
+      ],
+      "habitExposure": {
+        "tobacco": true,
+        "reverseSmoking": true,
+        "years": 18,
+        "frequency": "6-8 times daily with chewing tobacco"
+      },
+      "aiCondition": "Serious",
+      "aiConfidenceScore": 92.4,
+      "aiLesionType": "Oral Leukoplakia",
+      "boundingBoxCoordinates": {
+        "xmin": 205,
+        "ymin": 157,
+        "xmax": 520,
+        "ymax": 467
+      },
+      "clinicalRemarks": "AI Model predicts serious condition with 92.4% accuracy, flags Oral Leukoplakia on Right Buccal Mucosa. Biopsy recommended immediately at PHC G. Madugula.",
+      "createdAt": "2026-11-12T11:03:12.596Z",
+      "_id": "scr_1794481392596_7bxspx",
+      "updatedAt": "2026-11-12T11:03:12.596Z"
     }
   ],
   "appointments": [
@@ -3603,6 +3654,46 @@
     }
   ],
   "auditLogs": [
+    {
+      "actorId": "UIDN-ASR-2026-0049",
+      "role": "patient",
+      "action": "PATIENT_REGISTERED_AUTO_UIDN",
+      "targetUidn": "UIDN-ASR-2026-0049",
+      "details": {
+        "uidn": "UIDN-ASR-2026-0049",
+        "name": "G. Appa Rao",
+        "age": 42,
+        "mandal": "Hukumpeta"
+      },
+      "timestamp": "2026-11-12T11:03:13.451Z",
+      "_id": "log_1794481393451_3kscfr"
+    },
+    {
+      "actorId": "UIDN-ASR-2026-GM046",
+      "role": "patient",
+      "action": "ORAL_SCREENING_ANALYZED",
+      "targetUidn": "UIDN-ASR-2026-GM046",
+      "details": {
+        "screeningId": "SCR-ASR-2026-2369",
+        "condition": "Serious",
+        "confidence": 92.4,
+        "modelUsed": "Aarogya-OncoVision-v2.6 (Clinical Deep Neural Engine)"
+      },
+      "timestamp": "2026-11-12T11:03:12.599Z",
+      "_id": "log_1794481392599_5skfn"
+    },
+    {
+      "actorId": "UIDN-ASR-2026-GM046",
+      "role": "patient",
+      "action": "PATIENT_QUICK_LOGIN_SUCCESS",
+      "targetUidn": "UIDN-ASR-2026-GM046",
+      "details": {
+        "name": "K. Somanna",
+        "mandal": "G. Madugula"
+      },
+      "timestamp": "2026-11-12T11:03:06.157Z",
+      "_id": "log_1794481386157_ekqrun"
+    },
     {
       "actorId": "SYSTEM_BOOTSTRAP",
       "role": "admin",

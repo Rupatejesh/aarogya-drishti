@@ -300,7 +300,13 @@ export const AiArogyaAarohiBot: React.FC<AiArogyaAarohiBotProps> = ({
         >
           <span className="absolute -top-6 left-0 bg-slate-900 text-cyan-300 font-mono text-[10px] font-bold px-2 py-0.5 rounded shadow border border-cyan-500/50 flex items-center space-x-1">
             <Sparkles className="w-2.5 h-2.5 animate-spin" />
-            <span>Aarohi Inspector • Click to Explain</span>
+            <span>
+              {lang === 'te'
+                ? 'ఆరోహి ఇన్‌స్పెక్టర్ • క్లిక్ చేసి వివరణ వినండి'
+                : lang === 'hi'
+                ? 'आरोही इंस्पेक्टर • क्लिक करके विवरण सुनें'
+                : 'Aarohi Inspector • Click to Explain'}
+            </span>
           </span>
         </div>
       )}
@@ -323,10 +329,14 @@ export const AiArogyaAarohiBot: React.FC<AiArogyaAarohiBotProps> = ({
                 <div className="flex items-center space-x-1.5">
                   <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
                   <span className="font-extrabold text-xs text-[#0A4D68] tracking-wide">
-                    AI AAROHI BOT (ఏఐ ఆరోహి)
+                    {lang === 'te'
+                      ? 'ఏఐ ఆరోహి బోట్ (AI Aarohi)'
+                      : lang === 'hi'
+                      ? 'एआई आरोही बॉट (AI Aarohi)'
+                      : 'AI AAROHI BOT (ఏఐ ఆరోహి)'}
                   </span>
                   <span className="text-[9px] bg-amber-100 text-[#D97706] font-bold px-1.5 py-0.2 rounded border border-amber-300">
-                    MD-AI
+                    {lang === 'te' ? 'వైద్య ఏఐ' : lang === 'hi' ? 'चिकित्सा एआई' : 'MD-AI'}
                   </span>
                 </div>
 
@@ -389,10 +399,14 @@ export const AiArogyaAarohiBot: React.FC<AiArogyaAarohiBotProps> = ({
                         <span className="w-0.5 bg-cyan-400 animate-[bounce_0.6s_infinite_300ms] h-2 rounded-full" />
                         <span className="w-0.5 bg-[#D97706] animate-[bounce_0.6s_infinite_200ms] h-3.5 rounded-full" />
                       </span>
-                      <span className="text-[#088395] font-bold">Speaking...</span>
+                      <span className="text-[#088395] font-bold">
+                        {lang === 'te' ? 'మాట్లాడుతోంది...' : lang === 'hi' ? 'बोल रहा है...' : 'Speaking...'}
+                      </span>
                     </>
                   ) : (
-                    <span className="text-slate-400">Voice ready</span>
+                    <span className="text-slate-400">
+                      {lang === 'te' ? 'వాయిస్ సిద్ధం' : lang === 'hi' ? 'आवाज तैयार' : 'Voice ready'}
+                    </span>
                   )}
                 </div>
 
@@ -405,7 +419,7 @@ export const AiArogyaAarohiBot: React.FC<AiArogyaAarohiBotProps> = ({
                       title="Stop speaking immediately"
                     >
                       <Square className="w-2.5 h-2.5 fill-current" />
-                      <span>Stop Voice ⏹️</span>
+                      <span>{lang === 'te' ? 'వాయిస్ ఆపు ⏹️' : lang === 'hi' ? 'आवाज रोकें ⏹️' : 'Stop Voice ⏹️'}</span>
                     </button>
                   )}
 
@@ -451,7 +465,19 @@ export const AiArogyaAarohiBot: React.FC<AiArogyaAarohiBotProps> = ({
               title="Click any UI element to see its clinical explanation"
             >
               <Compass className="w-3 h-3" />
-              <span>{isInspectorActive ? 'Inspecting...' : 'Point & Explain'}</span>
+              <span>
+                {isInspectorActive
+                  ? lang === 'te'
+                    ? 'పరిశీలిస్తోంది...'
+                    : lang === 'hi'
+                    ? 'जांच जारी...'
+                    : 'Inspecting...'
+                  : lang === 'te'
+                  ? 'పాయింట్ & వివరణ'
+                  : lang === 'hi'
+                  ? 'पॉइंट व व्याख्या'
+                  : 'Point & Explain'}
+              </span>
             </button>
 
             {/* GYMNASTIC WIND-WHEEL BUTTON (COMPULSORY FEATURE) */}
@@ -461,7 +487,7 @@ export const AiArogyaAarohiBot: React.FC<AiArogyaAarohiBotProps> = ({
               title="Aarohi Bot performs a full gymnastic wind-wheel flip!"
             >
               <Zap className="w-3 h-3 fill-current text-slate-950" />
-              <span>🤸‍♀️ Wind Wheel</span>
+              <span>{lang === 'te' ? '🤸‍♀️ గాలి చక్రం' : lang === 'hi' ? '🤸‍♀️ पवन चक्र' : '🤸‍♀️ Wind Wheel'}</span>
             </button>
 
             {/* Stop Voice button in quick bar if speaking */}
@@ -472,7 +498,7 @@ export const AiArogyaAarohiBot: React.FC<AiArogyaAarohiBotProps> = ({
                 title="Stop Voice Output"
               >
                 <Square className="w-2.5 h-2.5 fill-current" />
-                <span>Stop</span>
+                <span>{lang === 'te' ? 'ఆపు' : lang === 'hi' ? 'रोकें' : 'Stop'}</span>
               </button>
             )}
           </div>
@@ -704,7 +730,7 @@ export const AiArogyaAarohiBot: React.FC<AiArogyaAarohiBotProps> = ({
             {/* Online Status Pill Badge */}
             <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-slate-900/90 text-cyan-300 font-extrabold text-[9px] px-2 py-0.5 rounded-full border border-cyan-400/50 shadow flex items-center space-x-1 whitespace-nowrap">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-              <span>Aarohi AI</span>
+              <span>{lang === 'te' ? 'ఆరోహి ఏఐ' : lang === 'hi' ? 'आरोही एआई' : 'Aarohi AI'}</span>
             </div>
           </div>
         </div>
