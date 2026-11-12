@@ -167,7 +167,7 @@ export class ResilientStore {
   public async findPatientByUidn(uidn: string): Promise<any | null> {
     if (this.isMongoConnected()) {
       try {
-        let found = await PatientModel.findOne({ uidn }).lean();
+        let found: any = await PatientModel.findOne({ uidn }).lean();
         if (!found && uidn === 'UIDN-ASR-2026-GM046') {
           found = await PatientModel.findOne({ uidn: 'UIDN-ASR-2026-0001' }).lean();
           if (found) {

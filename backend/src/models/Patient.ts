@@ -30,6 +30,7 @@ export interface IPatient extends Document {
   village: string;
   habitation: string;
   photoUrl?: string;
+  cloudinaryPhotoId?: string;
   consentTimestamp: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -105,6 +106,11 @@ const PatientSchema = new Schema<IPatient>(
     photoUrl: {
       type: String,
       trim: true
+    },
+    cloudinaryPhotoId: {
+      type: String,
+      trim: true,
+      default: null
     },
     consentTimestamp: {
       type: Date,

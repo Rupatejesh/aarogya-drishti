@@ -94,6 +94,31 @@ export const api = {
     return res.data;
   },
 
+  // Cloudinary File & Asset Upload
+  uploadToCloudinary: async (fileOrData: File | FormData | { imageBase64: string; patientUidn?: string; folder?: string }) => {
+    if (fileOrData instanceof FormData) {
+      const res = await apiClient.post('/upload/image', fileOrData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      return res.data;
+    } else if (fileOrData instanceof File) {
+      const formData = new FormData();
+      formData.append('file', fileOrData);
+      const res = await apiClient.post('/upload/image', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      return res.data;
+    } else {
+      const res = await apiClient.post('/upload/image', fileOrData);
+      return res.data;
+    }
+  },
+
+  getCloudinaryStatus: async () => {
+    const res = await apiClient.get('/upload/status');
+    return res.data;
+  },
+
   getPatientScreenings: async (uidn: string) => {
     const res = await apiClient.get(`/screenings/patient/${uidn}`);
     return res.data;

@@ -1,7 +1,9 @@
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
 import store from '../services/store.service.js';
 import { calculateAgeFromDob, ASR_MANDALS } from '../models/Patient.js';
+import cloudinaryService from '../services/cloudinary.service.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'aarogya_drishti_super_secret_jwt_key_itda_paderu_2026';
 
@@ -248,6 +250,21 @@ export const registerPatient = async (req: Request, res: Response): Promise<void
     const seq = String(allPatients.length + 1).padStart(4, '0');
     const uidn = `UIDN-ASR-2026-${seq}`;
 
+    // Cloudinary Profile Photo Integration
+    let finalPhotoUrl = photoUrl || '/uploads/default_patient.png';
+    let cloudinaryPhotoId: string | null = null;
+    if (photoUrl && (photoUrl.startsWith('data:') || photoUrl.startsWith('http') || photoUrl.includes('.'))) {
+      try {
+        const cldRes = await cloudinaryService.uploadPatientPhoto(photoUrl, uidn);
+        if (cldRes.secure_url) {
+          finalPhotoUrl = cldRes.secure_url;
+          cloudinaryPhotoId = cldRes.public_id;
+        }
+      } catch (err) {
+        console.warn('[AuthController] Cloudinary patient photo upload warning:', err);
+      }
+    }
+
     const newPatient = {
       uidn,
       name: name.trim(),
@@ -260,7 +277,8 @@ export const registerPatient = async (req: Request, res: Response): Promise<void
       mandal,
       village: village.trim(),
       habitation: (habitation || village).trim(),
-      photoUrl: photoUrl || '/uploads/default_patient.png',
+      photoUrl: finalPhotoUrl,
+      cloudinaryPhotoId,
       consentTimestamp: new Date()
     };
 

@@ -24,7 +24,9 @@ import {
   ScanLine,
   Target,
   Maximize2,
-  HelpCircle
+  HelpCircle,
+  Cloud,
+  ExternalLink
 } from 'lucide-react';
 import api from '../services/api.ts';
 import { Language, translations } from '../i18n/translations.ts';
@@ -67,6 +69,7 @@ export const PatientAiScreeningUpload: React.FC<PatientAiScreeningUploadProps> =
   const [selectedRegion, setSelectedRegion] = useState('Right Buccal Mucosa');
   const [loading, setLoading] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<any>(null);
+  const [cloudinaryInfo, setCloudinaryInfo] = useState<any>(null);
 
   // Risk profile (pre-filled with K. Somanna's compulsory case data)
   const [habits, setHabits] = useState({
@@ -316,6 +319,14 @@ export const PatientAiScreeningUpload: React.FC<PatientAiScreeningUploadProps> =
 
       const res = await api.analyzeOralPhoto(formData);
       setAnalysisResult(res.analysis);
+      if (res.cloudinary) {
+        setCloudinaryInfo(res.cloudinary);
+      } else if (res.screening?.cloudinarySecureUrl) {
+        setCloudinaryInfo({
+          secure_url: res.screening.cloudinarySecureUrl,
+          public_id: res.screening.cloudinaryPublicId
+        });
+      }
       if (res.screening) {
         onScreeningCompleted(res.screening);
       }
@@ -384,6 +395,10 @@ export const PatientAiScreeningUpload: React.FC<PatientAiScreeningUploadProps> =
                 </h3>
                 <span className="text-[10px] bg-royal-100 text-royal-800 font-extrabold px-2.5 py-0.5 rounded-full border border-royal-200">
                   Gemini Multimodal Live AI
+                </span>
+                <span className="text-[10px] bg-sky-100 text-sky-900 font-extrabold px-2.5 py-0.5 rounded-full border border-sky-300 flex items-center space-x-1">
+                  <Cloud className="w-3 h-3 text-sky-700" />
+                  <span>Cloudinary CDN</span>
                 </span>
               </div>
               <p className="text-xs text-slate-500 mt-0.5">
@@ -987,6 +1002,35 @@ export const PatientAiScreeningUpload: React.FC<PatientAiScreeningUploadProps> =
                   {analysisResult.clinicalRemarks}
                 </p>
               </div>
+
+              {/* Cloudinary CDN Asset Storage Proof */}
+              {cloudinaryInfo?.secure_url && (
+                <div className="flex items-center justify-between text-xs bg-sky-50 border border-sky-200 rounded-2xl p-3 text-sky-950 shadow-sm">
+                  <div className="flex items-center space-x-2.5">
+                    <span className="w-7 h-7 rounded-xl bg-sky-600 text-white flex items-center justify-center shadow-sm">
+                      <Cloud className="w-4 h-4" />
+                    </span>
+                    <div>
+                      <div className="font-bold flex items-center space-x-1.5">
+                        <span>Cloudinary CDN Synced</span>
+                        <span className="text-[10px] bg-sky-200 text-sky-900 font-extrabold px-1.5 py-0.2 rounded">Encrypted</span>
+                      </div>
+                      <div className="text-[11px] text-slate-600 font-mono truncate max-w-[200px] sm:max-w-xs">
+                        {cloudinaryInfo.public_id}
+                      </div>
+                    </div>
+                  </div>
+                  <a
+                    href={cloudinaryInfo.secure_url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-sky-700 hover:text-sky-900 font-bold bg-white hover:bg-sky-100 border border-sky-300 rounded-xl px-2.5 py-1 text-xs flex items-center space-x-1 shadow-sm transition-all"
+                  >
+                    <span>View on CDN</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                </div>
+              )}
 
               {/* Actionable Clinical Referral Pathway */}
               {isNoDisease ? (

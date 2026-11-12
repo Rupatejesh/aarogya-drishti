@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import store from '../services/store.service.js';
 import geminiService from '../services/gemini.service.js';
+import cloudinaryService from '../services/cloudinary.service.js';
 
 export const analyzeOralPhoto = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -63,6 +64,28 @@ export const analyzeOralPhoto = async (req: Request, res: Response): Promise<voi
       }
     }
 
+    // Upload oral image asset to Cloudinary CDN
+    let cloudinaryData: any = null;
+    try {
+      const sourceForCloudinary = localFilePath || (imageBase64 && typeof imageBase64 === 'string' && imageBase64.startsWith('data:') ? imageBase64 : null) || imageUrl;
+      if (sourceForCloudinary) {
+        const uploadRes = await cloudinaryService.uploadOralScan(sourceForCloudinary, patientUidn || 'UIDN-ASR-2026-0001');
+        if (uploadRes) {
+          cloudinaryData = {
+            publicId: uploadRes.public_id,
+            secureUrl: uploadRes.secure_url || uploadRes.url,
+            format: uploadRes.format,
+            bytes: uploadRes.bytes
+          };
+          if (uploadRes.success && uploadRes.secure_url) {
+            imageUrl = uploadRes.secure_url;
+          }
+        }
+      }
+    } catch (cldErr) {
+      console.warn('[ScreeningController] Cloudinary asset upload warning:', cldErr);
+    }
+
     // Run Gemini multi-modal / Clinical AI Analysis
     const aiAnalysis = await geminiService.analyzeOralPhoto({
       oralRegion,
@@ -80,6 +103,8 @@ export const analyzeOralPhoto = async (req: Request, res: Response): Promise<voi
       patientUidn: patientUidn || 'UIDN-ASR-2026-0001',
       oralRegion,
       imageUrl,
+      cloudinaryPublicId: cloudinaryData?.publicId || null,
+      cloudinarySecureUrl: cloudinaryData?.secureUrl || null,
       symptomsChecklist: parsedSymptoms,
       habitExposure: parsedHabits,
       aiCondition: aiAnalysis.aiCondition,
@@ -109,7 +134,8 @@ export const analyzeOralPhoto = async (req: Request, res: Response): Promise<voi
       success: true,
       message: 'Oral cavity photo analyzed successfully with high-confidence onco-triage.',
       screening: saved,
-      analysis: aiAnalysis
+      analysis: aiAnalysis,
+      cloudinary: cloudinaryData
     });
   } catch (error: any) {
     res.status(500).json({ success: false, message: error.message });

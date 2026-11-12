@@ -40,6 +40,8 @@ export interface IScreening extends Document {
   patientUidn: string;
   oralRegion: OralRegion;
   imageUrl: string;
+  cloudinaryPublicId?: string;
+  cloudinarySecureUrl?: string;
   symptomsChecklist: string[];
   habitExposure: IHabitExposure;
   aiCondition: AICondition;
@@ -96,6 +98,14 @@ const ScreeningSchema = new Schema<IScreening>(
     imageUrl: {
       type: String,
       required: true
+    },
+    cloudinaryPublicId: {
+      type: String,
+      default: null
+    },
+    cloudinarySecureUrl: {
+      type: String,
+      default: null
     },
     symptomsChecklist: {
       type: [String],

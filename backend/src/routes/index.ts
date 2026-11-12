@@ -5,6 +5,7 @@ import appointmentRoutes from './appointment.routes.js';
 import prescriptionRoutes from './prescription.routes.js';
 import adminRoutes from './admin.routes.js';
 import searchRoutes from './search.routes.js';
+import uploadRoutes from './upload.routes.js';
 
 const apiV1Router = Router();
 
@@ -14,6 +15,7 @@ apiV1Router.use('/appointments', appointmentRoutes);
 apiV1Router.use('/prescriptions', prescriptionRoutes);
 apiV1Router.use('/admin', adminRoutes);
 apiV1Router.use('/search', searchRoutes);
+apiV1Router.use('/upload', uploadRoutes);
 
 export default apiV1Router;
 
