@@ -437,7 +437,19 @@ export default function App() {
               </div>
 
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-950 tracking-tight">
-                AAROGYA DRISHTI <span className="royal-gradient-text">ఆరోగ్య దృష్టి</span>
+                {lang === 'te' ? (
+                  <>
+                    ఆరోగ్య దృష్టి <span className="royal-gradient-text font-serif italic text-2xl sm:text-3xl lg:text-4xl ml-2">Aarogya Drishti</span>
+                  </>
+                ) : lang === 'hi' ? (
+                  <>
+                    आरोग्य दृष्टि <span className="royal-gradient-text font-serif italic text-2xl sm:text-3xl lg:text-4xl ml-2">Aarogya Drishti</span>
+                  </>
+                ) : (
+                  <>
+                    AAROGYA DRISHTI <span className="royal-gradient-text ml-2">ఆరోగ్య దృష్టి</span>
+                  </>
+                )}
               </h1>
 
               <p className="text-slate-600 text-sm sm:text-base max-w-2xl mx-auto leading-relaxed">
