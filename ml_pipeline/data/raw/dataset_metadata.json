@@ -1,0 +1,38 @@
+{
+  "projectName": "Aarogya Drishti Multimodal Oral Oncology AI Pipeline",
+  "datasetVersion": "1.0.0",
+  "classes": [
+    {
+      "id": 0,
+      "className": "normal",
+      "displayName": "Normal Healthy Oral Mucosa",
+      "icd10": "Z01.20",
+      "description": "Healthy pink mucosa without keratosis, erythema, ulceration, or induration."
+    },
+    {
+      "id": 1,
+      "className": "benign_lesions",
+      "displayName": "Benign Oral Lesions & Aphthous Stomatitis",
+      "icd10": "K12.0",
+      "description": "Transient ulcers, traumatic keratosis, aphthae resolving within 14 days."
+    },
+    {
+      "id": 2,
+      "className": "opmd_leukoplakia",
+      "displayName": "Oral Potentially Malignant Disorders (OPMD)",
+      "icd10": "K13.21",
+      "description": "Leukoplakia, Erythroplakia, Oral Submucous Fibrosis (OSMF) with trismus."
+    },
+    {
+      "id": 3,
+      "className": "oral_squamous_carcinoma",
+      "displayName": "Oral Squamous Cell Carcinoma (OSCC Suspicion)",
+      "icd10": "C06.0",
+      "description": "Indurated, exophytic, or non-healing chronic ulcerative lesions."
+    }
+  ],
+  "inputResolution": [224, 224],
+  "colorSpace": "RGB",
+  "trainValTestSplit": [0.70, 0.15, 0.15]
+}
+
