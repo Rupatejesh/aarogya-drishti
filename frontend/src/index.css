@@ -71,3 +71,117 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #2563EB;
 }
+
+/* ========================================================
+   PRINT STYLES: 100% STRICT SINGLE-PAGE ISOLATION
+   Guarantees Page 1 of 1 with ZERO extra pages for:
+   1. Arogya Drishti Digital Health Card (Physical Card Only)
+   2. Official e-Prescription & Biopsy Referral Slip
+   ======================================================== */
+@media print {
+  @page {
+    size: portrait;
+    margin: 12mm auto;
+  }
+
+  /* Universal hide for non-printable web page elements */
+  .no-print,
+  .print-hidden,
+  nav,
+  header,
+  footer,
+  aside {
+    display: none !important;
+  }
+
+  /* --------------------------------------------------------
+     CASE 1: AROGYA DRISHTI DIGITAL HEALTH CARD (1 PAGE ONLY)
+     -------------------------------------------------------- */
+  body.printing-health-card-only {
+    background: #ffffff !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  /* Completely eliminate the entire React app from print layout */
+  body.printing-health-card-only #root {
+    display: none !important;
+    height: 0 !important;
+    overflow: hidden !important;
+  }
+
+  /* Only display the isolated single-page card portal */
+  body.printing-health-card-only #health-card-print-portal {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-height: 80vh !important;
+    width: 100% !important;
+    margin: 0 auto !important;
+    padding: 20px 0 !important;
+    background: #ffffff !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    page-break-before: avoid !important;
+    break-before: avoid !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+  }
+
+  body.printing-health-card-only #health-card-print-portal > div {
+    width: 100% !important;
+    max-width: 600px !important;
+    margin: 0 auto !important;
+    border: 2px solid #1D4ED8 !important;
+    box-shadow: 0 4px 15px rgba(29, 78, 216, 0.12) !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  body.printing-health-card-only #health-card-print-portal * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* --------------------------------------------------------
+     CASE 2: PRESCRIPTION & BIOPSY REFERRAL SLIP (1 PAGE ONLY)
+     -------------------------------------------------------- */
+  body.printing-prescription-only {
+    background: #ffffff !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  body.printing-prescription-only #root {
+    display: none !important;
+    height: 0 !important;
+    overflow: hidden !important;
+  }
+
+  body.printing-prescription-only #prescription-print-portal {
+    display: block !important;
+    width: 100% !important;
+    max-width: 780px !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  body.printing-prescription-only #prescription-print-portal * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}

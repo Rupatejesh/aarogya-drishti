@@ -72,7 +72,42 @@ export const PrescriptionSlipModal: React.FC<PrescriptionSlipModalProps> = ({
   if (!isOpen || !patient) return null;
 
   const handlePrint = () => {
-    window.print();
+    let portal = document.getElementById('prescription-print-portal');
+    if (!portal) {
+      portal = document.createElement('div');
+      portal.id = 'prescription-print-portal';
+      document.body.appendChild(portal);
+    }
+
+    const slipElement = printableRef.current;
+    if (!slipElement) return;
+
+    portal.innerHTML = '';
+    const clone = slipElement.cloneNode(true) as HTMLElement;
+    clone.style.maxWidth = '780px';
+    clone.style.width = '100%';
+    clone.style.margin = '0 auto';
+    clone.style.boxShadow = 'none';
+    portal.appendChild(clone);
+
+    const originalTitle = document.title;
+    document.title = `Rx_Biopsy_Slip_${patient.uidn || 'ASR'}_${prescription.rxId || '0001'}`;
+
+    document.body.classList.add('printing-prescription-only');
+
+    const cleanup = () => {
+      document.body.classList.remove('printing-prescription-only');
+      if (portal) portal.innerHTML = '';
+      document.title = originalTitle;
+      window.removeEventListener('afterprint', cleanup);
+    };
+
+    window.addEventListener('afterprint', cleanup);
+
+    setTimeout(() => {
+      window.print();
+      setTimeout(cleanup, 3000);
+    }, 150);
   };
 
   // 4-Step Longitudinal Journey

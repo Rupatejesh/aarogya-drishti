@@ -30,8 +30,255 @@ export const GoldenHealthCard: React.FC<GoldenHealthCardProps> = ({ patient, lan
 
   if (!patient) return null;
 
-  const handlePrint = () => {
-    window.print();
+  // STRICT 1-PAGE PRINT / PDF EXPORT (ZERO EXTRA PAGES)
+  const handlePrintCard = () => {
+    let portal = document.getElementById('health-card-print-portal');
+    if (!portal) {
+      portal = document.createElement('div');
+      portal.id = 'health-card-print-portal';
+      document.body.appendChild(portal);
+    }
+
+    const cardElement = cardRef.current;
+    if (!cardElement) return;
+
+    portal.innerHTML = '';
+    const clone = cardElement.cloneNode(true) as HTMLElement;
+    clone.style.maxWidth = '580px';
+    clone.style.width = '100%';
+    clone.style.margin = '0 auto';
+    clone.style.boxShadow = 'none';
+    portal.appendChild(clone);
+
+    const originalTitle = document.title;
+    document.title = `Arogya_Drishti_Health_Card_${patient.uidn || 'ASR'}`;
+
+    document.body.classList.add('printing-health-card-only');
+
+    const cleanup = () => {
+      document.body.classList.remove('printing-health-card-only');
+      if (portal) portal.innerHTML = '';
+      document.title = originalTitle;
+      window.removeEventListener('afterprint', cleanup);
+    };
+
+    window.addEventListener('afterprint', cleanup);
+
+    setTimeout(() => {
+      window.print();
+      setTimeout(cleanup, 3000);
+    }, 150);
+  };
+
+  // DIRECT IMAGE / PNG DOWNLOAD (ZERO EXTRA PAGES, INSTANT DOWNLOAD)
+  const handleDownloadImage = () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 1000;
+    canvas.height = 630;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const roundRect = (x: number, y: number, w: number, h: number, r: number) => {
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.arcTo(x + w, y, x + w, y + h, r);
+      ctx.arcTo(x + w, y + h, x, y + h, r);
+      ctx.arcTo(x, y + h, x, y, r);
+      ctx.arcTo(x, y, x + w, y, r);
+      ctx.closePath();
+    };
+
+    // Card Background Gradient
+    const bgGrad = ctx.createLinearGradient(0, 0, 1000, 630);
+    bgGrad.addColorStop(0, '#FFFFFF');
+    bgGrad.addColorStop(0.5, '#F8FAFC');
+    bgGrad.addColorStop(1, '#EFF6FF');
+    ctx.fillStyle = bgGrad;
+    roundRect(10, 10, 980, 610, 28);
+    ctx.fill();
+
+    // Card Border
+    ctx.lineWidth = 4;
+    ctx.strokeStyle = '#1D4ED8';
+    roundRect(10, 10, 980, 610, 28);
+    ctx.stroke();
+
+    // Decorative corner accent
+    ctx.fillStyle = 'rgba(219, 234, 254, 0.4)';
+    ctx.beginPath();
+    ctx.arc(950, 50, 180, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 1. Header Section
+    const iconGrad = ctx.createLinearGradient(45, 45, 105, 105);
+    iconGrad.addColorStop(0, '#1E3A8A');
+    iconGrad.addColorStop(1, '#1D4ED8');
+    ctx.fillStyle = iconGrad;
+    roundRect(45, 45, 60, 60, 14);
+    ctx.fill();
+
+    // Medical cross icon
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(70, 57, 10, 36);
+    ctx.fillRect(57, 70, 36, 10);
+
+    ctx.fillStyle = '#1E3A8A';
+    ctx.font = 'bold 13px Inter, system-ui, sans-serif';
+    ctx.fillText('GOVERNMENT OF ANDHRA PRADESH • ITDA PADERU', 120, 66);
+
+    ctx.fillStyle = '#0F172A';
+    ctx.font = 'bold 24px Inter, system-ui, sans-serif';
+    ctx.fillText('AROGYA DRISHTI HEALTH CARD', 120, 96);
+
+    // ABDM Verified Badge
+    ctx.fillStyle = '#059669';
+    roundRect(810, 48, 140, 28, 14);
+    ctx.fill();
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = 'bold 12px Inter, system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('ABDM VERIFIED', 880, 67);
+
+    ctx.fillStyle = '#64748B';
+    ctx.font = '12px Inter, system-ui, sans-serif';
+    ctx.fillText('Alluri Sitharama Raju', 880, 94);
+    ctx.textAlign = 'left';
+
+    // Divider
+    ctx.strokeStyle = '#E2E8F0';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(45, 125);
+    ctx.lineTo(955, 125);
+    ctx.stroke();
+
+    // 2. Middle Section: Avatar & Info & QR
+    const avatarGrad = ctx.createLinearGradient(45, 150, 195, 300);
+    avatarGrad.addColorStop(0, '#1E3A8A');
+    avatarGrad.addColorStop(1, '#2563EB');
+    ctx.fillStyle = avatarGrad;
+    roundRect(45, 150, 145, 145, 20);
+    ctx.fill();
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = '#3B82F6';
+    roundRect(45, 150, 145, 145, 20);
+    ctx.stroke();
+
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = 'bold 70px Inter, system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText((patient.name || 'P').charAt(0).toUpperCase(), 117, 248);
+    ctx.textAlign = 'left';
+
+    ctx.fillStyle = '#020617';
+    ctx.font = 'bold 30px Inter, system-ui, sans-serif';
+    ctx.fillText(patient.name || 'K. Somanna', 215, 185);
+
+    ctx.fillStyle = '#334155';
+    ctx.font = '600 16px Inter, system-ui, sans-serif';
+    ctx.fillText(`${patient.age || '46'} Yrs • ${patient.gender || 'Male'} • Blood:`, 215, 220);
+
+    // Blood Group Badge (Red)
+    ctx.fillStyle = '#FEE2E2';
+    roundRect(435, 202, 50, 26, 6);
+    ctx.fill();
+    ctx.strokeStyle = '#FCA5A5';
+    ctx.lineWidth = 1;
+    roundRect(435, 202, 50, 26, 6);
+    ctx.stroke();
+    ctx.fillStyle = '#DC2626';
+    ctx.font = 'bold 15px Inter, system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(patient.bloodGroup || 'O+', 460, 221);
+    ctx.textAlign = 'left';
+
+    ctx.fillStyle = '#475569';
+    ctx.font = '15px Inter, system-ui, sans-serif';
+    ctx.fillText(`📍 ${patient.village || 'G. Madugula'}, ${patient.mandal || 'G. Madugula'} (ITDA)`, 215, 255);
+
+    ctx.fillStyle = '#334155';
+    ctx.font = '500 15px monospace';
+    ctx.fillText(`Aadhaar: ${patient.aadhar || '4321 8765 2109'}`, 215, 285);
+
+    // QR Code Container
+    ctx.fillStyle = '#FFFFFF';
+    roundRect(805, 150, 145, 145, 18);
+    ctx.fill();
+    ctx.strokeStyle = '#BFDBFE';
+    ctx.lineWidth = 2;
+    roundRect(805, 150, 145, 145, 18);
+    ctx.stroke();
+
+    const qx = 825;
+    const qy = 165;
+    const qs = 105;
+    ctx.fillStyle = '#0F172A';
+    const drawFinder = (fx: number, fy: number) => {
+      ctx.fillRect(fx, fy, 28, 28);
+      ctx.clearRect(fx + 4, fy + 4, 20, 20);
+      ctx.fillRect(fx + 8, fy + 8, 12, 12);
+    };
+    drawFinder(qx, qy);
+    drawFinder(qx + qs - 28, qy);
+    drawFinder(qx, qy + qs - 28);
+    for (let r = 0; r < 5; r++) {
+      for (let c = 0; c < 5; c++) {
+        if ((r + c) % 2 === 0) {
+          ctx.fillRect(qx + 35 + c * 7, qy + 35 + r * 7, 5, 5);
+        }
+      }
+    }
+    ctx.fillStyle = '#1D4ED8';
+    ctx.font = 'bold 10px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('ABDM QR CODE', 877, 285);
+    ctx.textAlign = 'left';
+
+    // 3. Footer Section
+    ctx.strokeStyle = '#E2E8F0';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(45, 330);
+    ctx.lineTo(955, 330);
+    ctx.stroke();
+
+    ctx.fillStyle = '#64748B';
+    ctx.font = 'bold 11px Inter, system-ui, sans-serif';
+    ctx.fillText('UNIVERSAL PATIENT ID (UIDN)', 45, 365);
+
+    ctx.fillStyle = '#1D4ED8';
+    ctx.font = 'bold 26px monospace';
+    ctx.fillText(patient.uidn || 'UIDN-ASR-2026-GM046', 45, 400);
+
+    // 108 SOS
+    ctx.fillStyle = '#DC2626';
+    roundRect(720, 365, 105, 34, 17);
+    ctx.fill();
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = 'bold 13px Inter, system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('📞 108 SOS', 772, 387);
+
+    // 104 Mobile Van
+    ctx.fillStyle = '#1E3A8A';
+    roundRect(835, 365, 120, 34, 17);
+    ctx.fill();
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = 'bold 13px Inter, system-ui, sans-serif';
+    ctx.fillText('104 Mobile Van', 895, 387);
+    ctx.textAlign = 'left';
+
+    ctx.fillStyle = '#94A3B8';
+    ctx.font = '12px Inter, system-ui, sans-serif';
+    ctx.fillText('Alluri Sitharama Raju District • Integrated Tribal Oral Cancer Surveillance • Paderu Hub', 45, 435);
+
+    const dataUrl = canvas.toDataURL('image/png');
+    const link = document.createElement('a');
+    link.download = `Arogya_Drishti_Health_Card_${patient.uidn || 'AP'}.png`;
+    link.href = dataUrl;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
   };
 
   const handleSearch = (e: React.FormEvent) => {
@@ -72,7 +319,7 @@ export const GoldenHealthCard: React.FC<GoldenHealthCardProps> = ({ patient, lan
   return (
     <div className="space-y-5">
       {/* Action Header */}
-      <div className="flex flex-wrap justify-between items-center gap-3">
+      <div className="flex flex-wrap justify-between items-center gap-3 print:hidden">
         <div className="flex items-center space-x-2">
           <span className="w-2.5 h-2.5 rounded-full bg-royal-600 animate-pulse" />
           <h3 className="text-sm font-extrabold text-slate-900 uppercase tracking-wider">
@@ -81,26 +328,29 @@ export const GoldenHealthCard: React.FC<GoldenHealthCardProps> = ({ patient, lan
         </div>
         <div className="flex items-center space-x-2">
           <button
-            onClick={handlePrint}
+            onClick={handlePrintCard}
             className="px-3.5 py-2 bg-royal-600 hover:bg-royal-700 text-white rounded-xl text-xs font-bold transition-all duration-200 hover:-translate-y-0.5 shadow-sm flex items-center space-x-1.5"
+            title="Print or Save as 1-Page PDF (Zero Extra Pages)"
           >
             <Printer className="w-3.5 h-3.5" />
-            <span>Print Card</span>
+            <span>Print / Save PDF (1 Page)</span>
           </button>
           <button
-            onClick={handlePrint}
-            className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all duration-200 flex items-center space-x-1"
+            onClick={handleDownloadImage}
+            className="px-3.5 py-2 bg-white hover:bg-blue-50 text-royal-700 border border-royal-300 rounded-xl text-xs font-bold transition-all duration-200 hover:-translate-y-0.5 shadow-sm flex items-center space-x-1.5"
+            title="Download Official Health Card Image"
           >
             <Download className="w-3.5 h-3.5" />
-            <span>Download</span>
+            <span>Download Card</span>
           </button>
         </div>
       </div>
 
       {/* The Physical Card Container (Crisp White & Royal Blue Theme) */}
       <div
+        id="arogya-drishti-health-card-print"
         ref={cardRef}
-        className="relative aspect-[1.586/1] max-w-lg mx-auto rounded-3xl p-6 sm:p-7 text-slate-900 overflow-hidden shadow-xl border-2 border-royal-400 bg-gradient-to-br from-white via-blue-50/40 to-blue-100/30 select-none"
+        className="relative aspect-[1.586/1] max-w-lg mx-auto rounded-3xl p-6 sm:p-7 text-slate-900 overflow-hidden shadow-xl border-2 border-royal-400 bg-gradient-to-br from-white via-blue-50/40 to-blue-100/30 select-none health-card-printable-container"
         style={{
           boxShadow: '0 20px 40px -15px rgba(29, 78, 216, 0.15)'
         }}
@@ -188,7 +438,7 @@ export const GoldenHealthCard: React.FC<GoldenHealthCardProps> = ({ patient, lan
       </div>
 
       {/* PATIENT SEARCH ENGINE: Search own Arogya Drishti records */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm space-y-3">
+      <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm space-y-3 print:hidden">
         <div className="flex items-center justify-between">
           <span className="text-xs font-bold text-slate-800 uppercase flex items-center space-x-1.5">
             <Search className="w-3.5 h-3.5 text-royal-600" />
