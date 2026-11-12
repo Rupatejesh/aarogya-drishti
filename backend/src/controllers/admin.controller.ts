@@ -83,7 +83,8 @@ export const createDoctor = async (req: Request, res: Response): Promise<void> =
 
     const saved = await store.saveDoctor(newDoctor);
 
-    const defaultPasswordHash = await bcrypt.hash('Aarogya@2026', 10);
+    const plainPassword = req.body.password || 'Aarogya@2026';
+    const defaultPasswordHash = await bcrypt.hash(plainPassword, 10);
     await store.saveUser({
       email: saved.email,
       phone: saved.phone,

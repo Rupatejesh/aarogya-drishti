@@ -77,6 +77,15 @@ export const api = {
     return res.data;
   },
 
+  adminLogin: async (email: string, password: string) => {
+    const res = await apiClient.post('/auth/admin-login', { email, password });
+    if (res.data.token) {
+      localStorage.setItem('aarogya_admin_token', res.data.token);
+      localStorage.setItem('aarogya_admin', JSON.stringify(res.data.admin));
+    }
+    return res.data;
+  },
+
   // Screenings
   analyzeOralPhoto: async (formData: FormData) => {
     const res = await apiClient.post('/screenings/analyze-oral-photo', formData, {

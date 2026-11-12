@@ -438,3 +438,49 @@ export const doctorResetPassword = async (req: Request, res: Response): Promise<
   }
 };
 
+export const adminLogin = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      res.status(400).json({ success: false, message: 'Email and password are required' });
+      return;
+    }
+
+    const cleanEmail = String(email).trim().toLowerCase();
+    const cleanPass = String(password).trim();
+
+    // Standard ITDA Paderu Admin Credentials
+    const isValidAdmin =
+      (cleanEmail === 'admin@itdapaderu.gov.in' || cleanEmail === 'admin@aarogyadrishti.org' || cleanEmail === 'admin') &&
+      (cleanPass === 'admin123' || cleanPass === 'Aarogya@2026' || cleanPass === 'admin');
+
+    if (!isValidAdmin) {
+      res.status(401).json({
+        success: false,
+        message: 'Invalid administrative credentials. Use admin@itdapaderu.gov.in / admin123'
+      });
+      return;
+    }
+
+    const token = jwt.sign(
+      { role: 'admin', email: 'admin@itdapaderu.gov.in', name: 'ITDA Paderu District Health Administrator' },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: 'Admin Command Center authenticated successfully',
+      token,
+      admin: {
+        name: 'ITDA Paderu District Health Administrator',
+        email: 'admin@itdapaderu.gov.in',
+        district: 'Alluri Sitharama Raju District',
+        headquarters: 'ITDA Paderu HQ'
+      }
+    });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+

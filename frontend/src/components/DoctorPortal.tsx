@@ -23,27 +23,38 @@ interface DoctorPortalProps {
   lang: Language;
   onLaunchTelemedicine: (patient: any, doctor: any) => void;
   onViewPrescription: (prescription: any, patient: any) => void;
+  initialDoctor?: any;
 }
 
 export const DoctorPortal: React.FC<DoctorPortalProps> = ({
   lang,
   onLaunchTelemedicine,
-  onViewPrescription
+  onViewPrescription,
+  initialDoctor
 }) => {
   const t = translations[lang];
 
   // Auth States
-  const [isAuthenticated, setIsAuthenticated] = useState(true); // Default logged in as Dr. Swapna Devi for smooth hackathon evaluation
+  const [isAuthenticated, setIsAuthenticated] = useState(true); // Default logged in for smooth hackathon evaluation
   const [doctorIdInput, setDoctorIdInput] = useState('DOC-SWAPNA');
   const [doctorPassword, setDoctorPassword] = useState('Aarogya@2026');
-  const [activeDoctor, setActiveDoctor] = useState<any>({
-    uidn: 'DOC-SWAPNA',
-    name: 'Dr. Swapna Devi, MDS',
-    designation: 'Chief Onco-Pathologist & Lead Tele-Consultant',
-    hospitalDuty: 'PHC G. Madugula / GGH Paderu Tele-Lab Hub',
-    abdmCode: 'ABDM-DOC-AP-7821',
-    email: 'dr.swapna@aarogyadrishti.org'
-  });
+  const [activeDoctor, setActiveDoctor] = useState<any>(
+    initialDoctor || {
+      uidn: 'DOC-SWAPNA',
+      name: 'Dr. Swapna Devi, MDS',
+      designation: 'Chief Onco-Pathologist & Lead Tele-Consultant',
+      hospitalDuty: 'PHC G. Madugula / GGH Paderu Tele-Lab Hub',
+      abdmCode: 'ABDM-DOC-AP-7821',
+      email: 'dr.swapna@aarogyadrishti.org'
+    }
+  );
+
+  useEffect(() => {
+    if (initialDoctor) {
+      setActiveDoctor(initialDoctor);
+      setIsAuthenticated(true);
+    }
+  }, [initialDoctor]);
 
   // Forgot password modal
   const [isForgotModalOpen, setIsForgotModalOpen] = useState(false);

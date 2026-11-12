@@ -6,7 +6,8 @@ import {
   registerPatient,
   aadharLogin,
   doctorLogin,
-  doctorResetPassword
+  doctorResetPassword,
+  adminLogin
 } from '../controllers/auth.controller.js';
 
 const router = Router();
@@ -18,6 +19,7 @@ router.post('/register-patient', registerPatient);
 router.post('/aadhar-login', aadharLogin);
 router.post('/doctor-login', doctorLogin);
 router.post('/doctor-reset-password', doctorResetPassword);
+router.post('/admin-login', adminLogin);
 
 export default router;
 

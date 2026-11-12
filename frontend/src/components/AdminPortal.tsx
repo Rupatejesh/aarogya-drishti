@@ -51,7 +51,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ lang }) => {
     mandal: 'Chintapalle',
     abdmCode: 'ABDM-DOC-AP-8842',
     email: 'dr.ramesh@aarogyadrishti.org',
-    phone: '9490123477'
+    phone: '9490123477',
+    password: 'Doctor@2026'
   });
   const [addDoctorSuccess, setAddDoctorSuccess] = useState(false);
 
@@ -473,12 +474,18 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ lang }) => {
             </div>
 
             {addDoctorSuccess ? (
-              <div className="p-6 bg-emerald-50 rounded-2xl border border-emerald-300 text-center space-y-2">
+              <div className="p-6 bg-emerald-50 rounded-2xl border border-emerald-300 text-center space-y-3">
                 <CheckCircle className="w-10 h-10 text-emerald-600 mx-auto" />
-                <h4 className="font-bold text-base text-emerald-950 font-serif-royal">Doctor Successfully Registered!</h4>
-                <p className="text-xs text-emerald-800">
-                  Credentials and ABDM provider ID generated and provisioned in ITDA Paderu Registry.
-                </p>
+                <h4 className="font-bold text-base text-emerald-950 font-serif-royal">Doctor Credentials Provisioned!</h4>
+                <div className="bg-white/90 border border-emerald-200 rounded-xl p-3.5 text-left text-xs space-y-1.5 shadow-sm max-w-sm mx-auto">
+                  <div className="font-bold text-slate-800 border-b border-emerald-100 pb-1">Doctor Login Credentials:</div>
+                  <div className="text-slate-600"><strong>Email:</strong> <span className="font-mono text-emerald-900 font-bold">{newDoctor.email}</span></div>
+                  <div className="text-slate-600"><strong>Password:</strong> <span className="font-mono text-amber-900 font-bold">{newDoctor.password}</span></div>
+                  <div className="text-slate-600"><strong>Facility:</strong> {newDoctor.hospitalDuty}</div>
+                  <div className="text-[10px] text-emerald-700 font-semibold pt-1">
+                    ✓ Doctor can immediately sign in via the Doctor Portal.
+                  </div>
+                </div>
               </div>
             ) : (
               <form onSubmit={handleCreateDoctor} className="space-y-3.5">
@@ -495,6 +502,32 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ lang }) => {
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">Official Doctor Email</label>
+                    <input
+                      type="email"
+                      value={newDoctor.email}
+                      onChange={(e) => setNewDoctor({ ...newDoctor, email: e.target.value })}
+                      placeholder="doctor@aarogyadrishti.org"
+                      className="w-full bg-[#FAF9F5] border border-amber-300 rounded-xl p-2.5 text-xs font-medium"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">Login Password</label>
+                    <input
+                      type="text"
+                      value={newDoctor.password}
+                      onChange={(e) => setNewDoctor({ ...newDoctor, password: e.target.value })}
+                      placeholder="Doctor@2026"
+                      className="w-full bg-[#FAF9F5] border border-amber-300 rounded-xl p-2.5 text-xs font-mono font-bold"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
                     <label className="text-xs font-bold text-slate-700 block mb-1">Degree Certificate</label>
                     <input
                       type="text"
@@ -506,15 +539,26 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ lang }) => {
                   </div>
 
                   <div>
-                    <label className="text-xs font-bold text-slate-700 block mb-1">Alma Mater / University</label>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">Phone Number</label>
                     <input
-                      type="text"
-                      value={newDoctor.university}
-                      onChange={(e) => setNewDoctor({ ...newDoctor, university: e.target.value })}
+                      type="tel"
+                      value={newDoctor.phone}
+                      onChange={(e) => setNewDoctor({ ...newDoctor, phone: e.target.value })}
                       className="w-full bg-[#FAF9F5] border border-amber-300 rounded-xl p-2.5 text-xs"
                       required
                     />
                   </div>
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">Alma Mater / University</label>
+                  <input
+                    type="text"
+                    value={newDoctor.university}
+                    onChange={(e) => setNewDoctor({ ...newDoctor, university: e.target.value })}
+                    className="w-full bg-[#FAF9F5] border border-amber-300 rounded-xl p-2.5 text-xs"
+                    required
+                  />
                 </div>
 
                 <div className="grid grid-cols-3 gap-3">
