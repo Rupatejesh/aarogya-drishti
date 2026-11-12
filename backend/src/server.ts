@@ -120,6 +120,16 @@ io.on('connection', (socket) => {
     socket.to(roomId).emit('video-frame', { frame, senderRole });
   });
 
+  socket.on('call-started', ({ patientUidn, doctorUidn, doctorName, roomId }) => {
+    console.log(`[WebRTC] Doctor ${doctorName} started call for patient ${patientUidn} in ${roomId}`);
+    io.emit('doctor-calling-patient', { patientUidn, doctorUidn, doctorName, roomId });
+  });
+
+  socket.on('end-consultation', ({ roomId, endedBy }) => {
+    console.log(`[WebRTC] Consultation ended in room ${roomId} by ${endedBy || 'peer'}`);
+    socket.to(roomId).emit('consultation-ended', { endedBy });
+  });
+
   socket.on('disconnecting', () => {
     for (const room of socket.rooms) {
       if (room !== socket.id) {

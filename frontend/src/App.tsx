@@ -65,6 +65,7 @@ import DoctorPortal from './components/DoctorPortal.tsx';
 import AdminPortal from './components/AdminPortal.tsx';
 import AiArogyaVoiceAssistant from './components/AiArogyaVoiceAssistant.tsx';
 import UniversalOmnibarModal from './components/UniversalOmnibarModal.tsx';
+import { io } from 'socket.io-client';
 
 export default function App() {
   const [lang, setLang] = useState<Language>('en');
@@ -97,6 +98,35 @@ export default function App() {
   const [activeAppointment, setActiveAppointment] = useState<any>(null);
   const [patientAppointments, setPatientAppointments] = useState<any[]>([]);
   const [selectedDoctorForCall, setSelectedDoctorForCall] = useState<any>(null);
+  const [incomingCallNotification, setIncomingCallNotification] = useState<any>(null);
+
+  // Global Socket Listener for Live Doctor Calling Notification
+  useEffect(() => {
+    const socketUrl =
+      typeof window !== 'undefined' &&
+      (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+        ? 'http://localhost:5000'
+        : 'https://aarogya-drishti-9g70.onrender.com';
+
+    const globalSocket = io(socketUrl, {
+      transports: ['websocket', 'polling']
+    });
+
+    globalSocket.on('doctor-calling-patient', (data: any) => {
+      console.log('[Global Socket] Doctor started call notification:', data);
+      if (patient?.uidn && (data.patientUidn === patient.uidn || data.patientUidn?.includes(patient.uidn))) {
+        setIncomingCallNotification(data);
+      }
+    });
+
+    globalSocket.on('consultation-ended', () => {
+      setIncomingCallNotification(null);
+    });
+
+    return () => {
+      globalSocket.disconnect();
+    };
+  }, [patient?.uidn]);
 
   // Trilingual Live DOM Translation Effect
   useEffect(() => {
@@ -504,6 +534,51 @@ export default function App() {
                   </div>
                 </div>
 
+                {/* LIVE INCOMING DOCTOR CALL ALERT BANNER */}
+                {incomingCallNotification && (
+                  <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 text-white p-4 sm:p-5 rounded-3xl shadow-xl border border-emerald-400 flex flex-wrap items-center justify-between gap-4 animate-in slide-in-from-top-4 duration-300">
+                    <div className="flex items-center space-x-3.5">
+                      <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center flex-shrink-0">
+                        <Video className="w-6 h-6 text-white animate-pulse" />
+                      </div>
+                      <div>
+                        <div className="flex items-center space-x-2">
+                          <span className="w-2.5 h-2.5 rounded-full bg-emerald-300 animate-ping" />
+                          <h4 className="font-extrabold text-sm sm:text-base text-white">
+                            Doctor is Waiting in Live Consultation!
+                          </h4>
+                        </div>
+                        <p className="text-xs text-emerald-100 mt-0.5">
+                          {incomingCallNotification.doctorName} has launched your video consultation session.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => {
+                          setSelectedDoctorForCall({
+                            uidn: incomingCallNotification.doctorUidn,
+                            name: incomingCallNotification.doctorName,
+                            designation: 'Specialist Tele-Consultant'
+                          });
+                          setIsTelemedicineOpen(true);
+                          setIncomingCallNotification(null);
+                        }}
+                        className="px-5 py-2.5 bg-white text-emerald-900 font-extrabold text-xs rounded-xl shadow-lg hover:bg-emerald-50 active:scale-95 transition-all flex items-center space-x-2 cursor-pointer"
+                      >
+                        <Video className="w-4 h-4 text-emerald-700" />
+                        <span>Join Live Video Consultation Now</span>
+                      </button>
+                      <button
+                        onClick={() => setIncomingCallNotification(null)}
+                        className="px-3 py-2 text-emerald-200 hover:text-white text-xs font-bold cursor-pointer"
+                      >
+                        Dismiss
+                      </button>
+                    </div>
+                  </div>
+                )}
+
                 {/* 4 CORE HEALTH ACTION CARDS */}
                 <div>
                   <div className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-3">
@@ -837,17 +912,25 @@ export default function App() {
                                 <button
                                   onClick={() => {
                                     const docObj = {
-                                      uidn: a.doctorUidn || 'DOC-SWAPNA',
+                                      uidn: a.doctorUidn || 'DOC-ANIL',
                                       name: docDisplayName,
                                       hospitalDuty: a.hospitalName,
                                       designation: 'Approved Tele-Consultant'
                                     };
                                     handleLaunchTelemedicine(patient, docObj);
                                   }}
-                                  className="mt-1 px-3 py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold flex items-center space-x-1 shadow-sm transition-all"
+                                  className={`mt-1 px-3 py-1.5 text-white rounded-lg text-xs font-bold flex items-center space-x-1 shadow-sm transition-all cursor-pointer ${
+                                    incomingCallNotification?.doctorUidn === a.doctorUidn || incomingCallNotification?.roomId?.includes(a.doctorUidn)
+                                      ? 'bg-red-600 hover:bg-red-700 animate-pulse'
+                                      : 'bg-emerald-700 hover:bg-emerald-800'
+                                  }`}
                                 >
                                   <Video className="w-3 h-3" />
-                                  <span>Join Video Call</span>
+                                  <span>
+                                    {incomingCallNotification?.doctorUidn === a.doctorUidn || incomingCallNotification?.roomId?.includes(a.doctorUidn)
+                                      ? '🔴 Doctor in Call - Join Now'
+                                      : 'Join Video Call'}
+                                  </span>
                                 </button>
                               )}
 
@@ -1073,6 +1156,7 @@ export default function App() {
               hospitalDuty: 'Area Hospital Chintapalli / GGH Paderu Tele-Lab Hub'
             }
           }
+          screening={activeScreening}
           currentUserRole={role === 'doctor' ? 'doctor' : role === 'admin' ? 'admin' : 'patient'}
           lang={lang}
           onClose={() => setIsTelemedicineOpen(false)}
