@@ -1,4 +1,6 @@
 import { Request, Response } from 'express';
+import fs from 'fs';
+import path from 'path';
 import store from '../services/store.service.js';
 import geminiService from '../services/gemini.service.js';
 
@@ -18,6 +20,23 @@ export const analyzeOralPhoto = async (req: Request, res: Response): Promise<voi
     if (req.file) {
       imageUrl = `/uploads/${req.file.filename}`;
       localFilePath = req.file.path;
+    }
+
+    // Persist base64 image to uploads folder if provided
+    if (imageBase64 && !localFilePath && typeof imageBase64 === 'string' && imageBase64.startsWith('data:image')) {
+      try {
+        const matches = imageBase64.match(/^data:image\/([a-zA-Z0-9]+);base64,(.+)$/);
+        if (matches) {
+          const ext = matches[1] === 'jpeg' ? 'jpg' : matches[1];
+          const filename = `oral-scan-${Date.now()}.${ext}`;
+          const filePath = path.resolve(process.cwd(), 'uploads', filename);
+          fs.writeFileSync(filePath, Buffer.from(matches[2], 'base64'));
+          imageUrl = `/uploads/${filename}`;
+          localFilePath = filePath;
+        }
+      } catch (saveErr) {
+        console.warn('[ScreeningController] Could not persist base64 to disk:', saveErr);
+      }
     }
 
     if (!imageUrl && !imageBase64) {
@@ -49,6 +68,7 @@ export const analyzeOralPhoto = async (req: Request, res: Response): Promise<voi
       oralRegion,
       imagePath: localFilePath,
       imageBase64,
+      imageUrl,
       symptomsChecklist: Array.isArray(parsedSymptoms) ? parsedSymptoms : [],
       habitExposure: parsedHabits
     });

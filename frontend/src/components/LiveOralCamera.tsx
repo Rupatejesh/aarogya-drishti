@@ -15,7 +15,8 @@ import {
   Stethoscope,
   MapPin,
   Calendar,
-  X
+  X,
+  HelpCircle
 } from 'lucide-react';
 import api from '../services/api.ts';
 import { Language, translations } from '../i18n/translations.ts';
@@ -33,7 +34,8 @@ export const ORAL_REGIONS = [
   'Left Cheek',
   'Tongue Dorsum',
   'Floor of Mouth',
-  'Palate'
+  'Palate',
+  'Lower Labial Mucosa / Gums'
 ] as const;
 
 export type OralRegion = typeof ORAL_REGIONS[number];
@@ -47,8 +49,9 @@ export const LiveOralCamera: React.FC<LiveOralCameraProps> = ({
 }) => {
   const t = translations[lang];
   const videoRef = useRef<HTMLVideoElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [mode, setMode] = useState<'camera' | 'upload'>('camera');
+  const [mode, setMode] = useState<'camera' | 'upload'>('upload'); // Default to upload mode for easy instant photo test
   const [cameraActive, setCameraActive] = useState(false);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [selectedRegion, setSelectedRegion] = useState<OralRegion>('Right Buccal Mucosa');
@@ -73,7 +76,7 @@ export const LiveOralCamera: React.FC<LiveOralCameraProps> = ({
   const [analysisResult, setAnalysisResult] = useState<any>(null);
   const [cameraError, setCameraError] = useState<string | null>(null);
 
-  // Initialize webcam stream
+  // Initialize webcam stream if mode is camera
   useEffect(() => {
     if (mode === 'camera' && !capturedImage) {
       startCamera();
@@ -135,7 +138,9 @@ export const LiveOralCamera: React.FC<LiveOralCameraProps> = ({
   const handleRetake = () => {
     setCapturedImage(null);
     setAnalysisResult(null);
-    startCamera();
+    if (mode === 'camera') {
+      startCamera();
+    }
   };
 
   const handleUseMockSample = () => {
@@ -151,6 +156,7 @@ export const LiveOralCamera: React.FC<LiveOralCameraProps> = ({
       const reader = new FileReader();
       reader.onload = () => {
         setCapturedImage(reader.result as string);
+        setAnalysisResult(null);
         stopCamera();
       };
       reader.readAsDataURL(file);
@@ -159,7 +165,7 @@ export const LiveOralCamera: React.FC<LiveOralCameraProps> = ({
 
   const handleRunAiAnalysis = async () => {
     if (!capturedImage) {
-      alert('Please capture or select an intra-oral scan image first.');
+      alert('Please capture or select an image first.');
       return;
     }
 
@@ -221,14 +227,14 @@ export const LiveOralCamera: React.FC<LiveOralCameraProps> = ({
           <div>
             <div className="flex items-center space-x-2">
               <h3 className="font-extrabold text-base tracking-wide">
-                Live Intra-Oral Camera & AI Screening
+                Live Intra-Oral Camera & AI Multimodal Vision
               </h3>
-              <span className="text-[10px] bg-amber-100 text-slate-900 font-extrabold px-2 py-0.5 rounded-full border border-amber-300">
-                Gemini 2.0 Multimodal
+              <span className="text-[10px] bg-yellow-300 text-slate-900 font-extrabold px-2.5 py-0.5 rounded-full shadow-sm">
+                Gemini 3.5 AI Vision
               </span>
             </div>
             <p className="text-[11px] text-blue-100">
-              Examining: <strong className="text-white">{patientName}</strong> ({patientUidn})
+              Examining Patient: <strong className="text-white">{patientName}</strong> ({patientUidn})
             </p>
           </div>
         </div>
@@ -237,27 +243,27 @@ export const LiveOralCamera: React.FC<LiveOralCameraProps> = ({
         <div className="flex items-center space-x-2 bg-royal-800/80 p-1 rounded-xl border border-royal-600 text-xs">
           <button
             onClick={() => {
-              setMode('camera');
-              setCapturedImage(null);
-            }}
-            className={`px-3 py-1.5 rounded-lg font-semibold flex items-center space-x-1.5 transition-all ${
-              mode === 'camera' ? 'bg-white text-royal-700 shadow-sm' : 'text-blue-100 hover:text-white'
-            }`}
-          >
-            <Camera className="w-3.5 h-3.5" />
-            <span>Webcam Live</span>
-          </button>
-          <button
-            onClick={() => {
               setMode('upload');
               stopCamera();
             }}
-            className={`px-3 py-1.5 rounded-lg font-semibold flex items-center space-x-1.5 transition-all ${
+            className={`px-3 py-1.5 rounded-lg font-bold flex items-center space-x-1.5 transition-all ${
               mode === 'upload' ? 'bg-white text-royal-700 shadow-sm' : 'text-blue-100 hover:text-white'
             }`}
           >
             <UploadCloud className="w-3.5 h-3.5" />
             <span>Upload Photo</span>
+          </button>
+          <button
+            onClick={() => {
+              setMode('camera');
+              setCapturedImage(null);
+            }}
+            className={`px-3 py-1.5 rounded-lg font-bold flex items-center space-x-1.5 transition-all ${
+              mode === 'camera' ? 'bg-white text-royal-700 shadow-sm' : 'text-blue-100 hover:text-white'
+            }`}
+          >
+            <Camera className="w-3.5 h-3.5" />
+            <span>Webcam Live</span>
           </button>
         </div>
       </div>
@@ -296,15 +302,15 @@ export const LiveOralCamera: React.FC<LiveOralCameraProps> = ({
                   className="w-full h-full object-cover"
                 />
 
-                {/* AI Detected Bounding Box Overlay */}
-                {analysisResult && (
+                {/* AI Detected Bounding Box Overlay (Only for genuine lesions) */}
+                {analysisResult && analysisResult.hasLesion !== false && analysisResult.aiCondition !== 'Low' && (
                   <div
                     className="absolute border-2 border-red-500 rounded-lg bg-red-500/10 pointer-events-none transition-all duration-500 shadow-[0_0_15px_rgba(239,68,68,0.5)]"
                     style={{
-                      left: '30%',
-                      top: '25%',
-                      width: '45%',
-                      height: '50%'
+                      left: '25%',
+                      top: '20%',
+                      width: '50%',
+                      height: '55%'
                     }}
                   >
                     <div className="absolute -top-7 left-0 bg-red-600 text-white text-[10px] font-extrabold px-2 py-0.5 rounded shadow flex items-center space-x-1 whitespace-nowrap">
@@ -348,14 +354,22 @@ export const LiveOralCamera: React.FC<LiveOralCameraProps> = ({
             {/* 4. Upload Mode Drag & Drop */}
             {mode === 'upload' && !capturedImage && (
               <label className="cursor-pointer w-full h-full flex flex-col items-center justify-center p-6 text-center hover:bg-slate-800 transition-colors">
-                <UploadCloud className="w-14 h-14 text-blue-400 mb-2" />
+                <UploadCloud className="w-14 h-14 text-blue-400 mb-2 animate-bounce" />
                 <span className="text-sm font-bold text-white mb-1">
-                  Upload Intra-Oral Medical Photograph
+                  Upload Intra-Oral Photograph for AI Prediction
                 </span>
-                <span className="text-xs text-slate-400 max-w-xs">
-                  JPEG, PNG, or WebP up to 15MB. Captured via smartphone camera or clinical probe.
+                <span className="text-xs text-slate-400 max-w-xs leading-relaxed">
+                  Click to select PNG, JPG, or WEBP photo. (Demo face photos will be automatically detected as non-disease).
                 </span>
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="mt-4 px-4 py-2 bg-royal-600 hover:bg-royal-700 text-white text-xs font-bold rounded-xl transition-all shadow-sm"
+                >
+                  Browse Device Photos
+                </button>
                 <input
+                  ref={fileInputRef}
                   type="file"
                   accept="image/*"
                   onChange={handleFileUpload}
@@ -371,7 +385,7 @@ export const LiveOralCamera: React.FC<LiveOralCameraProps> = ({
               <button
                 onClick={handleCapture}
                 disabled={!cameraActive}
-                className="w-full sm:w-auto flex-1 px-6 py-3 rounded-2xl bg-gradient-to-r from-royal-600 via-royal-700 to-royal-800 text-white font-extrabold text-xs shadow-blue-card hover:brightness-110 active:scale-95 transition-all duration-200 flex items-center justify-center space-x-2"
+                className="w-full sm:w-auto flex-1 px-6 py-3 rounded-2xl bg-royal-600 hover:bg-royal-700 text-white font-extrabold text-xs shadow-md active:scale-95 transition-all duration-200 flex items-center justify-center space-x-2"
               >
                 <Camera className="w-4 h-4" />
                 <span>{t.freezeCapture}</span>
@@ -384,7 +398,7 @@ export const LiveOralCamera: React.FC<LiveOralCameraProps> = ({
                 className="px-4 py-2.5 rounded-xl border border-slate-300 hover:bg-slate-100 text-slate-700 font-bold text-xs flex items-center space-x-1.5 transition-all shadow-sm"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
-                <span>{t.retake}</span>
+                <span>Upload Other Photo</span>
               </button>
             )}
 
@@ -393,12 +407,12 @@ export const LiveOralCamera: React.FC<LiveOralCameraProps> = ({
               disabled={!capturedImage || loading}
               className={`w-full sm:w-auto flex-1 px-6 py-3 rounded-2xl font-extrabold text-xs transition-all duration-200 flex items-center justify-center space-x-2 ${
                 capturedImage && !loading
-                  ? 'bg-gradient-to-r from-emerald-600 to-teal-700 text-white shadow-md hover:brightness-110 active:scale-95 animate-pulse'
+                  ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-md active:scale-95 animate-pulse'
                   : 'bg-slate-200 text-slate-400 cursor-not-allowed'
               }`}
             >
               <Sparkles className="w-4 h-4" />
-              <span>{loading ? t.analyzingWithGemini : 'Run AI Disease Prediction (>90% Accuracy)'}</span>
+              <span>{loading ? 'Analyzing with Gemini Vision AI...' : 'Run Real AI Disease Prediction'}</span>
             </button>
           </div>
         </div>
@@ -482,14 +496,43 @@ export const LiveOralCamera: React.FC<LiveOralCameraProps> = ({
 
           {/* AI Screening Triage Card */}
           {analysisResult && (
-            <div className="bg-white rounded-2xl border-2 border-red-300 p-5 shadow-luxury space-y-3">
+            <div
+              className={`rounded-2xl border-2 p-5 shadow-sm space-y-3 transition-all ${
+                analysisResult.hasLesion === false || analysisResult.aiCondition === 'Low'
+                  ? 'bg-emerald-50/70 border-emerald-400'
+                  : 'bg-red-50/50 border-red-300'
+              }`}
+            >
               <div className="flex items-center justify-between">
-                <span className="text-xs font-extrabold text-red-900 uppercase tracking-wider flex items-center space-x-1.5">
-                  <ShieldAlert className="w-4 h-4 text-red-600" />
-                  <span>AI Onco-Triage Verdict</span>
+                <span
+                  className={`text-xs font-extrabold uppercase tracking-wider flex items-center space-x-1.5 ${
+                    analysisResult.hasLesion === false || analysisResult.aiCondition === 'Low'
+                      ? 'text-emerald-950'
+                      : 'text-red-950'
+                  }`}
+                >
+                  {analysisResult.hasLesion === false || analysisResult.aiCondition === 'Low' ? (
+                    <>
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                      <span>AI Triage Analysis Result</span>
+                    </>
+                  ) : (
+                    <>
+                      <ShieldAlert className="w-4 h-4 text-red-600" />
+                      <span>AI Onco-Triage Verdict</span>
+                    </>
+                  )}
                 </span>
-                <span className="bg-red-600 text-white font-extrabold text-xs px-2.5 py-1 rounded-full shadow-sm">
-                  {analysisResult.aiCondition} Condition
+                <span
+                  className={`font-extrabold text-xs px-2.5 py-1 rounded-full shadow-sm text-white ${
+                    analysisResult.hasLesion === false || analysisResult.aiCondition === 'Low'
+                      ? 'bg-emerald-600'
+                      : 'bg-red-600'
+                  }`}
+                >
+                  {analysisResult.hasLesion === false || analysisResult.aiCondition === 'Low'
+                    ? 'No Disease Found'
+                    : `${analysisResult.aiCondition} Condition`}
                 </span>
               </div>
 
@@ -498,18 +541,35 @@ export const LiveOralCamera: React.FC<LiveOralCameraProps> = ({
                   {analysisResult.aiLesionType}
                 </div>
                 <div className="text-xs text-slate-500 mt-0.5">
-                  Confidence Score: <strong className="text-emerald-700 font-bold">{analysisResult.aiConfidenceScore}% Accuracy</strong> • Model: {analysisResult.modelUsed}
+                  Confidence Score:{' '}
+                  <strong className="text-emerald-700 font-bold">
+                    {analysisResult.aiConfidenceScore}% Accuracy
+                  </strong>{' '}
+                  • Engine: <span className="font-mono text-[11px] text-slate-700">{analysisResult.modelUsed}</span>
                 </div>
               </div>
 
-              <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs text-slate-700 leading-relaxed">
-                <strong>Clinical Remarks:</strong> {analysisResult.clinicalRemarks}
+              <div className="bg-white p-3 rounded-xl border border-slate-200 text-xs text-slate-700 leading-relaxed shadow-sm">
+                <strong className="text-slate-900">Clinical Assessment:</strong> {analysisResult.clinicalRemarks}
               </div>
 
-              <div className="pt-2 flex items-center justify-between text-[11px] font-bold text-slate-800 border-t border-slate-200">
-                <span>Biopsy Referral: Recommended</span>
-                <span className="text-emerald-700 font-extrabold">PHC G. Madugula (Punch Biopsy Kit Ready)</span>
-              </div>
+              {/* Status Notice for Face Photo or No Disease */}
+              {analysisResult.hasLesion === false || analysisResult.aiCondition === 'Low' ? (
+                <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl text-xs text-royal-900 space-y-1">
+                  <div className="font-bold flex items-center space-x-1.5">
+                    <AlertTriangle className="w-3.5 h-3.5 text-royal-600" />
+                    <span>Guidance for User:</span>
+                  </div>
+                  <p className="text-[11px] text-slate-600 leading-relaxed">
+                    No oral lesion or cancer detected. If you uploaded a face photo, selfie, or non-oral picture, please click <strong>"Upload Other Photo"</strong> and provide a close-up photo of the inside of your mouth (cheek, tongue, or gums) showing any suspected patch.
+                  </p>
+                </div>
+              ) : (
+                <div className="pt-2 flex items-center justify-between text-[11px] font-bold text-slate-800 border-t border-slate-200">
+                  <span>Biopsy Referral: Recommended</span>
+                  <span className="text-emerald-700 font-extrabold">PHC G. Madugula (Punch Biopsy Kit Ready)</span>
+                </div>
+              )}
             </div>
           )}
 

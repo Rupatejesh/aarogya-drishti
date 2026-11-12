@@ -33,7 +33,10 @@ const fileFilter = (
 
 export const uploadOralPhoto = multer({
   storage,
-  limits: { fileSize: 15 * 1024 * 1024 }, // 15 MB
+  limits: {
+    fileSize: 25 * 1024 * 1024,
+    fieldSize: 25 * 1024 * 1024 // 25 MB field size for high-res base64 intraoral images
+  },
   fileFilter
 });
 

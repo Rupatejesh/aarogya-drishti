@@ -48,6 +48,7 @@ import { Language, translations } from './i18n/translations.ts';
 import Header, { ActiveRole } from './components/Header.tsx';
 import OralBiomarkerHelix3D from './components/OralBiomarkerHelix3D.tsx';
 import LiveOralCamera from './components/LiveOralCamera.tsx';
+import PatientAiScreeningUpload from './components/PatientAiScreeningUpload.tsx';
 import WebRTCTelemedicineRoom from './components/WebRTCTelemedicineRoom.tsx';
 import EmergencySosModal from './components/EmergencySosModal.tsx';
 import AiArogyaDrawer from './components/AiArogyaDrawer.tsx';
@@ -267,7 +268,11 @@ export default function App() {
         <button
           onClick={() => {
             setRole('patient');
-            setIsCameraModalOpen(true);
+            setTimeout(() => {
+              const el = document.getElementById('patient-ai-screening-section');
+              if (el) el.scrollIntoView({ behavior: 'smooth' });
+              else setIsCameraModalOpen(true);
+            }, 80);
           }}
           className={`p-3.5 rounded-2xl border text-left transition-all duration-200 hover:-translate-y-0.5 active:scale-95 flex items-center justify-between ${
             isCameraModalOpen
@@ -1062,6 +1067,20 @@ export default function App() {
                     </div>
                   </div>
                 )}
+              </section>
+            )}
+
+            {/* SECTION 2: AI ORAL LESION PHOTO SCANNER & UPLOAD CENTER */}
+            {patient && (
+              <section id="patient-ai-screening-section" className="scroll-mt-24">
+                <PatientAiScreeningUpload
+                  patient={patient}
+                  lang={lang}
+                  onScreeningCompleted={(sc) => {
+                    handleScreeningCompleted(sc);
+                  }}
+                  onLaunchFullCameraModal={() => setIsCameraModalOpen(true)}
+                />
               </section>
             )}
 
