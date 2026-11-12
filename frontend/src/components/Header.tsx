@@ -10,7 +10,8 @@ import {
   LogOut,
   ShieldCheck,
   CheckCircle2,
-  Home
+  Home,
+  Download
 } from 'lucide-react';
 import { Language, translations } from '../i18n/translations.ts';
 
@@ -185,6 +186,18 @@ export const Header: React.FC<HeaderProps> = ({
               <span>हिन्दी</span>
             </button>
           </div>
+
+          {/* Flow Diagram Direct Download Link */}
+          <a
+            href="/application_image_flow.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-sky-50 to-blue-50 hover:from-sky-100 hover:to-blue-100 text-royal-800 border border-sky-300 hover:border-sky-400 text-xs font-extrabold transition-all duration-200 hover:-translate-y-0.5 active:scale-95 flex items-center space-x-1.5 shadow-sm"
+            title="Open and Download Application Image Flow Diagram for Clients (PNG, SVG, PDF)"
+          >
+            <Download className="w-3.5 h-3.5 text-royal-700" />
+            <span>Flow Diagram</span>
+          </a>
 
           {/* AI Arogya Drawer Launcher (Only in Patient Portal) */}
           {currentRole === 'patient' && onOpenAiArogya && (

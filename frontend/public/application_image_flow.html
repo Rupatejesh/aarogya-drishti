@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aarogya Drishti — Application Image Flow & Architecture Diagram</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @media print {
+      .no-print { display: none !important; }
+      body { background: white !important; color: black !important; padding: 0 !important; }
+      .diagram-container { box-shadow: none !important; border: none !important; width: 100% !important; }
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased">
+  <!-- Top Control Bar -->
+  <header class="no-print sticky top-0 z-50 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 px-6 py-4 flex flex-wrap items-center justify-between gap-4 shadow-xl">
+    <div class="flex items-center space-x-3">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#0284C7] to-[#088395] flex items-center justify-center text-white font-extrabold shadow-md">
+        AD
+      </div>
+      <div>
+        <h1 class="text-base font-extrabold text-white tracking-wide">
+          AAROGYA DRISHTI — APPLICATION IMAGE FLOW
+        </h1>
+        <p class="text-xs text-slate-400">
+          ITDA Paderu • Autonomous Oral Onco-Care & WebRTC Telemedicine
+        </p>
+      </div>
+    </div>
+
+    <!-- Download & Export Action Buttons -->
+    <div class="flex items-center space-x-2.5">
+      <!-- 1. Download PNG -->
+      <button
+        id="btnDownloadPng"
+        class="px-4 py-2 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 text-white text-xs font-extrabold rounded-xl shadow-lg transition-all flex items-center space-x-2 active:scale-95 cursor-pointer"
+        title="Download high-resolution PNG image directly to your computer"
+      >
+        <span>📥</span>
+        <span>Download Image (PNG)</span>
+      </button>
+
+      <!-- 2. Download SVG -->
+      <button
+        id="btnDownloadSvg"
+        class="px-4 py-2 bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-500 hover:to-sky-600 text-white text-xs font-extrabold rounded-xl shadow-lg transition-all flex items-center space-x-2 active:scale-95 cursor-pointer"
+        title="Download crisp vector SVG file"
+      >
+        <span>📐</span>
+        <span>Download Vector (SVG)</span>
+      </button>
+
+      <!-- 3. Print / Save PDF -->
+      <button
+        onclick="window.print()"
+        class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-xl border border-slate-700 shadow transition-all flex items-center space-x-2 active:scale-95 cursor-pointer"
+        title="Print or Save as PDF"
+      >
+        <span>🖨️</span>
+        <span>Print / Save PDF</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Notification Banner -->
+  <div class="no-print bg-cyan-950/40 border-b border-cyan-800/40 px-6 py-2.5 text-center text-xs text-cyan-300 font-medium">
+    💡 <strong>Client Presentation Mode:</strong> Click <strong>"Download Image (PNG)"</strong> above to instantly download this diagram to your computer for presentations, slides, and reports.
+  </div>
+
+  <!-- Main Diagram Viewer -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8 flex flex-col items-center">
+    <div class="diagram-container w-full rounded-2xl overflow-hidden border border-slate-800 shadow-2xl bg-[#090D16] p-2 sm:p-4">
+      <div id="svgWrapper" class="w-full flex justify-center">
+        <!-- Embedded High-Definition SVG -->
+        <object
+          id="svgObject"
+          data="/application_image_flow.svg"
+          type="image/svg+xml"
+          class="w-full h-auto max-w-full rounded-xl"
+          style="min-height: 800px;"
+        >
+          Your browser does not support SVG objects.
+        </object>
+      </div>
+    </div>
+  </main>
+
+  <!-- Hidden Canvas for PNG conversion -->
+  <canvas id="exportCanvas" class="hidden"></canvas>
+
+  <script>
+    // 1. Direct Download PNG Handler
+    document.getElementById('btnDownloadPng').addEventListener('click', async function() {
+      try {
+        const btn = document.getElementById('btnDownloadPng');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<span>⏳</span><span>Generating PNG...</span>';
+
+        // Fetch SVG content
+        const response = await fetch('/application_image_flow.svg');
+        const svgText = await response.text();
+
+        const canvas = document.getElementById('exportCanvas');
+        canvas.width = 1600;
+        canvas.height = 1200;
+        const ctx = canvas.getContext('2d');
+
+        const img = new Image();
+        const svgBlob = new Blob([svgText], { type: 'image/svg+xml;charset=utf-8' });
+        const URL = window.URL || window.webkitURL || window;
+        const blobURL = URL.createObjectURL(svgBlob);
+
+        img.onload = function() {
+          ctx.drawImage(img, 0, 0, 1600, 1200);
+          URL.revokeObjectURL(blobURL);
+
+          const pngUrl = canvas.toDataURL('image/png');
+          const downloadLink = document.createElement('a');
+          downloadLink.href = pngUrl;
+          downloadLink.download = 'Aarogya_Drishti_Application_Flow.png';
+          document.body.appendChild(downloadLink);
+          downloadLink.click();
+          document.body.removeChild(downloadLink);
+
+          btn.innerHTML = '<span>✅</span><span>PNG Downloaded!</span>';
+          setTimeout(() => { btn.innerHTML = originalText; }, 2500);
+        };
+
+        img.onerror = function() {
+          // Fallback to direct SVG download
+          window.location.href = '/application_image_flow.svg';
+          btn.innerHTML = originalText;
+        };
+
+        img.src = blobURL;
+      } catch (err) {
+        console.error('PNG export error:', err);
+        window.open('/application_image_flow.svg', '_blank');
+      }
+    });
+
+    // 2. Direct Download SVG Handler
+    document.getElementById('btnDownloadSvg').addEventListener('click', function() {
+      const a = document.createElement('a');
+      a.href = '/application_image_flow.svg';
+      a.download = 'Aarogya_Drishti_Application_Flow.svg';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,372 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1200" width="1600" height="1200" style="background:#0F172A;font-family:'Segoe UI',Roboto,-apple-system,BlinkMacSystemFont,sans-serif;">
+  <defs>
+    <!-- Gradients -->
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#090D16"/>
+      <stop offset="100%" stop-color="#0F172A"/>
+    </linearGradient>
+    <linearGradient id="headerGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#0284C7"/>
+      <stop offset="50%" stop-color="#088395"/>
+      <stop offset="100%" stop-color="#0A4D68"/>
+    </linearGradient>
+    <linearGradient id="cardGrad1" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1E293B"/>
+      <stop offset="100%" stop-color="#0F172A"/>
+    </linearGradient>
+    <linearGradient id="blueAccent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#38BDF8"/>
+      <stop offset="100%" stop-color="#0284C7"/>
+    </linearGradient>
+    <linearGradient id="purpleAccent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#C084FC"/>
+      <stop offset="100%" stop-color="#7C3AED"/>
+    </linearGradient>
+    <linearGradient id="amberAccent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#FBBF24"/>
+      <stop offset="100%" stop-color="#D97706"/>
+    </linearGradient>
+    <linearGradient id="greenAccent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#34D399"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+    <linearGradient id="roseAccent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#F472B6"/>
+      <stop offset="100%" stop-color="#DB2777"/>
+    </linearGradient>
+    <linearGradient id="cyanAccent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#67E8F9"/>
+      <stop offset="100%" stop-color="#088395"/>
+    </linearGradient>
+
+    <!-- Filters -->
+    <filter id="cardShadow" x="-10%" y="-10%" width="120%" height="125%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#000000" flood-opacity="0.6"/>
+    </filter>
+    <filter id="glowCyan" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+
+    <!-- Arrow Marker -->
+    <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#38BDF8"/>
+    </marker>
+    <marker id="arrowGreen" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#34D399"/>
+    </marker>
+    <marker id="arrowPurple" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#C084FC"/>
+    </marker>
+  </defs>
+
+  <!-- Background Canvas -->
+  <rect width="1600" height="1200" fill="url(#bgGrad)"/>
+  <circle cx="200" cy="200" r="300" fill="#0284C7" opacity="0.05" filter="blur(80px)"/>
+  <circle cx="1400" cy="900" r="350" fill="#7C3AED" opacity="0.06" filter="blur(90px)"/>
+
+  <!-- Top Executive Header Bar -->
+  <rect x="50" y="35" width="1500" height="110" rx="20" fill="#1E293B" stroke="#334155" stroke-width="1.5" filter="url(#cardShadow)"/>
+  <rect x="50" y="35" width="12" height="110" rx="4" fill="url(#headerGrad)"/>
+  
+  <text x="85" y="78" fill="#F8FAFC" font-size="28" font-weight="900" letter-spacing="1">AAROGYA DRISHTI — APPLICATION WORKFLOW &amp; IMAGE FLOW</text>
+  <text x="85" y="112" fill="#38BDF8" font-size="14" font-weight="700">Autonomous Multimodal AI Oral Cancer Triage, WebRTC Tele-Consultation &amp; 11 Mandals Care Grid</text>
+  
+  <g transform="translate(1180, 58)">
+    <rect width="340" height="42" rx="10" fill="#0F172A" stroke="#38BDF8" stroke-width="1"/>
+    <circle cx="22" cy="21" r="6" fill="#10B981"/>
+    <text x="38" y="26" fill="#E2E8F0" font-size="12" font-weight="700">ITDA Paderu • Alluri Sitharama Raju Dist</text>
+  </g>
+
+  <!-- ============================================================== -->
+  <!-- STAGE 1: CITIZEN INTAKE & IMAGE CAPTURE -->
+  <!-- ============================================================== -->
+  <g transform="translate(50, 180)">
+    <rect width="460" height="460" rx="24" fill="url(#cardGrad1)" stroke="#0284C7" stroke-width="2" filter="url(#cardShadow)"/>
+    
+    <!-- Header -->
+    <rect x="0" y="0" width="460" height="56" rx="24" fill="#0369A1" opacity="0.25"/>
+    <circle cx="36" cy="28" r="16" fill="#0284C7"/>
+    <text x="30" y="34" fill="#FFFFFF" font-size="15" font-weight="900">1</text>
+    <text x="64" y="35" fill="#38BDF8" font-size="15" font-weight="800">CITIZEN INTAKE &amp; IMAGE CAPTURE</text>
+    
+    <!-- Step Items -->
+    <!-- Item 1: Registration -->
+    <g transform="translate(24, 76)">
+      <rect width="412" height="74" rx="12" fill="#0F172A" stroke="#334155" stroke-width="1"/>
+      <circle cx="32" cy="37" r="18" fill="#1E293B"/>
+      <text x="24" y="43" fill="#38BDF8" font-size="18">👤</text>
+      <text x="62" y="32" fill="#F8FAFC" font-size="13" font-weight="800">Tribal Registration &amp; Golden Card</text>
+      <text x="62" y="52" fill="#94A3B8" font-size="11">Aadhaar (12D) / Phone OTP • Assigns UIDN-ASR-2026-GM046</text>
+    </g>
+
+    <!-- Item 2: Habit Profiler -->
+    <g transform="translate(24, 164)">
+      <rect width="412" height="74" rx="12" fill="#0F172A" stroke="#334155" stroke-width="1"/>
+      <circle cx="32" cy="37" r="18" fill="#1E293B"/>
+      <text x="24" y="43" fill="#F59E0B" font-size="18">⚠️</text>
+      <text x="62" y="32" fill="#F8FAFC" font-size="13" font-weight="800">Addiction &amp; Habit Profiler</text>
+      <text x="62" y="52" fill="#94A3B8" font-size="11">Adda Poga (Reverse Smoking), Khaini, Chewable Gutkha</text>
+    </g>
+
+    <!-- Item 3: Reticle Camera -->
+    <g transform="translate(24, 252)">
+      <rect width="412" height="88" rx="12" fill="#0F172A" stroke="#0284C7" stroke-width="1.5"/>
+      <circle cx="32" cy="44" r="18" fill="#0369A1"/>
+      <text x="24" y="50" fill="#FFFFFF" font-size="18">📷</text>
+      <text x="62" y="36" fill="#38BDF8" font-size="13" font-weight="800">Intra-Oral Camera / Photo Upload</text>
+      <text x="62" y="56" fill="#E2E8F0" font-size="11">Guided clinical targeting reticle: Right buccal mucosa, palate,</text>
+      <text x="62" y="72" fill="#94A3B8" font-size="11">tongue, and gingiva. Normalizes lighting &amp; focal distance.</text>
+    </g>
+
+    <!-- Badge -->
+    <rect x="24" y="356" width="412" height="38" rx="10" fill="#0284C7" opacity="0.15"/>
+    <text x="38" y="380" fill="#38BDF8" font-size="11" font-weight="700">OUTPUT: High-Resolution Base64 Encoded Intra-Oral Image Stream</text>
+  </g>
+
+  <!-- Arrow 1 -> 2 -->
+  <path d="M 510 410 L 565 410" stroke="#38BDF8" stroke-width="3" stroke-dasharray="6,4" marker-end="url(#arrow)"/>
+
+  <!-- ============================================================== -->
+  <!-- STAGE 2: MULTIMODAL GEMINI AI VISION TRIAGE -->
+  <!-- ============================================================== -->
+  <g transform="translate(570, 180)">
+    <rect width="460" height="460" rx="24" fill="url(#cardGrad1)" stroke="#7C3AED" stroke-width="2" filter="url(#cardShadow)"/>
+    
+    <!-- Header -->
+    <rect x="0" y="0" width="460" height="56" rx="24" fill="#6D28D9" opacity="0.25"/>
+    <circle cx="36" cy="28" r="16" fill="#7C3AED"/>
+    <text x="30" y="34" fill="#FFFFFF" font-size="15" font-weight="900">2</text>
+    <text x="64" y="35" fill="#C084FC" font-size="15" font-weight="800">MULTIMODAL GEMINI AI VISION TRIAGE</text>
+    
+    <!-- Item 1: Vision Model Inference -->
+    <g transform="translate(24, 76)">
+      <rect width="412" height="74" rx="12" fill="#0F172A" stroke="#334155" stroke-width="1"/>
+      <circle cx="32" cy="37" r="18" fill="#1E293B"/>
+      <text x="24" y="43" fill="#C084FC" font-size="18">🧠</text>
+      <text x="62" y="32" fill="#F8FAFC" font-size="13" font-weight="800">Multimodal Neural Vision Model</text>
+      <text x="62" y="52" fill="#94A3B8" font-size="11">Detects margins, keratosis, induration, and ulcer depth</text>
+    </g>
+
+    <!-- Item 2: Lesion Classification -->
+    <g transform="translate(24, 164)">
+      <rect width="412" height="88" rx="12" fill="#0F172A" stroke="#7C3AED" stroke-width="1.5"/>
+      <circle cx="32" cy="44" r="18" fill="#5B21B6"/>
+      <text x="24" y="50" fill="#FFFFFF" font-size="18">🎯</text>
+      <text x="62" y="34" fill="#C084FC" font-size="13" font-weight="800">Oral Leukoplakia Detected (92.4% Conf)</text>
+      <text x="62" y="54" fill="#E2E8F0" font-size="11">Non-scrapable white patch in right buccal pouch.</text>
+      <text x="62" y="70" fill="#A78BFA" font-size="11">Classification: Leukoplakia • Erythroplakia • OSMF • Ulcer</text>
+    </g>
+
+    <!-- Item 3: Biomarkers & Biopsy Trigger -->
+    <g transform="translate(24, 266)">
+      <rect width="412" height="74" rx="12" fill="#0F172A" stroke="#334155" stroke-width="1"/>
+      <circle cx="32" cy="37" r="18" fill="#1E293B"/>
+      <text x="24" y="43" fill="#EF4444" font-size="18">🧬</text>
+      <text x="62" y="32" fill="#F8FAFC" font-size="13" font-weight="800">Biomarker Risk &amp; 4mm Biopsy Trigger</text>
+      <text x="62" y="52" fill="#F87171" font-size="11">p53 overexpression • Ki-67 high • 4mm Punch Biopsy Mandated</text>
+    </g>
+
+    <!-- Badge -->
+    <rect x="24" y="356" width="412" height="38" rx="10" fill="#7C3AED" opacity="0.15"/>
+    <text x="38" y="380" fill="#C084FC" font-size="11" font-weight="700">OUTPUT: Structured Onco-Triage JSON + Histopathology Flag</text>
+  </g>
+
+  <!-- Arrow 2 -> 3 -->
+  <path d="M 1030 410 L 1085 410" stroke="#C084FC" stroke-width="3" stroke-dasharray="6,4" marker-end="url(#arrowPurple)"/>
+
+  <!-- ============================================================== -->
+  <!-- STAGE 3: SPECIALIST DOCTOR TELE-TRIAGE & BOOKING -->
+  <!-- ============================================================== -->
+  <g transform="translate(1090, 180)">
+    <rect width="460" height="460" rx="24" fill="url(#cardGrad1)" stroke="#D97706" stroke-width="2" filter="url(#cardShadow)"/>
+    
+    <!-- Header -->
+    <rect x="0" y="0" width="460" height="56" rx="24" fill="#B45309" opacity="0.25"/>
+    <circle cx="36" cy="28" r="16" fill="#D97706"/>
+    <text x="30" y="34" fill="#FFFFFF" font-size="15" font-weight="900">3</text>
+    <text x="64" y="35" fill="#FBBF24" font-size="15" font-weight="800">DOCTOR TELE-TRIAGE &amp; SLOT BOOKING</text>
+    
+    <!-- Item 1: Booking -->
+    <g transform="translate(24, 76)">
+      <rect width="412" height="74" rx="12" fill="#0F172A" stroke="#334155" stroke-width="1"/>
+      <circle cx="32" cy="37" r="18" fill="#1E293B"/>
+      <text x="24" y="43" fill="#FBBF24" font-size="18">📅</text>
+      <text x="62" y="32" fill="#F8FAFC" font-size="13" font-weight="800">Patient Selects Doctor &amp; Mandal Slot</text>
+      <text x="62" y="52" fill="#94A3B8" font-size="11">General Consultation vs Biopsy Procedure • 11 Mandals Centers</text>
+    </g>
+
+    <!-- Item 2: Doctor Availability Engine -->
+    <g transform="translate(24, 164)">
+      <rect width="412" height="74" rx="12" fill="#0F172A" stroke="#334155" stroke-width="1"/>
+      <circle cx="32" cy="37" r="18" fill="#1E293B"/>
+      <text x="24" y="43" fill="#10B981" font-size="18">⏰</text>
+      <text x="62" y="32" fill="#F8FAFC" font-size="13" font-weight="800">Doctor Real-Time Availability Slots</text>
+      <text x="62" y="52" fill="#94A3B8" font-size="11">Dr. Swapna Devi / Dr. Anil Kumar configure morning/afternoon slots</text>
+    </g>
+
+    <!-- Item 3: Approval Status -->
+    <g transform="translate(24, 252)">
+      <rect width="412" height="88" rx="12" fill="#0F172A" stroke="#D97706" stroke-width="1.5"/>
+      <circle cx="32" cy="44" r="18" fill="#78350F"/>
+      <text x="24" y="50" fill="#FBBF24" font-size="18">✅</text>
+      <text x="62" y="36" fill="#FBBF24" font-size="13" font-weight="800">Live Status Action Cards</text>
+      <text x="62" y="54" fill="#34D399" font-size="11" font-weight="700">• GREEN: APPROVED (Saturday 10:30 AM at PHC G. Madugula)</text>
+      <text x="62" y="70" fill="#94A3B8" font-size="11">• AMBER: PENDING Review • RED: REJECTED</text>
+    </g>
+
+    <!-- Badge -->
+    <rect x="24" y="356" width="412" height="38" rx="10" fill="#D97706" opacity="0.15"/>
+    <text x="38" y="380" fill="#FBBF24" font-size="11" font-weight="700">OUTPUT: Instant Real-Time Push Notification &amp; WebRTC Room ID</text>
+  </g>
+
+  <!-- Downward Arrow 3 -> 4 -->
+  <path d="M 1320 640 L 1320 700 L 980 700" stroke="#FBBF24" stroke-width="3" stroke-dasharray="6,4" marker-end="url(#arrow)"/>
+
+  <!-- ============================================================== -->
+  <!-- STAGE 4: ENCRYPTED WebRTC TELEMEDICINE & e-PRESCRIPTION -->
+  <!-- ============================================================== -->
+  <g transform="translate(50, 680)">
+    <rect width="460" height="460" rx="24" fill="url(#cardGrad1)" stroke="#059669" stroke-width="2" filter="url(#cardShadow)"/>
+    
+    <!-- Header -->
+    <rect x="0" y="0" width="460" height="56" rx="24" fill="#047857" opacity="0.25"/>
+    <circle cx="36" cy="28" r="16" fill="#059669"/>
+    <text x="30" y="34" fill="#FFFFFF" font-size="15" font-weight="900">4</text>
+    <text x="64" y="35" fill="#34D399" font-size="15" font-weight="800">WebRTC TELEMEDICINE &amp; e-PRESCRIPTION</text>
+    
+    <!-- Item 1: Live WebRTC Room -->
+    <g transform="translate(24, 76)">
+      <rect width="412" height="74" rx="12" fill="#0F172A" stroke="#059669" stroke-width="1.5"/>
+      <circle cx="32" cy="37" r="18" fill="#065F46"/>
+      <text x="24" y="43" fill="#34D399" font-size="18">📹</text>
+      <text x="62" y="32" fill="#34D399" font-size="13" font-weight="800">Encrypted P2P WebRTC Video Room</text>
+      <text x="62" y="52" fill="#E2E8F0" font-size="11">Peer-to-peer audio &amp; video • Low-latency Socket.io signaling</text>
+    </g>
+
+    <!-- Item 2: Side by Side Exam -->
+    <g transform="translate(24, 164)">
+      <rect width="412" height="74" rx="12" fill="#0F172A" stroke="#334155" stroke-width="1"/>
+      <circle cx="32" cy="37" r="18" fill="#1E293B"/>
+      <text x="24" y="43" fill="#38BDF8" font-size="18">🩺</text>
+      <text x="62" y="32" fill="#F8FAFC" font-size="13" font-weight="800">Side-by-Side Clinical Examination</text>
+      <text x="62" y="52" fill="#94A3B8" font-size="11">Live patient feed + AI scan records + Send Rx from History</text>
+    </g>
+
+    <!-- Item 3: Rx & 4mm Biopsy -->
+    <g transform="translate(24, 252)">
+      <rect width="412" height="88" rx="12" fill="#0F172A" stroke="#334155" stroke-width="1"/>
+      <circle cx="32" cy="44" r="18" fill="#1E293B"/>
+      <text x="24" y="50" fill="#F43F5E" font-size="18">📝</text>
+      <text x="62" y="36" fill="#F8FAFC" font-size="13" font-weight="800">Doctor e-Prescription &amp; 4mm Biopsy Slip</text>
+      <text x="62" y="54" fill="#94A3B8" font-size="11">Kenacort Paste, Lycopene Antioxidants, Chlorhexidine rinse.</text>
+      <text x="62" y="70" fill="#34D399" font-size="11" font-weight="700">Official Barcode: BAR-ASR-2026-GM046 • PDF Slip Generation</text>
+    </g>
+
+    <!-- Badge -->
+    <rect x="24" y="356" width="412" height="38" rx="10" fill="#059669" opacity="0.15"/>
+    <text x="38" y="380" fill="#34D399" font-size="11" font-weight="700">OUTPUT: Digitally Signed e-Prescription with Verified QR Code</text>
+  </g>
+
+  <!-- Arrow 4 -> 5 -->
+  <path d="M 510 910 L 565 910" stroke="#34D399" stroke-width="3" stroke-dasharray="6,4" marker-end="url(#arrowGreen)"/>
+
+  <!-- ============================================================== -->
+  <!-- STAGE 5: 11 MANDALS NETWORK & CARE CONTINUUM -->
+  <!-- ============================================================== -->
+  <g transform="translate(570, 680)">
+    <rect width="460" height="460" rx="24" fill="url(#cardGrad1)" stroke="#088395" stroke-width="2" filter="url(#cardShadow)"/>
+    
+    <!-- Header -->
+    <rect x="0" y="0" width="460" height="56" rx="24" fill="#088395" opacity="0.25"/>
+    <circle cx="36" cy="28" r="16" fill="#088395"/>
+    <text x="30" y="34" fill="#FFFFFF" font-size="15" font-weight="900">5</text>
+    <text x="64" y="35" fill="#67E8F9" font-size="15" font-weight="800">11 MANDALS NETWORK &amp; BIOPSY TRACKING</text>
+    
+    <!-- Item 1: 11 Mandals Hubs -->
+    <g transform="translate(24, 76)">
+      <rect width="412" height="74" rx="12" fill="#0F172A" stroke="#334155" stroke-width="1"/>
+      <circle cx="32" cy="37" r="18" fill="#1E293B"/>
+      <text x="24" y="43" fill="#67E8F9" font-size="18">🏥</text>
+      <text x="62" y="32" fill="#F8FAFC" font-size="13" font-weight="800">District Oncology Hub &amp; CHC Network</text>
+      <text x="62" y="52" fill="#94A3B8" font-size="11">AH Paderu / GGH Hub • CHC Araku • CHC G. Madugula • CHC Chintapalli</text>
+    </g>
+
+    <!-- Item 2: 4-Step Continuum -->
+    <g transform="translate(24, 164)">
+      <rect width="412" height="88" rx="12" fill="#0F172A" stroke="#088395" stroke-width="1.5"/>
+      <circle cx="32" cy="44" r="18" fill="#0A4D68"/>
+      <text x="24" y="50" fill="#67E8F9" font-size="18">🔄</text>
+      <text x="62" y="36" fill="#67E8F9" font-size="13" font-weight="800">4-Step Onco-Care Treatment Journey</text>
+      <text x="62" y="54" fill="#E2E8F0" font-size="11">1️⃣ Screening Triage → 2️⃣ Medical Rx Dispensed</text>
+      <text x="62" y="70" fill="#38BDF8" font-size="11" font-weight="700">→ 3️⃣ Biopsy Scheduled → 4️⃣ Histopathology Review</text>
+    </g>
+
+    <!-- Item 3: Emergency 108/104 -->
+    <g transform="translate(24, 266)">
+      <rect width="412" height="74" rx="12" fill="#0F172A" stroke="#334155" stroke-width="1"/>
+      <circle cx="32" cy="37" r="18" fill="#1E293B"/>
+      <text x="24" y="43" fill="#EF4444" font-size="18">🚑</text>
+      <text x="62" y="32" fill="#F8FAFC" font-size="13" font-weight="800">Tribal Emergency SOS (108 / 104)</text>
+      <text x="62" y="52" fill="#94A3B8" font-size="11">108 4WD Tribal Ambulance dispatch &amp; 104 Medical tele-advice</text>
+    </g>
+
+    <!-- Badge -->
+    <rect x="24" y="356" width="412" height="38" rx="10" fill="#088395" opacity="0.15"/>
+    <text x="38" y="380" fill="#67E8F9" font-size="11" font-weight="700">OUTPUT: Closed-Loop Referral &amp; Early Biopsy Intervention</text>
+  </g>
+
+  <!-- Arrow 5 -> 6 -->
+  <path d="M 1030 910 L 1085 910" stroke="#67E8F9" stroke-width="3" stroke-dasharray="6,4" marker-end="url(#arrow)"/>
+
+  <!-- ============================================================== -->
+  <!-- STAGE 6: AI AAROHI BOT (RIGHT CORNER ROBOT ASSISTANT) -->
+  <!-- ============================================================== -->
+  <g transform="translate(1090, 680)">
+    <rect width="460" height="460" rx="24" fill="url(#cardGrad1)" stroke="#DB2777" stroke-width="2" filter="url(#cardShadow)"/>
+    
+    <!-- Header -->
+    <rect x="0" y="0" width="460" height="56" rx="24" fill="#BE185D" opacity="0.25"/>
+    <circle cx="36" cy="28" r="16" fill="#DB2777"/>
+    <text x="30" y="34" fill="#FFFFFF" font-size="15" font-weight="900">6</text>
+    <text x="64" y="35" fill="#F472B6" font-size="15" font-weight="800">AI AAROHI BOT (RIGHT CORNER)</text>
+    
+    <!-- Item 1: Two-Way Communication -->
+    <g transform="translate(24, 76)">
+      <rect width="412" height="74" rx="12" fill="#0F172A" stroke="#334155" stroke-width="1"/>
+      <circle cx="32" cy="37" r="18" fill="#1E293B"/>
+      <text x="24" y="43" fill="#F472B6" font-size="18">🎙️</text>
+      <text x="62" y="32" fill="#F8FAFC" font-size="13" font-weight="800">Two-Way Voice (Mic STT) &amp; Text Input</text>
+      <text x="62" y="52" fill="#94A3B8" font-size="11">Speech-to-Text in Telugu (te-IN), Hindi (hi-IN), English (en-IN)</text>
+    </g>
+
+    <!-- Item 2: Bhashini Neural TTS Engine -->
+    <g transform="translate(24, 164)">
+      <rect width="412" height="88" rx="12" fill="#0F172A" stroke="#DB2777" stroke-width="1.5"/>
+      <circle cx="32" cy="44" r="18" fill="#831843"/>
+      <text x="24" y="50" fill="#F472B6" font-size="18">🔊</text>
+      <text x="62" y="36" fill="#F472B6" font-size="13" font-weight="800">Bhashini Neural TTS &amp; Web Speech</text>
+      <text x="62" y="54" fill="#E2E8F0" font-size="11">Native Indian voice audio stream + Web Speech API fallback.</text>
+      <text x="62" y="70" fill="#F43F5E" font-size="11" font-weight="700">Dedicated Stop Voice (⏹️) button &amp; animated audio waves</text>
+    </g>
+
+    <!-- Item 3: Inspector & Wind-Wheel -->
+    <g transform="translate(24, 266)">
+      <rect width="412" height="74" rx="12" fill="#0F172A" stroke="#334155" stroke-width="1"/>
+      <circle cx="32" cy="37" r="18" fill="#1E293B"/>
+      <text x="24" y="43" fill="#FBBF24" font-size="18">🤸‍♀️</text>
+      <text x="62" y="32" fill="#F8FAFC" font-size="13" font-weight="800">Point &amp; Explain UI Inspector + Wind-Wheel</text>
+      <text x="62" y="52" fill="#94A3B8" font-size="11">Interactive element inspection + 360° gymnastic cartwheel flip</text>
+    </g>
+
+    <!-- Badge -->
+    <rect x="24" y="356" width="412" height="38" rx="10" fill="#DB2777" opacity="0.15"/>
+    <text x="38" y="380" fill="#F472B6" font-size="11" font-weight="700">OUTPUT: 24/7 Trilingual Autonomous Patient Navigator</text>
+  </g>
+
+  <!-- Bottom Legend Bar -->
+  <g transform="translate(50, 1155)">
+    <text x="0" y="22" fill="#64748B" font-size="12" font-weight="600">AAROGYA DRISHTI ARCHITECTURE v2.4 • ABDM &amp; HIPAA-GRADE DATA ISOLATION • ICMR &amp; WHO CLINICAL PROTOCOL COMPLIANT</text>
+    <text x="1300" y="22" fill="#38BDF8" font-size="12" font-weight="700">ITDA PADERU AGENCY</text>
+  </g>
+</svg>
