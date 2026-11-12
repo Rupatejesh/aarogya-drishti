@@ -97,9 +97,9 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="bg-[#FAF9F5] p-1 rounded-2xl border border-amber-200 flex items-center space-x-1 shadow-inner text-xs">
             <button
               onClick={() => onRoleChange('patient')}
-              className={`px-3 py-1.5 rounded-xl font-bold transition-all flex items-center space-x-1.5 ${
+              className={`px-3 py-1.5 rounded-xl font-bold transition-all duration-200 hover:-translate-y-0.5 active:scale-95 flex items-center space-x-1.5 ${
                 currentRole === 'patient'
-                  ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-sm'
+                  ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-sm ring-1 ring-amber-400'
                   : 'text-slate-600 hover:text-amber-900 hover:bg-amber-50'
               }`}
             >
@@ -109,9 +109,9 @@ export const Header: React.FC<HeaderProps> = ({
 
             <button
               onClick={() => onRoleChange('doctor')}
-              className={`px-3 py-1.5 rounded-xl font-bold transition-all flex items-center space-x-1.5 ${
+              className={`px-3 py-1.5 rounded-xl font-bold transition-all duration-200 hover:-translate-y-0.5 active:scale-95 flex items-center space-x-1.5 ${
                 currentRole === 'doctor'
-                  ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-sm'
+                  ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-sm ring-1 ring-amber-400'
                   : 'text-slate-600 hover:text-amber-900 hover:bg-amber-50'
               }`}
             >
@@ -121,9 +121,9 @@ export const Header: React.FC<HeaderProps> = ({
 
             <button
               onClick={() => onRoleChange('admin')}
-              className={`px-3 py-1.5 rounded-xl font-bold transition-all flex items-center space-x-1.5 ${
+              className={`px-3 py-1.5 rounded-xl font-bold transition-all duration-200 hover:-translate-y-0.5 active:scale-95 flex items-center space-x-1.5 ${
                 currentRole === 'admin'
-                  ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-sm'
+                  ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-sm ring-1 ring-amber-400'
                   : 'text-slate-600 hover:text-amber-900 hover:bg-amber-50'
               }`}
             >
@@ -136,24 +136,24 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="flex items-center space-x-1 bg-[#FAF9F5] border border-amber-200 rounded-xl p-1 text-[11px] font-bold">
             <button
               onClick={() => onLanguageChange('en')}
-              className={`px-2 py-1 rounded-lg transition-all ${
-                lang === 'en' ? 'bg-amber-500 text-white' : 'text-slate-600 hover:bg-amber-50'
+              className={`px-2 py-1 rounded-lg transition-all duration-200 hover:-translate-y-0.5 active:scale-95 ${
+                lang === 'en' ? 'bg-amber-500 text-white shadow-sm' : 'text-slate-600 hover:bg-amber-50'
               }`}
             >
               EN
             </button>
             <button
               onClick={() => onLanguageChange('te')}
-              className={`px-2 py-1 rounded-lg transition-all ${
-                lang === 'te' ? 'bg-amber-500 text-white font-telugu' : 'text-slate-600 hover:bg-amber-50'
+              className={`px-2 py-1 rounded-lg transition-all duration-200 hover:-translate-y-0.5 active:scale-95 ${
+                lang === 'te' ? 'bg-amber-500 text-white font-telugu shadow-sm' : 'text-slate-600 hover:bg-amber-50'
               }`}
             >
               తెలుగు
             </button>
             <button
               onClick={() => onLanguageChange('hi')}
-              className={`px-2 py-1 rounded-lg transition-all ${
-                lang === 'hi' ? 'bg-amber-500 text-white font-devanagari' : 'text-slate-600 hover:bg-amber-50'
+              className={`px-2 py-1 rounded-lg transition-all duration-200 hover:-translate-y-0.5 active:scale-95 ${
+                lang === 'hi' ? 'bg-amber-500 text-white font-devanagari shadow-sm' : 'text-slate-600 hover:bg-amber-50'
               }`}
             >
               हिंदी
@@ -163,7 +163,7 @@ export const Header: React.FC<HeaderProps> = ({
           {/* AI Arogya Floating Drawer Launcher */}
           <button
             onClick={onOpenAiArogya}
-            className="px-4 py-2 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 text-white font-extrabold text-xs shadow-gold-glow hover:brightness-110 active:scale-95 transition-all flex items-center space-x-2 border border-amber-300"
+            className="px-4 py-2 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 text-white font-extrabold text-xs shadow-gold-glow hover:brightness-110 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-amber-500/30 active:scale-95 transition-all duration-200 flex items-center space-x-2 border border-amber-300 animate-pulse"
           >
             <Sparkles className="w-4 h-4 text-amber-200 animate-spin" style={{ animationDuration: '6s' }} />
             <span>{t.aiArogyaLauncher}</span>

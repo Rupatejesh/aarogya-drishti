@@ -159,7 +159,7 @@ export const DoctorPortal: React.FC<DoctorPortalProps> = ({
         <div className="flex items-center space-x-3">
           <button
             onClick={() => setIsForgotModalOpen(true)}
-            className="px-3.5 py-2 bg-white/10 hover:bg-white/20 text-amber-200 rounded-xl text-xs font-semibold transition-colors flex items-center space-x-1.5"
+            className="px-3.5 py-2 bg-white/10 hover:bg-white/20 text-amber-200 rounded-xl text-xs font-semibold transition-all duration-200 hover:-translate-y-0.5 active:scale-95 flex items-center space-x-1.5"
           >
             <KeyRound className="w-3.5 h-3.5" />
             <span>Reset Password</span>
@@ -167,7 +167,7 @@ export const DoctorPortal: React.FC<DoctorPortalProps> = ({
 
           <button
             onClick={loadDoctorData}
-            className="px-3.5 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-xl text-xs font-bold transition-colors flex items-center space-x-1.5 shadow-sm"
+            className="px-3.5 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-xl text-xs font-bold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:shadow-amber-500/30 active:scale-95 flex items-center space-x-1.5 shadow-sm"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             <span>Refresh Queue</span>
@@ -241,15 +241,15 @@ export const DoctorPortal: React.FC<DoctorPortalProps> = ({
               <div className="flex items-center space-x-2">
                 <button
                   onClick={() => handleUpdateStatus(appt.appointmentId, 'APPROVED')}
-                  className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition-all shadow-sm flex items-center space-x-1"
+                  className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-700 hover:brightness-110 text-white rounded-xl text-xs font-extrabold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-emerald-500/30 active:scale-95 flex items-center space-x-1.5 shadow-sm"
                 >
                   <CheckCircle className="w-3.5 h-3.5" />
-                  <span>Approve</span>
+                  <span>Approve Appointment Slot</span>
                 </button>
 
                 <button
                   onClick={() => handleUpdateStatus(appt.appointmentId, 'REJECTED')}
-                  className="px-3.5 py-1.5 bg-red-600 hover:bg-red-500 text-white rounded-xl text-xs font-bold transition-all shadow-sm flex items-center space-x-1"
+                  className="px-3.5 py-2 bg-red-600 hover:bg-red-500 text-white rounded-xl text-xs font-bold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:shadow-red-500/30 active:scale-95 flex items-center space-x-1 shadow-sm"
                 >
                   <XCircle className="w-3.5 h-3.5" />
                   <span>Reject</span>
@@ -290,7 +290,7 @@ export const DoctorPortal: React.FC<DoctorPortalProps> = ({
               <div className="pt-2 border-t border-amber-200 flex gap-2">
                 <button
                   onClick={() => onLaunchTelemedicine(pat, activeDoctor)}
-                  className="flex-1 py-2 bg-gradient-to-r from-emerald-600 to-teal-700 hover:brightness-105 text-white font-bold text-xs rounded-xl flex items-center justify-center space-x-1.5 shadow-sm"
+                  className="flex-1 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-700 hover:brightness-110 text-white font-extrabold text-xs rounded-xl flex items-center justify-center space-x-1.5 shadow-sm hover:-translate-y-0.5 hover:shadow-lg hover:shadow-emerald-500/30 active:scale-95 transition-all duration-200"
                 >
                   <Video className="w-3.5 h-3.5" />
                   <span>Call WebRTC</span>
@@ -298,7 +298,7 @@ export const DoctorPortal: React.FC<DoctorPortalProps> = ({
 
                 <button
                   onClick={() => onViewPrescription(null, pat)}
-                  className="px-3 py-2 bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold text-xs rounded-xl flex items-center justify-center space-x-1"
+                  className="px-3 py-2 bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold text-xs rounded-xl flex items-center justify-center space-x-1 hover:-translate-y-0.5 active:scale-95 transition-all duration-200 shadow-sm"
                   title="View Rx Slip"
                 >
                   <FileText className="w-3.5 h-3.5" />

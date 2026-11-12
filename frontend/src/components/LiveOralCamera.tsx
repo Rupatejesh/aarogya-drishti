@@ -337,7 +337,7 @@ export const LiveOralCamera: React.FC<LiveOralCameraProps> = ({
               <button
                 onClick={handleCapture}
                 disabled={!cameraActive}
-                className="w-full sm:w-auto flex-1 px-6 py-3 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 text-white font-bold text-xs shadow-gold-glow hover:brightness-110 active:scale-95 transition-all flex items-center justify-center space-x-2"
+                className="w-full sm:w-auto flex-1 px-6 py-3 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 text-white font-extrabold text-xs shadow-gold-glow hover:brightness-110 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-amber-500/30 active:scale-95 transition-all duration-200 flex items-center justify-center space-x-2"
               >
                 <Camera className="w-4 h-4" />
                 <span>{t.freezeCapture}</span>
@@ -347,7 +347,7 @@ export const LiveOralCamera: React.FC<LiveOralCameraProps> = ({
             {capturedImage && (
               <button
                 onClick={handleRetake}
-                className="px-4 py-2.5 rounded-xl border border-slate-300 hover:bg-slate-100 text-slate-700 font-bold text-xs flex items-center space-x-1.5 transition-all"
+                className="px-4 py-2.5 rounded-xl border border-slate-300 hover:bg-slate-100 text-slate-700 font-bold text-xs flex items-center space-x-1.5 hover:-translate-y-0.5 active:scale-95 transition-all duration-200 shadow-sm"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
                 <span>{t.retake}</span>
@@ -357,14 +357,14 @@ export const LiveOralCamera: React.FC<LiveOralCameraProps> = ({
             <button
               onClick={handleRunAiAnalysis}
               disabled={!capturedImage || loading}
-              className={`w-full sm:w-auto flex-1 px-6 py-3 rounded-2xl font-bold text-xs transition-all flex items-center justify-center space-x-2 ${
+              className={`w-full sm:w-auto flex-1 px-6 py-3 rounded-2xl font-extrabold text-xs transition-all duration-200 flex items-center justify-center space-x-2 ${
                 capturedImage && !loading
-                  ? 'bg-gradient-to-r from-emerald-600 to-teal-700 text-white shadow-lg hover:shadow-emerald-500/25 active:scale-95'
+                  ? 'bg-gradient-to-r from-emerald-600 via-emerald-700 to-teal-800 text-white shadow-lg hover:shadow-xl hover:shadow-emerald-500/40 hover:-translate-y-0.5 active:scale-95 animate-pulse'
                   : 'bg-slate-200 text-slate-400 cursor-not-allowed'
               }`}
             >
               <Sparkles className="w-4 h-4" />
-              <span>{loading ? t.analyzingWithGemini : t.analyzeWithAi}</span>
+              <span>{loading ? t.analyzingWithGemini : 'Run AI Disease Prediction'}</span>
             </button>
           </div>
         </div>

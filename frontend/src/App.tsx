@@ -188,6 +188,138 @@ export default function App() {
     });
   };
 
+  // Sleek Guided Demo Flow Indicator for Effortless Hackathon Presentation
+  const renderDemoFlowBar = () => (
+    <div className="bg-gradient-to-r from-amber-500/10 via-white to-emerald-500/10 border-2 border-amber-300/80 rounded-3xl p-4 sm:p-5 shadow-luxury">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-3 px-1">
+        <div className="flex items-center space-x-2">
+          <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse" />
+          <span className="text-xs font-black tracking-wider uppercase text-amber-950 font-serif-royal">
+            Presentation Demo Flow (4-Stage Guided Architecture)
+          </span>
+        </div>
+        <span className="text-[11px] font-bold text-slate-500 hidden sm:inline">
+          Click any stage to transition directly for evaluator demonstrations
+        </span>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        {/* Stage 1: Patient Registration & Card */}
+        <button
+          onClick={() => {
+            setRole('patient');
+            setTimeout(() => {
+              const el = document.getElementById('patient-health-card-section');
+              if (el) el.scrollIntoView({ behavior: 'smooth' });
+            }, 60);
+          }}
+          className={`p-3.5 rounded-2xl border text-left transition-all duration-200 hover:-translate-y-0.5 active:scale-95 flex items-center justify-between ${
+            role === 'patient' && !isCameraModalOpen
+              ? 'bg-gradient-to-br from-amber-500 to-amber-600 text-white border-amber-600 shadow-md shadow-amber-500/30'
+              : 'bg-white hover:bg-amber-50 text-slate-800 border-amber-200'
+          }`}
+        >
+          <div className="flex items-center space-x-3">
+            <span className={`w-7 h-7 rounded-xl flex items-center justify-center text-xs font-black ${
+              role === 'patient' && !isCameraModalOpen ? 'bg-white text-amber-900 shadow-sm' : 'bg-amber-100 text-amber-900'
+            }`}>
+              1
+            </span>
+            <div>
+              <div className="text-xs font-black">Patient Registration & Card</div>
+              <div className={`text-[10px] ${role === 'patient' && !isCameraModalOpen ? 'text-amber-100 font-medium' : 'text-slate-500'}`}>
+                Somanna • Golden Card
+              </div>
+            </div>
+          </div>
+          <ChevronRight className="w-4 h-4 opacity-70" />
+        </button>
+
+        {/* Stage 2: Oral Photo & AI Triage */}
+        <button
+          onClick={() => {
+            setRole('patient');
+            setIsCameraModalOpen(true);
+          }}
+          className={`p-3.5 rounded-2xl border text-left transition-all duration-200 hover:-translate-y-0.5 active:scale-95 flex items-center justify-between ${
+            isCameraModalOpen
+              ? 'bg-gradient-to-br from-amber-500 to-amber-600 text-white border-amber-600 shadow-md shadow-amber-500/30'
+              : 'bg-white hover:bg-amber-50 text-slate-800 border-amber-200'
+          }`}
+        >
+          <div className="flex items-center space-x-3">
+            <span className={`w-7 h-7 rounded-xl flex items-center justify-center text-xs font-black ${
+              isCameraModalOpen ? 'bg-white text-amber-900 shadow-sm' : 'bg-amber-100 text-amber-900'
+            }`}>
+              2
+            </span>
+            <div>
+              <div className="text-xs font-black">Oral Photo & AI Triage</div>
+              <div className={`text-[10px] ${isCameraModalOpen ? 'text-amber-100 font-medium' : 'text-slate-500'}`}>
+                Live Reticle • 92.4% Leukoplakia
+              </div>
+            </div>
+          </div>
+          <Sparkles className="w-4 h-4 text-amber-500" />
+        </button>
+
+        {/* Stage 3: Doctor Review & WebRTC */}
+        <button
+          onClick={() => {
+            setRole('doctor');
+          }}
+          className={`p-3.5 rounded-2xl border text-left transition-all duration-200 hover:-translate-y-0.5 active:scale-95 flex items-center justify-between ${
+            role === 'doctor'
+              ? 'bg-gradient-to-br from-emerald-600 to-teal-700 text-white border-emerald-700 shadow-md shadow-emerald-500/30'
+              : 'bg-white hover:bg-emerald-50 text-slate-800 border-amber-200'
+          }`}
+        >
+          <div className="flex items-center space-x-3">
+            <span className={`w-7 h-7 rounded-xl flex items-center justify-center text-xs font-black ${
+              role === 'doctor' ? 'bg-white text-emerald-900 shadow-sm' : 'bg-emerald-100 text-emerald-900'
+            }`}>
+              3
+            </span>
+            <div>
+              <div className="text-xs font-black">Doctor Review & WebRTC</div>
+              <div className={`text-[10px] ${role === 'doctor' ? 'text-emerald-100 font-medium' : 'text-slate-500'}`}>
+                Dr. Swapna • Queue & Tele-Call
+              </div>
+            </div>
+          </div>
+          <Video className="w-4 h-4 opacity-70" />
+        </button>
+
+        {/* Stage 4: Biopsy Slip & 11 Mandals Admin */}
+        <button
+          onClick={() => {
+            setRole('admin');
+          }}
+          className={`p-3.5 rounded-2xl border text-left transition-all duration-200 hover:-translate-y-0.5 active:scale-95 flex items-center justify-between ${
+            role === 'admin'
+              ? 'bg-slate-900 text-white border-slate-950 shadow-md'
+              : 'bg-white hover:bg-slate-100 text-slate-800 border-amber-200'
+          }`}
+        >
+          <div className="flex items-center space-x-3">
+            <span className={`w-7 h-7 rounded-xl flex items-center justify-center text-xs font-black ${
+              role === 'admin' ? 'bg-amber-400 text-slate-950 shadow-sm' : 'bg-slate-200 text-slate-800'
+            }`}>
+              4
+            </span>
+            <div>
+              <div className="text-xs font-black">Biopsy Slip & 11 Mandals</div>
+              <div className={`text-[10px] ${role === 'admin' ? 'text-slate-300 font-medium' : 'text-slate-500'}`}>
+                Barcode • GGH Paderu • Admin
+              </div>
+            </div>
+          </div>
+          <Hospital className="w-4 h-4 opacity-70" />
+        </button>
+      </div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-[#FAF9F5] text-slate-800 flex flex-col font-sans selection:bg-amber-200 selection:text-amber-950">
       {/* 1. Header with Role Switcher, Languages, SOS & Omnibar Trigger */}
@@ -278,15 +410,15 @@ export default function App() {
                 <div className="flex flex-wrap gap-3 pt-2">
                   <button
                     onClick={() => setIsCameraModalOpen(true)}
-                    className="px-6 py-3 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 text-white font-extrabold text-xs shadow-gold-glow hover:brightness-110 active:scale-95 transition-all flex items-center space-x-2"
+                    className="px-6 py-3 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 text-white font-extrabold text-xs shadow-gold-glow hover:brightness-110 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-amber-500/30 active:scale-95 transition-all duration-200 flex items-center space-x-2 animate-pulse"
                   >
                     <Camera className="w-4 h-4" />
-                    <span>{t.startScreening}</span>
+                    <span>Run AI Disease Prediction</span>
                   </button>
 
                   <button
                     onClick={() => handleLaunchTelemedicine(patient)}
-                    className="px-6 py-3 rounded-2xl bg-gradient-to-r from-emerald-700 to-teal-800 text-white font-extrabold text-xs shadow-md hover:brightness-110 active:scale-95 transition-all flex items-center space-x-2"
+                    className="px-6 py-3 rounded-2xl bg-gradient-to-r from-emerald-700 to-teal-800 text-white font-extrabold text-xs shadow-md hover:brightness-110 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-emerald-500/30 active:scale-95 transition-all duration-200 flex items-center space-x-2"
                   >
                     <Video className="w-4 h-4" />
                     <span>{t.openTelemedicine}</span>
@@ -294,18 +426,21 @@ export default function App() {
 
                   <button
                     onClick={() => setIsAppointmentModalOpen(true)}
-                    className="px-5 py-3 rounded-2xl bg-white hover:bg-amber-50 text-slate-800 font-bold text-xs border border-amber-300 shadow-sm transition-all flex items-center space-x-1.5"
+                    className="px-5 py-3 rounded-2xl bg-white hover:bg-amber-50 text-slate-800 font-extrabold text-xs border border-amber-300 shadow-sm hover:-translate-y-0.5 hover:shadow-md hover:shadow-amber-500/20 active:scale-95 transition-all duration-200 flex items-center space-x-1.5"
                   >
                     <Calendar className="w-4 h-4 text-amber-600" />
-                    <span>Book Appointment</span>
+                    <span>Book Doctor</span>
                   </button>
 
                   <button
-                    onClick={() => setIsPrescriptionModalOpen(true)}
-                    className="px-4 py-3 rounded-2xl bg-white hover:bg-amber-50 text-slate-800 font-bold text-xs border border-amber-300 shadow-sm transition-all flex items-center space-x-1.5"
+                    onClick={() => {
+                      const el = document.getElementById('patient-health-card-section');
+                      if (el) el.scrollIntoView({ behavior: 'smooth' });
+                    }}
+                    className="px-4 py-3 rounded-2xl bg-white hover:bg-amber-50 text-slate-800 font-extrabold text-xs border border-amber-300 shadow-sm hover:-translate-y-0.5 hover:shadow-md hover:shadow-amber-500/20 active:scale-95 transition-all duration-200 flex items-center space-x-1.5"
                   >
-                    <FileText className="w-4 h-4 text-amber-600" />
-                    <span>Rx & Biopsy Slip</span>
+                    <QrCode className="w-4 h-4 text-amber-600" />
+                    <span>Arogya Drishti CARD</span>
                   </button>
                 </div>
               </div>
@@ -315,6 +450,9 @@ export default function App() {
                 <OralBiomarkerHelix3D />
               </div>
             </section>
+
+            {/* PREFERRED PRESENTATION DEMO FLOW STEP-INDICATOR BAR */}
+            {renderDemoFlowBar()}
 
             {/* 2. COMPULSORY 1-CLICK PATIENT ROSTER (Somanna, Lakshmi, Ramu) */}
             <section className="space-y-4">
@@ -404,15 +542,15 @@ export default function App() {
                   <div className="flex flex-wrap gap-2.5">
                     <button
                       onClick={() => setIsCameraModalOpen(true)}
-                      className="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-800 bg-amber-100 hover:bg-amber-200 border border-amber-300 transition-all flex items-center space-x-2"
+                      className="px-4 py-2.5 rounded-xl text-xs font-extrabold text-slate-800 bg-amber-100 hover:bg-amber-200 border border-amber-300 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:shadow-amber-500/20 active:scale-95 flex items-center space-x-2"
                     >
                       <Camera className="w-4 h-4 text-amber-700" />
-                      <span>Capture Oral Scan</span>
+                      <span>Start Live Camera Feed</span>
                     </button>
 
                     <button
                       onClick={() => handleLaunchTelemedicine(patient)}
-                      className="px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-emerald-600 to-teal-700 shadow-md hover:brightness-105 transition-all flex items-center space-x-2"
+                      className="px-4 py-2.5 rounded-xl text-xs font-extrabold text-white bg-gradient-to-r from-emerald-600 to-teal-700 shadow-md hover:brightness-110 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-emerald-500/30 active:scale-95 transition-all duration-200 flex items-center space-x-2"
                     >
                       <Video className="w-4 h-4" />
                       <span>Launch Tele-Call</span>
@@ -420,10 +558,21 @@ export default function App() {
 
                     <button
                       onClick={() => setIsAppointmentModalOpen(true)}
-                      className="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-800 bg-white hover:bg-amber-50 border border-amber-300 transition-all flex items-center space-x-2"
+                      className="px-4 py-2.5 rounded-xl text-xs font-extrabold text-slate-800 bg-white hover:bg-amber-50 border border-amber-300 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:shadow-amber-500/20 active:scale-95 flex items-center space-x-2"
                     >
                       <Calendar className="w-4 h-4 text-amber-600" />
-                      <span>Request Biopsy / Appt</span>
+                      <span>Book Doctor</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        const el = document.getElementById('patient-health-card-section');
+                        if (el) el.scrollIntoView({ behavior: 'smooth' });
+                      }}
+                      className="px-4 py-2.5 rounded-xl text-xs font-extrabold text-amber-950 bg-gradient-to-r from-amber-200 via-amber-300 to-amber-200 border border-amber-400 hover:brightness-105 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:shadow-amber-500/30 active:scale-95 flex items-center space-x-1.5"
+                    >
+                      <QrCode className="w-4 h-4 text-amber-800" />
+                      <span>Arogya Drishti CARD</span>
                     </button>
                   </div>
                 </div>
@@ -626,7 +775,7 @@ export default function App() {
 
             {/* 4. GOLDEN HEALTH CARD & HABIT CESSATION TRACKER (Side-by-Side) */}
             {patient && (
-              <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              <section id="patient-health-card-section" className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start scroll-mt-24">
                 {/* Golden Health Card (6 Cols) */}
                 <div className="lg:col-span-6 bg-white rounded-3xl border border-amber-300 p-6 shadow-luxury">
                   <GoldenHealthCard patient={patient} lang={lang} />
@@ -718,18 +867,24 @@ export default function App() {
         {/* ROLE 2: DOCTOR WORKSPACE */}
         {/* ========================================================================= */}
         {role === 'doctor' && (
-          <DoctorPortal
-            lang={lang}
-            onLaunchTelemedicine={(pat, doc) => handleLaunchTelemedicine(pat, doc)}
-            onViewPrescription={(rx, pat) => handleViewPrescription(rx, pat)}
-          />
+          <div className="space-y-8">
+            {renderDemoFlowBar()}
+            <DoctorPortal
+              lang={lang}
+              onLaunchTelemedicine={(pat, doc) => handleLaunchTelemedicine(pat, doc)}
+              onViewPrescription={(rx, pat) => handleViewPrescription(rx, pat)}
+            />
+          </div>
         )}
 
         {/* ========================================================================= */}
         {/* ROLE 3: ADMIN 11 MANDALS INFRASTRUCTURE PORTAL */}
         {/* ========================================================================= */}
         {role === 'admin' && (
-          <AdminPortal lang={lang} />
+          <div className="space-y-8">
+            {renderDemoFlowBar()}
+            <AdminPortal lang={lang} />
+          </div>
         )}
       </main>
 

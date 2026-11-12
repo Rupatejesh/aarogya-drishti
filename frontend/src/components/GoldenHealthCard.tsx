@@ -40,10 +40,10 @@ export const GoldenHealthCard: React.FC<GoldenHealthCardProps> = ({ patient, lan
         <div className="flex space-x-2">
           <button
             onClick={handlePrint}
-            className="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold transition-all shadow-sm flex items-center space-x-1.5"
+            className="px-3.5 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:brightness-110 text-white rounded-xl text-xs font-extrabold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-amber-500/30 active:scale-95 flex items-center space-x-1.5 shadow-sm"
           >
             <Printer className="w-3.5 h-3.5" />
-            <span>Print Card</span>
+            <span>Print Golden Card</span>
           </button>
         </div>
       </div>
