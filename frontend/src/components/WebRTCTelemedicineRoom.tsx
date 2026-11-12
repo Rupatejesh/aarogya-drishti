@@ -28,7 +28,10 @@ import {
   RefreshCw,
   Eye,
   Camera,
-  ChevronRight
+  ChevronRight,
+  Volume2,
+  VolumeX,
+  Volume1
 } from 'lucide-react';
 import { io, Socket } from 'socket.io-client';
 import api from '../services/api.ts';
@@ -120,12 +123,24 @@ export const WebRTCTelemedicineRoom: React.FC<WebRTCTelemedicineRoomProps> = ({
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
   const socketRef = useRef<Socket | null>(null);
   const localStreamRef = useRef<MediaStream | null>(null);
-  const audioRecorderRef = useRef<MediaRecorder | null>(null);
   const iceCandidatesQueue = useRef<any[]>([]);
+
+  // Web Audio API Real-Time Voice Streaming Engine refs
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const scriptProcessorRef = useRef<ScriptProcessorNode | null>(null);
+  const mediaStreamSourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
+  const remoteGainNodeRef = useRef<GainNode | null>(null);
+  const nextPlayTimeRef = useRef<number>(0);
+  const isMutedRef = useRef<boolean>(false);
+  const remoteVolTimerRef = useRef<any>(null);
 
   // Fallback real-time frame relay state (ensures live video even across restrictive firewalls)
   const [remoteFallbackFrame, setRemoteFallbackFrame] = useState<string | null>(null);
-  const [audioBlockedByAutoplay, setAudioBlockedByAutoplay] = useState(false);
+  const [audioNeedsUserGesture, setAudioNeedsUserGesture] = useState(false);
+  const [localMicVolume, setLocalMicVolume] = useState<number>(0);
+  const [remoteMicVolume, setRemoteMicVolume] = useState<number>(0);
+  const [remoteVoiceActive, setRemoteVoiceActive] = useState<boolean>(false);
+  const [callVolume, setCallVolume] = useState<number>(100);
 
   // Room ID strictly scoped to Patient UIDN & Doctor UIDN, or explicit passed roomId
   const docUid = (activeDoc?.uidn || activeDoc?.doctorId || 'DOC-ANIL').replace(/[^a-zA-Z0-9_-]/g, '_');
@@ -237,6 +252,34 @@ export const WebRTCTelemedicineRoom: React.FC<WebRTCTelemedicineRoomProps> = ({
     iceCandidatePoolSize: 10
   };
 
+  // Keep isMutedRef in sync with state for zero-latency audio processor callback
+  useEffect(() => {
+    isMutedRef.current = isMuted;
+  }, [isMuted]);
+
+  // Audio unlock helper for browser autoplay policies
+  const resumeAudioContext = async () => {
+    if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
+      try {
+        await audioContextRef.current.resume();
+        setAudioNeedsUserGesture(false);
+        console.log('[WebAudio] AudioContext resumed successfully by user gesture');
+      } catch (err) {
+        console.warn('[WebAudio] AudioContext resume notice:', err);
+      }
+    }
+  };
+
+  const handleVolumeChange = (newVol: number) => {
+    setCallVolume(newVol);
+    if (remoteGainNodeRef.current) {
+      remoteGainNodeRef.current.gain.value = newVol / 100;
+    }
+    if (remoteAudioRef.current) {
+      remoteAudioRef.current.volume = Math.min(1.0, newVol / 100);
+    }
+  };
+
   useEffect(() => {
     let isMounted = true;
     let frameInterval: any = null;
@@ -285,6 +328,84 @@ export const WebRTCTelemedicineRoom: React.FC<WebRTCTelemedicineRoomProps> = ({
           }
         }
 
+        // Initialize Web Audio API continuous 16kHz PCM Voice Engine
+        const AudioCtxClass = window.AudioContext || (window as any).webkitAudioContext;
+        let audioCtx: AudioContext | null = null;
+        if (AudioCtxClass) {
+          try {
+            audioCtx = new AudioCtxClass({ sampleRate: 16000 });
+            audioContextRef.current = audioCtx;
+            const remoteGain = audioCtx.createGain();
+            remoteGain.gain.value = callVolume / 100;
+            remoteGain.connect(audioCtx.destination);
+            remoteGainNodeRef.current = remoteGain;
+
+            if (audioCtx.state === 'suspended') {
+              setAudioNeedsUserGesture(true);
+            }
+          } catch (e) {
+            console.warn('[WebAudio] AudioContext init notice:', e);
+          }
+        }
+
+        // Setup Live PCM Voice Capture (guarantees voice transmission even across restrictive firewalls)
+        if (stream && stream.getAudioTracks().length > 0 && audioCtx) {
+          try {
+            const source = audioCtx.createMediaStreamSource(stream);
+            mediaStreamSourceRef.current = source;
+
+            // 2048 buffer size at 16000Hz = 128ms slices
+            const processor = audioCtx.createScriptProcessor(2048, 1, 1);
+            scriptProcessorRef.current = processor;
+
+            // Zero-gain node to prevent local mic playback through local speakers
+            const zeroGain = audioCtx.createGain();
+            zeroGain.gain.value = 0;
+            source.connect(processor);
+            processor.connect(zeroGain);
+            zeroGain.connect(audioCtx.destination);
+
+            processor.onaudioprocess = (e) => {
+              if (isMutedRef.current) {
+                setLocalMicVolume(0);
+                return;
+              }
+              const input = e.inputBuffer.getChannelData(0);
+              const pcm16 = new Int16Array(input.length);
+              let sum = 0;
+              for (let i = 0; i < input.length; i++) {
+                const s = Math.max(-1, Math.min(1, input[i]));
+                pcm16[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+                sum += s * s;
+              }
+              const rms = Math.sqrt(sum / input.length);
+              const volPct = Math.min(100, Math.round(rms * 500));
+              setLocalMicVolume(volPct);
+
+              // Convert pcm16 to base64
+              const bytes = new Uint8Array(pcm16.buffer);
+              let binary = '';
+              const chunkSize = 0x8000;
+              for (let i = 0; i < bytes.byteLength; i += chunkSize) {
+                binary += String.fromCharCode.apply(null, Array.from(bytes.subarray(i, i + chunkSize)));
+              }
+              const base64Pcm = btoa(binary);
+
+              if (socketRef.current?.connected) {
+                socketRef.current.emit('voice-pcm', {
+                  roomId,
+                  pcm: base64Pcm,
+                  senderRole: isDoctorUser ? 'doctor' : 'patient',
+                  volume: volPct
+                });
+              }
+            };
+            console.log('[WebAudio] Live 16kHz PCM Voice Capture Engine active');
+          } catch (micErr) {
+            console.warn('[WebAudio] Setup capture notice:', micErr);
+          }
+        }
+
         // 2. Connect to Socket.io Signaling Engine
         const socketUrl = 'https://aarogya-drishti-9g70.onrender.com';
 
@@ -330,10 +451,10 @@ export const WebRTCTelemedicineRoom: React.FC<WebRTCTelemedicineRoomProps> = ({
               remoteAudioRef.current.volume = 1.0;
               remoteAudioRef.current.muted = false;
               remoteAudioRef.current.play().then(() => {
-                setAudioBlockedByAutoplay(false);
+                setAudioNeedsUserGesture(false);
               }).catch((audioErr) => {
                 console.warn('[WebRTC Audio] Autoplay policy prevented immediate playback, awaiting gesture:', audioErr);
-                setAudioBlockedByAutoplay(true);
+                setAudioNeedsUserGesture(true);
               });
             }
 
@@ -426,11 +547,18 @@ export const WebRTCTelemedicineRoom: React.FC<WebRTCTelemedicineRoomProps> = ({
           }
         });
 
+        // Remote peer(s) already waiting in the room
+        socket.on('room-peers-present', (data: { peerCount: number }) => {
+          console.log('[WebRTC] Remote peer(s) already in room:', data);
+          setPeerConnected(true);
+          setConnectionStatus('Peer in Room • Live Call Active');
+        });
+
         // Peer Joined: Initiate offer
         socket.on('user-connected', async ({ socketId, userDetails }) => {
           console.log(`[WebRTC] Peer joined room: ${socketId}`, userDetails);
           setPeerConnected(true);
-          setConnectionStatus('Peer Detected • Handshaking...');
+          setConnectionStatus('Peer Joined • Live Call Active');
           try {
             const offer = await pc.createOffer({
               offerToReceiveAudio: true,
@@ -534,80 +662,62 @@ export const WebRTCTelemedicineRoom: React.FC<WebRTCTelemedicineRoomProps> = ({
             setRemoteFallbackFrame(frame);
             setPeerConnected(true);
             setRemoteStreamAvailable(true);
-            if (!connectionStatus.includes('P2P Connected')) {
-              setConnectionStatus('Live Real-Time Stream (Relay Active)');
-            }
+            setConnectionStatus('Live Real-Time Stream Connected');
           }
         });
 
-        // Direct Audio Chunk Relay Failsafe (guarantees voice transmission even across restrictive firewalls)
-        if (stream && stream.getAudioTracks().length > 0 && typeof MediaRecorder !== 'undefined') {
-          try {
-            const audioStream = new MediaStream(stream.getAudioTracks());
-            const supportedMime = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
-              ? 'audio/webm;codecs=opus'
-              : MediaRecorder.isTypeSupported('audio/webm')
-              ? 'audio/webm'
-              : MediaRecorder.isTypeSupported('audio/ogg;codecs=opus')
-              ? 'audio/ogg;codecs=opus'
-              : '';
-
-            const recorder = new MediaRecorder(
-              audioStream,
-              supportedMime ? { mimeType: supportedMime, audioBitsPerSecond: 24000 } : undefined
-            );
-            audioRecorderRef.current = recorder;
-
-            recorder.ondataavailable = async (e) => {
-              if (e.data && e.data.size > 0 && socketRef.current?.connected && !isMuted) {
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                  const base64Data = (reader.result as string)?.split(',')[1];
-                  if (base64Data) {
-                    socketRef.current?.emit('audio-chunk', {
-                      roomId,
-                      chunk: base64Data,
-                      mimeType: recorder.mimeType || 'audio/webm',
-                      senderRole: isDoctorUser ? 'doctor' : 'patient'
-                    });
-                  }
-                };
-                reader.readAsDataURL(e.data);
-              }
-            };
-
-            recorder.start(300); // 300ms audio slice
-          } catch (recErr) {
-            console.warn('[WebRTC Audio Relay] MediaRecorder setup notice:', recErr);
-          }
-        }
-
-        // Receiving real-time voice chunks over socket
-        socket.on('audio-chunk', ({ chunk, mimeType, senderRole }: { chunk: string; mimeType: string; senderRole: string }) => {
+        // Receiving real-time PCM voice stream over socket (guarantees voice across restrictive NAT/firewalls)
+        socket.on('voice-pcm', (data: { pcm: string; senderRole: string; volume?: number }) => {
           const expectedRole = isDoctorUser ? 'patient' : 'doctor';
-          if (senderRole !== expectedRole && senderRole) return;
-          if (isMuted) return;
+          if (data.senderRole !== expectedRole && data.senderRole) return;
 
-          // If native WebRTC P2P ICE is already connected and audio is flowing, skip socket chunk to prevent echo
-          if (peerConnectionRef.current?.iceConnectionState === 'connected' && remoteAudioRef.current && !remoteAudioRef.current.paused) {
+          setPeerConnected(true);
+          setRemoteStreamAvailable(true);
+          setRemoteVoiceActive(true);
+          setRemoteMicVolume(typeof data.volume === 'number' ? data.volume : 35);
+
+          if (remoteVolTimerRef.current) clearTimeout(remoteVolTimerRef.current);
+          remoteVolTimerRef.current = setTimeout(() => {
+            setRemoteMicVolume(0);
+            setRemoteVoiceActive(false);
+          }, 350);
+
+          const actx = audioContextRef.current;
+          if (!actx) return;
+
+          if (actx.state === 'suspended') {
+            setAudioNeedsUserGesture(true);
+            actx.resume().then(() => setAudioNeedsUserGesture(false)).catch(() => {});
             return;
           }
 
           try {
-            const binary = window.atob(chunk);
-            const len = binary.length;
-            const bytes = new Uint8Array(len);
-            for (let i = 0; i < len; i++) {
+            const binary = atob(data.pcm);
+            const bytes = new Uint8Array(binary.length);
+            for (let i = 0; i < binary.length; i++) {
               bytes[i] = binary.charCodeAt(i);
             }
-            const blob = new Blob([bytes.buffer], { type: mimeType || 'audio/webm' });
-            const url = URL.createObjectURL(blob);
-            const audioEl = new Audio(url);
-            audioEl.volume = 1.0;
-            audioEl.play().catch(() => {});
-            setTimeout(() => URL.revokeObjectURL(url), 3000);
-          } catch (audioErr) {
-            console.warn('[Audio Relay] Chunk decode notice:', audioErr);
+            const pcm16 = new Int16Array(bytes.buffer);
+            const float32 = new Float32Array(pcm16.length);
+            for (let i = 0; i < pcm16.length; i++) {
+              float32[i] = pcm16[i] / 32768.0;
+            }
+
+            const audioBuf = actx.createBuffer(1, float32.length, 16000);
+            audioBuf.copyToChannel(float32, 0);
+
+            const source = actx.createBufferSource();
+            source.buffer = audioBuf;
+            source.connect(remoteGainNodeRef.current || actx.destination);
+
+            const now = actx.currentTime;
+            if (nextPlayTimeRef.current < now) {
+              nextPlayTimeRef.current = now + 0.02; // 20ms jitter buffer
+            }
+            source.start(nextPlayTimeRef.current);
+            nextPlayTimeRef.current += audioBuf.duration;
+          } catch (decErr) {
+            console.warn('[WebAudio] PCM playback decode notice:', decErr);
           }
         });
 
@@ -632,6 +742,8 @@ export const WebRTCTelemedicineRoom: React.FC<WebRTCTelemedicineRoomProps> = ({
           setPeerConnected(false);
           setRemoteStreamAvailable(false);
           setRemoteFallbackFrame(null);
+          setRemoteMicVolume(0);
+          setRemoteVoiceActive(false);
           setConnectionStatus('Remote Peer Left Room');
         });
       } catch (err) {
@@ -647,9 +759,23 @@ export const WebRTCTelemedicineRoom: React.FC<WebRTCTelemedicineRoomProps> = ({
       if (frameInterval) {
         clearInterval(frameInterval);
       }
-      if (audioRecorderRef.current && audioRecorderRef.current.state !== 'inactive') {
+      if (remoteVolTimerRef.current) {
+        clearTimeout(remoteVolTimerRef.current);
+      }
+      if (scriptProcessorRef.current) {
         try {
-          audioRecorderRef.current.stop();
+          scriptProcessorRef.current.disconnect();
+          scriptProcessorRef.current.onaudioprocess = null;
+        } catch (e) {}
+      }
+      if (mediaStreamSourceRef.current) {
+        try {
+          mediaStreamSourceRef.current.disconnect();
+        } catch (e) {}
+      }
+      if (audioContextRef.current) {
+        try {
+          audioContextRef.current.close();
         } catch (e) {}
       }
       if (localStreamRef.current) {
@@ -674,6 +800,10 @@ export const WebRTCTelemedicineRoom: React.FC<WebRTCTelemedicineRoomProps> = ({
   const toggleMute = () => {
     const nextMuted = !isMuted;
     setIsMuted(nextMuted);
+    isMutedRef.current = nextMuted;
+    if (nextMuted) {
+      setLocalMicVolume(0);
+    }
     if (localStreamRef.current) {
       localStreamRef.current.getAudioTracks().forEach((track) => {
         track.enabled = !nextMuted;
@@ -702,9 +832,20 @@ export const WebRTCTelemedicineRoom: React.FC<WebRTCTelemedicineRoomProps> = ({
   };
 
   const handleEndCall = () => {
-    if (audioRecorderRef.current && audioRecorderRef.current.state !== 'inactive') {
+    if (scriptProcessorRef.current) {
       try {
-        audioRecorderRef.current.stop();
+        scriptProcessorRef.current.disconnect();
+        scriptProcessorRef.current.onaudioprocess = null;
+      } catch (e) {}
+    }
+    if (mediaStreamSourceRef.current) {
+      try {
+        mediaStreamSourceRef.current.disconnect();
+      } catch (e) {}
+    }
+    if (audioContextRef.current) {
+      try {
+        audioContextRef.current.close();
       } catch (e) {}
     }
     if (activePat?.uidn) {
@@ -817,11 +958,8 @@ export const WebRTCTelemedicineRoom: React.FC<WebRTCTelemedicineRoomProps> = ({
 
   return (
     <div
-      onClick={() => {
-        if (remoteAudioRef.current && remoteAudioRef.current.paused) {
-          remoteAudioRef.current.play().then(() => setAudioBlockedByAutoplay(false)).catch(() => {});
-        }
-      }}
+      onClick={resumeAudioContext}
+      onTouchStart={resumeAudioContext}
       className="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-1 sm:p-4 overflow-y-auto animate-in fade-in duration-200"
     >
       <div className="bg-white w-full max-w-7xl rounded-2xl sm:rounded-3xl border border-slate-200 shadow-2xl overflow-hidden flex flex-col max-h-[98vh] h-[98vh] sm:h-auto sm:max-h-[96vh]">
@@ -836,8 +974,14 @@ export const WebRTCTelemedicineRoom: React.FC<WebRTCTelemedicineRoomProps> = ({
                 <h3 className="font-extrabold text-xs sm:text-base tracking-wide">
                   Live WebRTC Telemedicine Consultation
                 </h3>
-                <span className="text-[9px] sm:text-[10px] bg-emerald-500/20 text-emerald-200 font-mono px-2 py-0.5 rounded-full border border-emerald-400/40">
-                  {connectionStatus}
+                <span className={`text-[9px] sm:text-[10px] font-mono px-2 py-0.5 rounded-full border ${
+                  peerConnected || remoteStreamAvailable || remoteFallbackFrame || remoteVoiceActive
+                    ? 'bg-emerald-500/20 text-emerald-200 border-emerald-400/40'
+                    : 'bg-amber-500/20 text-amber-200 border-amber-400/40'
+                }`}>
+                  {peerConnected || remoteStreamAvailable || remoteFallbackFrame || remoteVoiceActive
+                    ? 'CONNECTED • LIVE'
+                    : connectionStatus}
                 </span>
               </div>
               <p className="text-[10px] sm:text-[11px] text-blue-100 hidden sm:block">
@@ -931,21 +1075,18 @@ export const WebRTCTelemedicineRoom: React.FC<WebRTCTelemedicineRoomProps> = ({
                 />
 
                 {/* 4. Autoplay Unmute Prompt */}
-                {audioBlockedByAutoplay && (
+                {audioNeedsUserGesture && (
                   <button
-                    onClick={() => {
-                      if (remoteAudioRef.current) {
-                        remoteAudioRef.current.play().then(() => setAudioBlockedByAutoplay(false)).catch(() => {});
-                      }
-                    }}
-                    className="absolute top-2 left-2 z-30 px-3 py-1 bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-black rounded-full shadow-lg border border-amber-500 animate-bounce flex items-center space-x-1 cursor-pointer"
+                    onClick={resumeAudioContext}
+                    className="absolute top-2 left-1/2 -translate-x-1/2 z-40 px-3.5 py-1.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 text-xs font-black rounded-full shadow-2xl border-2 border-white animate-bounce flex items-center space-x-1.5 cursor-pointer"
                   >
-                    <span>🔊 Click to Unmute Remote Voice</span>
+                    <Volume2 className="w-4 h-4 animate-pulse" />
+                    <span>🔊 Click to Enable Sound / Voice</span>
                   </button>
                 )}
 
                 {/* 3. Waiting Screen when Neither Stream has arrived yet */}
-                {!remoteStreamAvailable && !remoteFallbackFrame && (
+                {!peerConnected && !remoteStreamAvailable && !remoteFallbackFrame && !remoteVoiceActive && (
                   <div className="relative w-full h-full flex flex-col items-center justify-center p-3 sm:p-6 text-center bg-gradient-to-b from-slate-900 to-slate-950 text-slate-300 space-y-2">
                     <div className="relative">
                       <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-royal-900/50 border border-royal-500/30 flex items-center justify-center">
@@ -992,14 +1133,26 @@ export const WebRTCTelemedicineRoom: React.FC<WebRTCTelemedicineRoomProps> = ({
                   <div className="text-[9px] sm:text-[10px] text-slate-300 font-medium truncate max-w-[140px] sm:max-w-none">
                     {remoteUser.subtext}
                   </div>
+                  {/* Live Remote Audio Activity Indicator */}
+                  <div className="flex items-center space-x-1.5 mt-0.5">
+                    <span className={`w-1.5 h-1.5 rounded-full ${remoteMicVolume > 5 ? 'bg-emerald-400 animate-ping' : 'bg-slate-400'}`} />
+                    <span className="text-[9px] text-emerald-300 font-mono">
+                      {remoteMicVolume > 5 ? 'Speaking...' : 'Listening'}
+                    </span>
+                    <div className="flex items-end space-x-0.5 h-2.5">
+                      <span className={`w-0.5 rounded-full transition-all ${remoteMicVolume > 5 ? 'bg-emerald-400 h-2' : 'bg-slate-600 h-1'}`} />
+                      <span className={`w-0.5 rounded-full transition-all ${remoteMicVolume > 15 ? 'bg-emerald-400 h-2.5' : 'bg-slate-600 h-1'}`} />
+                      <span className={`w-0.5 rounded-full transition-all ${remoteMicVolume > 30 ? 'bg-emerald-400 h-3' : 'bg-slate-600 h-1'}`} />
+                    </div>
+                  </div>
                 </div>
 
                 {/* Remote Status Badge */}
                 <div className="absolute top-2 right-2 sm:top-3 sm:right-3 z-20">
-                  {remoteStreamAvailable || remoteFallbackFrame ? (
+                  {peerConnected || remoteStreamAvailable || remoteFallbackFrame || remoteVoiceActive ? (
                     <span className="bg-emerald-600 text-white font-bold text-[8px] sm:text-[9px] px-2 py-0.5 rounded-full flex items-center space-x-1 shadow-md">
                       <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
-                      <span>{remoteFallbackFrame ? 'RELAY' : 'LIVE P2P'}</span>
+                      <span>CONNECTED • LIVE</span>
                     </span>
                   ) : (
                     <span className="bg-amber-600 text-white font-bold text-[8px] sm:text-[9px] px-2 py-0.5 rounded-full flex items-center space-x-1 shadow-md">
@@ -1044,6 +1197,20 @@ export const WebRTCTelemedicineRoom: React.FC<WebRTCTelemedicineRoomProps> = ({
                   <div className="text-[9px] sm:text-[10px] text-slate-300 font-medium truncate max-w-[140px] sm:max-w-none">
                     {localUser.subtext}
                   </div>
+                  {/* Live Local Mic Indicator */}
+                  <div className="flex items-center space-x-1.5 mt-0.5">
+                    <span className={`w-1.5 h-1.5 rounded-full ${isMuted ? 'bg-red-500' : localMicVolume > 5 ? 'bg-emerald-400 animate-pulse' : 'bg-emerald-500'}`} />
+                    <span className={`text-[9px] font-mono ${isMuted ? 'text-red-300' : 'text-emerald-300'}`}>
+                      {isMuted ? 'Mic Muted' : localMicVolume > 5 ? 'Speaking...' : 'Mic Live'}
+                    </span>
+                    {!isMuted && (
+                      <div className="flex items-end space-x-0.5 h-2.5">
+                        <span className={`w-0.5 rounded-full transition-all ${localMicVolume > 5 ? 'bg-emerald-400 h-2' : 'bg-slate-600 h-1'}`} />
+                        <span className={`w-0.5 rounded-full transition-all ${localMicVolume > 15 ? 'bg-emerald-400 h-2.5' : 'bg-slate-600 h-1'}`} />
+                        <span className={`w-0.5 rounded-full transition-all ${localMicVolume > 30 ? 'bg-emerald-400 h-3' : 'bg-slate-600 h-1'}`} />
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Local Badge */}
@@ -1054,15 +1221,18 @@ export const WebRTCTelemedicineRoom: React.FC<WebRTCTelemedicineRoomProps> = ({
             </div>
 
             {/* In-Call Controls Toolbar */}
-            <div className="bg-slate-800/90 backdrop-blur-md rounded-2xl p-2 sm:p-3 border border-slate-700 flex items-center justify-center space-x-3">
+            <div className="bg-slate-800/90 backdrop-blur-md rounded-2xl p-2 sm:p-3 border border-slate-700 flex flex-wrap items-center justify-center gap-2 sm:gap-3">
               <button
                 onClick={toggleMute}
-                className={`p-2.5 sm:p-3 rounded-xl transition-all cursor-pointer ${
+                className={`p-2.5 sm:p-3 rounded-xl transition-all cursor-pointer relative ${
                   isMuted ? 'bg-red-600 text-white' : 'bg-slate-700 hover:bg-slate-600 text-white'
                 }`}
                 title={isMuted ? t.unmuteMic : t.muteMic}
               >
                 {isMuted ? <MicOff className="w-4 h-4 sm:w-5 sm:h-5" /> : <Mic className="w-4 h-4 sm:w-5 sm:h-5" />}
+                {!isMuted && localMicVolume > 10 && (
+                  <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-400 rounded-full animate-ping" />
+                )}
               </button>
 
               <button
@@ -1074,6 +1244,21 @@ export const WebRTCTelemedicineRoom: React.FC<WebRTCTelemedicineRoomProps> = ({
               >
                 {isVideoOff ? <VideoOff className="w-4 h-4 sm:w-5 sm:h-5" /> : <Video className="w-4 h-4 sm:w-5 sm:h-5" />}
               </button>
+
+              {/* Volume Slider & Boost */}
+              <div className="flex items-center space-x-1.5 bg-slate-700/80 px-2.5 py-1.5 rounded-xl border border-slate-600 text-white">
+                <Volume2 className="w-3.5 h-3.5 text-blue-300" />
+                <input
+                  type="range"
+                  min="0"
+                  max="150"
+                  value={callVolume}
+                  onChange={(e) => handleVolumeChange(Number(e.target.value))}
+                  className="w-16 sm:w-20 accent-emerald-400 cursor-pointer h-1.5"
+                  title={`Call Volume: ${callVolume}%`}
+                />
+                <span className="text-[10px] font-mono text-slate-300 w-7">{callVolume}%</span>
+              </div>
 
               <button
                 onClick={handleEndCall}

@@ -50,6 +50,11 @@ io.on('connection', (socket) => {
   socket.on('join-room', (roomId: string, userDetails: any) => {
     socket.join(roomId);
     console.log(`[WebRTC] Peer ${socket.id} (${userDetails?.role || 'user'}) joined room: ${roomId}`);
+    const room = io.sockets.adapter.rooms.get(roomId);
+    const peerCount = room ? room.size : 1;
+    if (peerCount > 1) {
+      socket.emit('room-peers-present', { peerCount: peerCount - 1 });
+    }
     socket.to(roomId).emit('user-connected', { socketId: socket.id, userDetails });
   });
 
@@ -123,6 +128,12 @@ io.on('connection', (socket) => {
 
   socket.on('audio-chunk', ({ roomId, chunk, mimeType, senderRole }) => {
     socket.to(roomId).emit('audio-chunk', { chunk, mimeType, senderRole });
+  });
+
+  socket.on('voice-pcm', (data: { roomId: string; pcm: string; senderRole: string; volume?: number }) => {
+    if (data?.roomId) {
+      socket.to(data.roomId).emit('voice-pcm', data);
+    }
   });
 
   socket.on('call-started', ({ patientUidn, doctorUidn, doctorName, roomId }) => {
