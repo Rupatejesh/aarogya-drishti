@@ -19,7 +19,9 @@ import {
   Clock,
   Check,
   Trash2,
-  Sparkles
+  Sparkles,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import api from '../services/api.ts';
 import { Language, translations } from '../i18n/translations.ts';
@@ -84,6 +86,7 @@ export const DoctorPortal: React.FC<DoctorPortalProps> = ({
   const [isForgotModalOpen, setIsForgotModalOpen] = useState(false);
   const [forgotSecurityCode, setForgotSecurityCode] = useState('ASR-DOC-2026');
   const [forgotNewPassword, setForgotNewPassword] = useState('');
+  const [showResetPassword, setShowResetPassword] = useState(false);
   const [resetSuccess, setResetSuccess] = useState(false);
 
   // Doctor Data States
@@ -801,15 +804,25 @@ export const DoctorPortal: React.FC<DoctorPortalProps> = ({
 
                 <div>
                   <label className="text-xs font-bold text-slate-700 block mb-1">New Password</label>
-                  <input
-                    type="password"
-                    value={forgotNewPassword}
-                    autoComplete="new-password"
-                    onChange={(e) => setForgotNewPassword(e.target.value)}
-                    placeholder="Enter new password"
-                    className="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs text-slate-900"
-                    required
-                  />
+                  <div className="relative">
+                    <input
+                      type={showResetPassword ? 'text' : 'password'}
+                      value={forgotNewPassword}
+                      autoComplete="new-password"
+                      onChange={(e) => setForgotNewPassword(e.target.value)}
+                      placeholder="Enter new password"
+                      className="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 pr-10 text-xs text-slate-900"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowResetPassword(!showResetPassword)}
+                      className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 cursor-pointer"
+                      title={showResetPassword ? 'Hide password' : 'Show password'}
+                    >
+                      {showResetPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
                 </div>
 
                 <button

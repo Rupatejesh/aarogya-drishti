@@ -20,7 +20,9 @@ import {
   ToggleRight,
   Copy,
   Check,
-  Lock
+  Lock,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import api from '../services/api.ts';
 import { Language, translations } from '../i18n/translations.ts';
@@ -59,6 +61,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ lang }) => {
     password: 'Doctor@2026',
     isActive: true
   });
+  const [showNewDocPassword, setShowNewDocPassword] = useState(false);
   const [addDoctorSuccess, setAddDoctorSuccess] = useState(false);
 
   // Active admin tab: Default to Doctors Registry & Credential Management
@@ -658,15 +661,25 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ lang }) => {
                       <Lock className="w-3.5 h-3.5 text-slate-600" />
                       <span>Doctor Login Password</span>
                     </label>
-                    <input
-                      type="text"
-                      value={newDoctor.password}
-                      autoComplete="new-password"
-                      placeholder="e.g. Doctor@2026"
-                      onChange={(e) => setNewDoctor({ ...newDoctor, password: e.target.value })}
-                      className="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-mono font-bold text-slate-900 focus:ring-2 focus:ring-royal-500 focus:outline-none"
-                      required
-                    />
+                    <div className="relative">
+                      <input
+                        type={showNewDocPassword ? 'text' : 'password'}
+                        value={newDoctor.password}
+                        autoComplete="new-password"
+                        placeholder="e.g. Doctor@2026"
+                        onChange={(e) => setNewDoctor({ ...newDoctor, password: e.target.value })}
+                        className="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 pr-10 text-xs font-mono font-bold text-slate-900 focus:ring-2 focus:ring-royal-500 focus:outline-none"
+                        required
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowNewDocPassword(!showNewDocPassword)}
+                        className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 cursor-pointer"
+                        title={showNewDocPassword ? 'Hide password' : 'Show password'}
+                      >
+                        {showNewDocPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
                   </div>
                 </div>
 

@@ -7,7 +7,9 @@ import {
   CheckCircle,
   X,
   AlertTriangle,
-  ArrowRight
+  ArrowRight,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import api from '../services/api.ts';
 import { Language, translations } from '../i18n/translations.ts';
@@ -30,6 +32,7 @@ export const DoctorAuthModal: React.FC<DoctorAuthModalProps> = ({
   // Clean Form states (Zero demo defaults)
   const [doctorIdOrEmail, setDoctorIdOrEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -38,6 +41,7 @@ export const DoctorAuthModal: React.FC<DoctorAuthModalProps> = ({
   const [forgotDocId, setForgotDocId] = useState('');
   const [forgotSecurityCode, setForgotSecurityCode] = useState('');
   const [forgotNewPass, setForgotNewPass] = useState('');
+  const [showForgotPass, setShowForgotPass] = useState(false);
   const [forgotSuccess, setForgotSuccess] = useState(false);
 
   if (!isOpen) return null;
@@ -145,14 +149,22 @@ export const DoctorAuthModal: React.FC<DoctorAuthModalProps> = ({
             <div className="relative">
               <Lock className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
               <input
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 value={password}
                 autoComplete="current-password"
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:ring-2 focus:ring-royal-500 focus:outline-none"
+                className="w-full pl-9 pr-10 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:ring-2 focus:ring-royal-500 focus:outline-none"
                 required
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 cursor-pointer p-0.5"
+                title={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
             </div>
           </div>
 
@@ -224,14 +236,24 @@ export const DoctorAuthModal: React.FC<DoctorAuthModalProps> = ({
                   </div>
                   <div>
                     <label className="text-[11px] font-bold text-slate-700 block mb-0.5">New Password</label>
-                    <input
-                      type="password"
-                      value={forgotNewPass}
-                      onChange={(e) => setForgotNewPass(e.target.value)}
-                      placeholder="Min 6 characters"
-                      className="w-full p-2 bg-slate-50 border border-slate-300 rounded-xl text-xs"
-                      required
-                    />
+                    <div className="relative">
+                      <input
+                        type={showForgotPass ? 'text' : 'password'}
+                        value={forgotNewPass}
+                        onChange={(e) => setForgotNewPass(e.target.value)}
+                        placeholder="Min 6 characters"
+                        className="w-full p-2 pr-9 bg-slate-50 border border-slate-300 rounded-xl text-xs"
+                        required
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowForgotPass(!showForgotPass)}
+                        className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600 cursor-pointer"
+                        title={showForgotPass ? 'Hide password' : 'Show password'}
+                      >
+                        {showForgotPass ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                      </button>
+                    </div>
                   </div>
                   <button
                     type="submit"

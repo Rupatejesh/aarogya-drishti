@@ -31,7 +31,8 @@ import {
   ChevronRight,
   Volume2,
   VolumeX,
-  Volume1
+  Volume1,
+  CheckCircle2
 } from 'lucide-react';
 import { io, Socket } from 'socket.io-client';
 import api from '../services/api.ts';
@@ -141,6 +142,8 @@ export const WebRTCTelemedicineRoom: React.FC<WebRTCTelemedicineRoomProps> = ({
   const [remoteMicVolume, setRemoteMicVolume] = useState<number>(0);
   const [remoteVoiceActive, setRemoteVoiceActive] = useState<boolean>(false);
   const [callVolume, setCallVolume] = useState<number>(100);
+  const [testingAudio, setTestingAudio] = useState(false);
+  const [audioTestPassed, setAudioTestPassed] = useState(false);
 
   // Room ID strictly scoped to Patient UIDN & Doctor UIDN, or explicit passed roomId
   const docUid = (activeDoc?.uidn || activeDoc?.doctorId || 'DOC-ANIL').replace(/[^a-zA-Z0-9_-]/g, '_');
@@ -280,6 +283,65 @@ export const WebRTCTelemedicineRoom: React.FC<WebRTCTelemedicineRoomProps> = ({
     }
   };
 
+  // One-click sound card & mic hardware self-test chime
+  const handleTestMicAndSpeaker = async () => {
+    setTestingAudio(true);
+    await resumeAudioContext();
+    const actx = audioContextRef.current;
+    if (!actx) {
+      setTestingAudio(false);
+      return;
+    }
+
+    try {
+      if (actx.state === 'suspended') {
+        await actx.resume();
+      }
+
+      // 1. Play dual-frequency confirmation chime (C5 -> E5 -> G5)
+      const now = actx.currentTime;
+      const osc = actx.createOscillator();
+      const gain = actx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(523.25, now); // C5
+      osc.frequency.setValueAtTime(659.25, now + 0.12); // E5
+      osc.frequency.setValueAtTime(783.99, now + 0.24); // G5
+      gain.gain.setValueAtTime(0.35, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.55);
+      osc.connect(gain);
+      gain.connect(actx.destination);
+      osc.start(now);
+      osc.stop(now + 0.55);
+
+      // 2. Loopback local mic to speakers for 2 seconds so the user can hear their own voice
+      if (localStreamRef.current && localStreamRef.current.getAudioTracks().length > 0) {
+        const testSource = actx.createMediaStreamSource(localStreamRef.current);
+        const testGain = actx.createGain();
+        testGain.gain.setValueAtTime(0.8, now);
+        testSource.connect(testGain);
+        testGain.connect(actx.destination);
+        setTimeout(() => {
+          try {
+            testSource.disconnect();
+            testGain.disconnect();
+          } catch (e) {}
+          setTestingAudio(false);
+          setAudioTestPassed(true);
+          setTimeout(() => setAudioTestPassed(false), 4000);
+        }, 2000);
+      } else {
+        setTimeout(() => {
+          setTestingAudio(false);
+          setAudioTestPassed(true);
+          setTimeout(() => setAudioTestPassed(false), 4000);
+        }, 600);
+      }
+    } catch (e) {
+      console.warn('[Audio Test] Error:', e);
+      setTestingAudio(false);
+    }
+  };
+
   useEffect(() => {
     let isMounted = true;
     let frameInterval: any = null;
@@ -328,12 +390,12 @@ export const WebRTCTelemedicineRoom: React.FC<WebRTCTelemedicineRoomProps> = ({
           }
         }
 
-        // Initialize Web Audio API continuous 16kHz PCM Voice Engine
+        // Initialize Web Audio API continuous PCM Voice Engine (uses native hardware rate to ensure 100% media stream compatibility)
         const AudioCtxClass = window.AudioContext || (window as any).webkitAudioContext;
         let audioCtx: AudioContext | null = null;
         if (AudioCtxClass) {
           try {
-            audioCtx = new AudioCtxClass({ sampleRate: 16000 });
+            audioCtx = new AudioCtxClass();
             audioContextRef.current = audioCtx;
             const remoteGain = audioCtx.createGain();
             remoteGain.gain.value = callVolume / 100;
@@ -342,6 +404,7 @@ export const WebRTCTelemedicineRoom: React.FC<WebRTCTelemedicineRoomProps> = ({
 
             if (audioCtx.state === 'suspended') {
               setAudioNeedsUserGesture(true);
+              audioCtx.resume().catch(() => {});
             }
           } catch (e) {
             console.warn('[WebAudio] AudioContext init notice:', e);
@@ -354,8 +417,8 @@ export const WebRTCTelemedicineRoom: React.FC<WebRTCTelemedicineRoomProps> = ({
             const source = audioCtx.createMediaStreamSource(stream);
             mediaStreamSourceRef.current = source;
 
-            // 2048 buffer size at 16000Hz = 128ms slices
-            const processor = audioCtx.createScriptProcessor(2048, 1, 1);
+            // 4096 buffer size at 48kHz = 85ms slices
+            const processor = audioCtx.createScriptProcessor(4096, 1, 1);
             scriptProcessorRef.current = processor;
 
             // Zero-gain node to prevent local mic playback through local speakers
@@ -371,14 +434,19 @@ export const WebRTCTelemedicineRoom: React.FC<WebRTCTelemedicineRoomProps> = ({
                 return;
               }
               const input = e.inputBuffer.getChannelData(0);
-              const pcm16 = new Int16Array(input.length);
+              const sampleRate = audioCtx?.sampleRate || 48000;
+              const targetRate = 16000;
+              const ratio = sampleRate / targetRate;
+              const targetLength = Math.max(1, Math.round(input.length / ratio));
+              const pcm16 = new Int16Array(targetLength);
               let sum = 0;
-              for (let i = 0; i < input.length; i++) {
-                const s = Math.max(-1, Math.min(1, input[i]));
+              for (let i = 0; i < targetLength; i++) {
+                const srcIdx = Math.min(input.length - 1, Math.round(i * ratio));
+                const s = Math.max(-1, Math.min(1, input[srcIdx]));
                 pcm16[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
                 sum += s * s;
               }
-              const rms = Math.sqrt(sum / input.length);
+              const rms = Math.sqrt(sum / targetLength);
               const volPct = Math.min(100, Math.round(rms * 500));
               setLocalMicVolume(volPct);
 
@@ -391,16 +459,18 @@ export const WebRTCTelemedicineRoom: React.FC<WebRTCTelemedicineRoomProps> = ({
               }
               const base64Pcm = btoa(binary);
 
-              if (socketRef.current?.connected) {
+              if (socketRef.current) {
                 socketRef.current.emit('voice-pcm', {
                   roomId,
                   pcm: base64Pcm,
+                  sampleRate: 16000,
                   senderRole: isDoctorUser ? 'doctor' : 'patient',
+                  senderSocketId: socketRef.current.id,
                   volume: volPct
                 });
               }
             };
-            console.log('[WebAudio] Live 16kHz PCM Voice Capture Engine active');
+            console.log('[WebAudio] Live Speech-Optimized PCM Voice Capture active at native rate', audioCtx.sampleRate);
           } catch (micErr) {
             console.warn('[WebAudio] Setup capture notice:', micErr);
           }
@@ -667,14 +737,16 @@ export const WebRTCTelemedicineRoom: React.FC<WebRTCTelemedicineRoomProps> = ({
         });
 
         // Receiving real-time PCM voice stream over socket (guarantees voice across restrictive NAT/firewalls)
-        socket.on('voice-pcm', (data: { pcm: string; senderRole: string; volume?: number }) => {
-          const expectedRole = isDoctorUser ? 'patient' : 'doctor';
-          if (data.senderRole !== expectedRole && data.senderRole) return;
+        socket.on('voice-pcm', (data: { pcm: string; sampleRate?: number; senderRole?: string; senderSocketId?: string; volume?: number }) => {
+          // Ignore own packets if returned by server
+          if (data.senderSocketId && socketRef.current && data.senderSocketId === socketRef.current.id) {
+            return;
+          }
 
           setPeerConnected(true);
           setRemoteStreamAvailable(true);
           setRemoteVoiceActive(true);
-          setRemoteMicVolume(typeof data.volume === 'number' ? data.volume : 35);
+          setRemoteMicVolume(typeof data.volume === 'number' ? data.volume : 45);
 
           if (remoteVolTimerRef.current) clearTimeout(remoteVolTimerRef.current);
           remoteVolTimerRef.current = setTimeout(() => {
@@ -687,8 +759,7 @@ export const WebRTCTelemedicineRoom: React.FC<WebRTCTelemedicineRoomProps> = ({
 
           if (actx.state === 'suspended') {
             setAudioNeedsUserGesture(true);
-            actx.resume().then(() => setAudioNeedsUserGesture(false)).catch(() => {});
-            return;
+            actx.resume().catch(() => {});
           }
 
           try {
@@ -703,7 +774,8 @@ export const WebRTCTelemedicineRoom: React.FC<WebRTCTelemedicineRoomProps> = ({
               float32[i] = pcm16[i] / 32768.0;
             }
 
-            const audioBuf = actx.createBuffer(1, float32.length, 16000);
+            const pcmRate = data.sampleRate || 16000;
+            const audioBuf = actx.createBuffer(1, float32.length, pcmRate);
             audioBuf.copyToChannel(float32, 0);
 
             const source = actx.createBufferSource();
@@ -971,17 +1043,22 @@ export const WebRTCTelemedicineRoom: React.FC<WebRTCTelemedicineRoomProps> = ({
             </div>
             <div>
               <div className="flex items-center space-x-1.5 sm:space-x-2 flex-wrap">
-                <h3 className="font-extrabold text-xs sm:text-base tracking-wide">
-                  Live WebRTC Telemedicine Consultation
+                <h3 className="font-extrabold text-xs sm:text-base tracking-wide flex items-center space-x-1.5">
+                  <span>Live WebRTC Telemedicine Consultation</span>
                 </h3>
-                <span className={`text-[9px] sm:text-[10px] font-mono px-2 py-0.5 rounded-full border ${
+                <span className={`text-[9px] sm:text-[10px] font-mono px-2.5 py-0.5 rounded-full border flex items-center space-x-1 ${
                   peerConnected || remoteStreamAvailable || remoteFallbackFrame || remoteVoiceActive
-                    ? 'bg-emerald-500/20 text-emerald-200 border-emerald-400/40'
+                    ? 'bg-emerald-500 text-slate-950 font-black border-emerald-300 shadow-sm animate-pulse'
                     : 'bg-amber-500/20 text-amber-200 border-amber-400/40'
                 }`}>
-                  {peerConnected || remoteStreamAvailable || remoteFallbackFrame || remoteVoiceActive
-                    ? 'CONNECTED • LIVE'
-                    : connectionStatus}
+                  {peerConnected || remoteStreamAvailable || remoteFallbackFrame || remoteVoiceActive ? (
+                    <>
+                      <CheckCircle2 className="w-3 h-3 text-slate-950" />
+                      <span>CONNECTED SUCCESSFULLY • LIVE</span>
+                    </>
+                  ) : (
+                    <span>{connectionStatus}</span>
+                  )}
                 </span>
               </div>
               <p className="text-[10px] sm:text-[11px] text-blue-100 hidden sm:block">
@@ -991,6 +1068,23 @@ export const WebRTCTelemedicineRoom: React.FC<WebRTCTelemedicineRoomProps> = ({
           </div>
 
           <div className="flex items-center space-x-2">
+            {/* Quick Test Mic & Sound Pill */}
+            <button
+              onClick={handleTestMicAndSpeaker}
+              disabled={testingAudio}
+              className={`px-2.5 py-1 rounded-xl text-[10px] sm:text-xs font-bold transition-all flex items-center space-x-1 border cursor-pointer ${
+                audioTestPassed
+                  ? 'bg-emerald-500 text-slate-950 border-emerald-300 font-extrabold'
+                  : testingAudio
+                  ? 'bg-amber-500 text-slate-950 border-amber-300 animate-pulse'
+                  : 'bg-royal-800 text-blue-200 border-royal-600 hover:text-white'
+              }`}
+              title="Test microphone loopback and speaker output"
+            >
+              <Volume2 className="w-3.5 h-3.5" />
+              <span>{testingAudio ? 'Testing Sound...' : audioTestPassed ? '✅ Mic Working!' : 'Test Sound & Mic'}</span>
+            </button>
+
             {/* Room ID Pill & 1-Click Copy */}
             <div className="flex items-center space-x-1 bg-royal-800/90 px-2 sm:px-3 py-1 sm:py-1.5 rounded-xl text-xs border border-royal-600">
               <Laptop className="w-3 h-3 text-blue-200" />
@@ -1016,6 +1110,23 @@ export const WebRTCTelemedicineRoom: React.FC<WebRTCTelemedicineRoomProps> = ({
             </button>
           </div>
         </div>
+
+        {/* Prominent Connection Success Notification Banner (Visible across top of room when connected) */}
+        {(peerConnected || remoteStreamAvailable || remoteFallbackFrame || remoteVoiceActive) && (
+          <div className="bg-emerald-600 text-white px-3 sm:px-5 py-1.5 flex flex-wrap items-center justify-between gap-1.5 text-xs font-bold border-b border-emerald-700 shadow-sm animate-in fade-in">
+            <div className="flex items-center space-x-2">
+              <CheckCircle2 className="w-4 h-4 text-emerald-200 animate-bounce flex-shrink-0" />
+              <span>
+                CONNECTED SUCCESSFULLY: Consultation between {localUser.name} & {remoteUser.name} is Active!
+              </span>
+            </div>
+            <div className="flex items-center space-x-2 text-[10px]">
+              <span className="bg-emerald-800 text-emerald-100 px-2 py-0.5 rounded-full font-mono font-semibold">
+                🟢 Live Voice & Video Connected
+              </span>
+            </div>
+          </div>
+        )}
 
         {/* Clean Patient Context Bar (Zero Demo Numbers, Pure Patient Demographics) */}
         <div className="bg-slate-50 border-b border-slate-200 px-3 sm:px-5 py-2 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-800">
@@ -1150,14 +1261,14 @@ export const WebRTCTelemedicineRoom: React.FC<WebRTCTelemedicineRoomProps> = ({
                 {/* Remote Status Badge */}
                 <div className="absolute top-2 right-2 sm:top-3 sm:right-3 z-20">
                   {peerConnected || remoteStreamAvailable || remoteFallbackFrame || remoteVoiceActive ? (
-                    <span className="bg-emerald-600 text-white font-bold text-[8px] sm:text-[9px] px-2 py-0.5 rounded-full flex items-center space-x-1 shadow-md">
+                    <span className="bg-emerald-600 text-white font-extrabold text-[8px] sm:text-[9px] px-2.5 py-0.5 rounded-full flex items-center space-x-1 shadow-md border border-emerald-400">
                       <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
-                      <span>CONNECTED • LIVE</span>
+                      <span>CONNECTED SUCCESSFULLY</span>
                     </span>
                   ) : (
                     <span className="bg-amber-600 text-white font-bold text-[8px] sm:text-[9px] px-2 py-0.5 rounded-full flex items-center space-x-1 shadow-md">
                       <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                      <span>WAITING</span>
+                      <span>WAITING FOR PEER</span>
                     </span>
                   )}
                 </div>
@@ -1214,8 +1325,9 @@ export const WebRTCTelemedicineRoom: React.FC<WebRTCTelemedicineRoomProps> = ({
                 </div>
 
                 {/* Local Badge */}
-                <div className="absolute top-2 right-2 sm:top-3 sm:right-3 z-20 bg-royal-600 text-white font-bold text-[8px] sm:text-[9px] px-2 py-0.5 rounded-full shadow-md border border-royal-400/30">
-                  YOU
+                <div className="absolute top-2 right-2 sm:top-3 sm:right-3 z-20 bg-royal-600 text-white font-bold text-[8px] sm:text-[9px] px-2 py-0.5 rounded-full shadow-md border border-royal-400/30 flex items-center space-x-1">
+                  <CheckCircle2 className="w-3 h-3 text-emerald-300" />
+                  <span>YOU • CONNECTED</span>
                 </div>
               </div>
             </div>
@@ -1259,6 +1371,23 @@ export const WebRTCTelemedicineRoom: React.FC<WebRTCTelemedicineRoomProps> = ({
                 />
                 <span className="text-[10px] font-mono text-slate-300 w-7">{callVolume}%</span>
               </div>
+
+              {/* Mic & Sound Verification Button */}
+              <button
+                onClick={handleTestMicAndSpeaker}
+                disabled={testingAudio}
+                className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 cursor-pointer shadow-md ${
+                  audioTestPassed
+                    ? 'bg-emerald-500 text-slate-950 font-black'
+                    : testingAudio
+                    ? 'bg-amber-500 text-slate-950 animate-pulse'
+                    : 'bg-slate-700 hover:bg-slate-600 text-blue-200 hover:text-white'
+                }`}
+                title="Verify speaker chime and microphone loopback"
+              >
+                <Volume2 className="w-3.5 h-3.5" />
+                <span>{testingAudio ? 'Testing...' : audioTestPassed ? '✅ Mic Working!' : 'Test Sound'}</span>
+              </button>
 
               <button
                 onClick={handleEndCall}

@@ -9,7 +9,9 @@ import {
   ArrowRight,
   Sparkles,
   CheckCircle2,
-  LogIn
+  LogIn,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import api from '../services/api.ts';
 import { Language, translations } from '../i18n/translations.ts';
@@ -31,6 +33,7 @@ export const AdminAuthModal: React.FC<AdminAuthModalProps> = ({
 
   const [email, setEmail] = useState('admin@aarogyadrishti.in');
   const [password, setPassword] = useState('admin123');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -189,14 +192,22 @@ export const AdminAuthModal: React.FC<AdminAuthModalProps> = ({
             <div className="relative">
               <Lock className="w-4 h-4 absolute left-3 top-3.5 text-slate-400" />
               <input
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 value={password}
                 autoComplete="current-password"
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:ring-2 focus:ring-blue-600 focus:outline-none"
+                className="w-full pl-9 pr-10 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:ring-2 focus:ring-blue-600 focus:outline-none"
                 required
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 cursor-pointer p-0.5"
+                title={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
             </div>
           </div>
 
