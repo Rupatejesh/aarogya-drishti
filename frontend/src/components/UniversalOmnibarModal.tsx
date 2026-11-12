@@ -93,15 +93,15 @@ export const UniversalOmnibarModal: React.FC<UniversalOmnibarModalProps> = ({
     (results?.prescriptions?.length || 0);
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-start justify-center p-4 sm:p-6 pt-16 sm:pt-24 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-md flex items-start justify-center p-4 sm:p-6 pt-16 sm:pt-24 animate-in fade-in duration-200">
       <div
-        className="bg-white w-full max-w-2xl rounded-3xl border-2 border-amber-400 shadow-2xl overflow-hidden flex flex-col max-h-[80vh]"
+        className="bg-white w-full max-w-2xl rounded-3xl border border-slate-200 shadow-2xl overflow-hidden flex flex-col max-h-[80vh]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Search Header Bar */}
-        <div className="p-4 sm:p-5 border-b border-amber-200/80 bg-gradient-to-r from-[#FFFDF8] via-white to-amber-50/40 flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-2xl bg-amber-100 flex items-center justify-center text-amber-700 flex-shrink-0">
-            <Search className="w-5 h-5" />
+        <div className="p-4 sm:p-5 border-b border-slate-200 bg-white flex items-center space-x-3">
+          <div className="w-10 h-10 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center text-royal-600 flex-shrink-0">
+            <Search className="w-5 h-5 text-royal-600" />
           </div>
 
           <input
@@ -114,10 +114,10 @@ export const UniversalOmnibarModal: React.FC<UniversalOmnibarModalProps> = ({
           />
 
           {loading && (
-            <div className="w-4 h-4 border-2 border-amber-500 border-t-transparent rounded-full animate-spin flex-shrink-0" />
+            <div className="w-4 h-4 border-2 border-royal-600 border-t-transparent rounded-full animate-spin flex-shrink-0" />
           )}
 
-          <div className="hidden sm:flex items-center space-x-1.5 px-2 py-1 rounded-lg bg-amber-100/70 border border-amber-300 text-[10px] font-mono text-amber-900">
+          <div className="hidden sm:flex items-center space-x-1.5 px-2 py-1 rounded-lg bg-slate-100 border border-slate-200 text-[10px] font-mono text-slate-700">
             <span>ESC to close</span>
           </div>
 
@@ -132,25 +132,25 @@ export const UniversalOmnibarModal: React.FC<UniversalOmnibarModalProps> = ({
         {/* Quick Suggestion Chips if no query */}
         {!query && (
           <div className="p-6 space-y-4">
-            <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+            <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">
               Quick Evaluator Searches
             </div>
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => handleSearch('Somanna')}
-                className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 transition-all flex items-center space-x-1"
+                className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-blue-50 hover:bg-blue-100 text-royal-800 border border-blue-200 transition-all flex items-center space-x-1"
               >
                 <span>K. Somanna (Compulsory Case)</span>
               </button>
               <button
                 onClick={() => handleSearch('Dr. Swapna')}
-                className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 transition-all"
+                className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-200 transition-all"
               >
                 Dr. Swapna Devi (AH Paderu)
               </button>
               <button
                 onClick={() => handleSearch('Madugula')}
-                className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 transition-all"
+                className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 transition-all"
               >
                 CHC G. Madugula
               </button>
@@ -166,17 +166,17 @@ export const UniversalOmnibarModal: React.FC<UniversalOmnibarModalProps> = ({
 
         {/* Results Container */}
         {results && (
-          <div className="p-4 sm:p-5 overflow-y-auto space-y-4 divide-y divide-amber-100">
+          <div className="p-4 sm:p-5 overflow-y-auto space-y-4 divide-y divide-slate-100">
             <div className="text-xs font-bold text-slate-500 flex justify-between items-center pb-1">
               <span>Results Found: {totalResults}</span>
-              <span className="font-mono text-[10px] text-amber-700 font-bold">Query: "{query}"</span>
+              <span className="font-mono text-[10px] text-royal-700 font-bold">Query: "{query}"</span>
             </div>
 
             {/* 1. Patients */}
             {results.patients?.length > 0 && (
               <div className="pt-3 space-y-2">
-                <div className="text-xs font-bold text-amber-900 flex items-center space-x-1.5">
-                  <User className="w-3.5 h-3.5 text-amber-600" />
+                <div className="text-xs font-bold text-royal-900 flex items-center space-x-1.5">
+                  <User className="w-3.5 h-3.5 text-royal-600" />
                   <span>Tribal Patients</span>
                 </div>
                 <div className="space-y-1.5">
@@ -187,12 +187,12 @@ export const UniversalOmnibarModal: React.FC<UniversalOmnibarModalProps> = ({
                         onSelectPatient(p.uidn);
                         onClose();
                       }}
-                      className="p-3 rounded-2xl hover:bg-amber-50 cursor-pointer flex items-center justify-between transition-colors border border-transparent hover:border-amber-300 group"
+                      className="p-3 rounded-2xl hover:bg-blue-50/60 cursor-pointer flex items-center justify-between transition-colors border border-transparent hover:border-blue-200 group"
                     >
                       <div>
                         <div className="font-bold text-sm text-slate-900 flex items-center space-x-2">
                           <span>{p.name}</span>
-                          <span className="text-[10px] font-mono bg-amber-100 text-amber-900 px-2 py-0.5 rounded font-bold">
+                          <span className="text-[10px] font-mono bg-blue-100 text-royal-900 px-2 py-0.5 rounded font-bold">
                             {p.uidn}
                           </span>
                         </div>
@@ -200,7 +200,7 @@ export const UniversalOmnibarModal: React.FC<UniversalOmnibarModalProps> = ({
                           Age: {p.age} • Mandal: <strong>{p.mandal}</strong> • Village: {p.village}
                         </div>
                       </div>
-                      <div className="flex items-center space-x-2 text-xs font-bold text-amber-700 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex items-center space-x-2 text-xs font-bold text-royal-700 opacity-0 group-hover:opacity-100 transition-opacity">
                         <span>Authenticate</span>
                         <CornerDownLeft className="w-3.5 h-3.5" />
                       </div>
@@ -213,8 +213,8 @@ export const UniversalOmnibarModal: React.FC<UniversalOmnibarModalProps> = ({
             {/* 2. Doctors */}
             {results.doctors?.length > 0 && (
               <div className="pt-3 space-y-2">
-                <div className="text-xs font-bold text-amber-900 flex items-center space-x-1.5">
-                  <Stethoscope className="w-3.5 h-3.5 text-amber-600" />
+                <div className="text-xs font-bold text-emerald-950 flex items-center space-x-1.5">
+                  <Stethoscope className="w-3.5 h-3.5 text-emerald-700" />
                   <span>Specialist Doctors</span>
                 </div>
                 <div className="space-y-1.5">
@@ -225,7 +225,7 @@ export const UniversalOmnibarModal: React.FC<UniversalOmnibarModalProps> = ({
                         if (onSelectDoctor) onSelectDoctor(d);
                         onClose();
                       }}
-                      className="p-3 rounded-2xl hover:bg-amber-50 cursor-pointer flex items-center justify-between transition-colors border border-transparent hover:border-amber-300 group"
+                      className="p-3 rounded-2xl hover:bg-emerald-50/60 cursor-pointer flex items-center justify-between transition-colors border border-transparent hover:border-emerald-200 group"
                     >
                       <div>
                         <div className="font-bold text-sm text-slate-900 flex items-center space-x-2">
@@ -238,7 +238,7 @@ export const UniversalOmnibarModal: React.FC<UniversalOmnibarModalProps> = ({
                           {d.designation} • {d.hospitalDuty} ({d.experienceYears}y exp)
                         </div>
                       </div>
-                      <ArrowRight className="w-4 h-4 text-amber-600 group-hover:translate-x-1 transition-transform" />
+                      <ArrowRight className="w-4 h-4 text-emerald-600 group-hover:translate-x-1 transition-transform" />
                     </div>
                   ))}
                 </div>
@@ -248,8 +248,8 @@ export const UniversalOmnibarModal: React.FC<UniversalOmnibarModalProps> = ({
             {/* 3. Hospitals */}
             {results.hospitals?.length > 0 && (
               <div className="pt-3 space-y-2">
-                <div className="text-xs font-bold text-amber-900 flex items-center space-x-1.5">
-                  <Hospital className="w-3.5 h-3.5 text-amber-600" />
+                <div className="text-xs font-bold text-slate-900 flex items-center space-x-1.5">
+                  <Hospital className="w-3.5 h-3.5 text-royal-600" />
                   <span>11 Mandals Facilities</span>
                 </div>
                 <div className="space-y-1.5">
@@ -260,7 +260,7 @@ export const UniversalOmnibarModal: React.FC<UniversalOmnibarModalProps> = ({
                         if (onSelectHospital) onSelectHospital(h);
                         onClose();
                       }}
-                      className="p-3 rounded-2xl hover:bg-amber-50 cursor-pointer flex items-center justify-between transition-colors border border-transparent hover:border-amber-300 group"
+                      className="p-3 rounded-2xl hover:bg-slate-50 cursor-pointer flex items-center justify-between transition-colors border border-transparent hover:border-slate-300 group"
                     >
                       <div>
                         <div className="font-bold text-sm text-slate-900">{h.name}</div>
@@ -268,7 +268,7 @@ export const UniversalOmnibarModal: React.FC<UniversalOmnibarModalProps> = ({
                           Mandal: <strong>{h.mandal}</strong> • MO: {h.moInCharge} • Biopsy: {h.biopsyEquipStatus}
                         </div>
                       </div>
-                      <span className="text-[10px] font-mono font-bold bg-amber-100 text-amber-900 px-2 py-0.5 rounded">
+                      <span className="text-[10px] font-mono font-bold bg-slate-100 text-slate-800 px-2 py-0.5 rounded">
                         {h.facilityType}
                       </span>
                     </div>
@@ -280,8 +280,8 @@ export const UniversalOmnibarModal: React.FC<UniversalOmnibarModalProps> = ({
             {/* 4. Prescriptions & Biopsy Referrals */}
             {results.prescriptions?.length > 0 && (
               <div className="pt-3 space-y-2">
-                <div className="text-xs font-bold text-amber-900 flex items-center space-x-1.5">
-                  <FileText className="w-3.5 h-3.5 text-amber-600" />
+                <div className="text-xs font-bold text-royal-900 flex items-center space-x-1.5">
+                  <FileText className="w-3.5 h-3.5 text-royal-600" />
                   <span>Prescriptions & Biopsy Slips</span>
                 </div>
                 <div className="space-y-1.5">
@@ -292,7 +292,7 @@ export const UniversalOmnibarModal: React.FC<UniversalOmnibarModalProps> = ({
                         if (onSelectPrescription) onSelectPrescription(rx);
                         onClose();
                       }}
-                      className="p-3 rounded-2xl hover:bg-amber-50 cursor-pointer flex items-center justify-between transition-colors border border-transparent hover:border-amber-300 group"
+                      className="p-3 rounded-2xl hover:bg-blue-50/60 cursor-pointer flex items-center justify-between transition-colors border border-transparent hover:border-blue-200 group"
                     >
                       <div>
                         <div className="font-bold text-sm text-slate-900 flex items-center space-x-2">
@@ -305,7 +305,7 @@ export const UniversalOmnibarModal: React.FC<UniversalOmnibarModalProps> = ({
                           Status: {rx.trackingStatus} • Barcode: {rx.printableBarcodeId}
                         </div>
                       </div>
-                      <ArrowRight className="w-4 h-4 text-amber-600 group-hover:translate-x-1 transition-transform" />
+                      <ArrowRight className="w-4 h-4 text-royal-600 group-hover:translate-x-1 transition-transform" />
                     </div>
                   ))}
                 </div>
@@ -321,12 +321,12 @@ export const UniversalOmnibarModal: React.FC<UniversalOmnibarModalProps> = ({
         )}
 
         {/* Footer shortcuts */}
-        <div className="p-3 bg-[#FCFBF7] border-t border-amber-200/80 px-5 flex items-center justify-between text-[11px] text-slate-500">
+        <div className="p-3 bg-slate-50 border-t border-slate-200 px-5 flex items-center justify-between text-[11px] text-slate-500">
           <div className="flex items-center space-x-3">
             <span>Press <kbd className="px-1.5 py-0.5 bg-white border border-slate-300 rounded font-mono font-bold text-[10px] text-slate-700">ESC</kbd> to exit</span>
             <span>Press <kbd className="px-1.5 py-0.5 bg-white border border-slate-300 rounded font-mono font-bold text-[10px] text-slate-700">/</kbd> anytime to open</span>
           </div>
-          <span className="font-bold text-amber-900">ITDA Paderu Healthcare Engine</span>
+          <span className="font-bold text-royal-700">ITDA Paderu Healthcare Engine</span>
         </div>
       </div>
     </div>

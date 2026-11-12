@@ -451,7 +451,7 @@ export const adminLogin = async (req: Request, res: Response): Promise<void> => 
 
     // Standard ITDA Paderu Admin Credentials
     const isValidAdmin =
-      (cleanEmail === 'admin@itdapaderu.gov.in' || cleanEmail === 'admin@aarogyadrishti.org' || cleanEmail === 'admin') &&
+      (cleanEmail === 'admin@aarogyadrishti.in' || cleanEmail === 'admin@itdapaderu.gov.in' || cleanEmail === 'admin@aarogyadrishti.org' || cleanEmail === 'admin') &&
       (cleanPass === 'admin123' || cleanPass === 'Aarogya@2026' || cleanPass === 'admin');
 
     if (!isValidAdmin) {

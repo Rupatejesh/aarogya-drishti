@@ -8,7 +8,9 @@ import {
   HelpCircle,
   ShieldCheck,
   Stethoscope,
-  Info
+  Info,
+  Headphones,
+  Volume2
 } from 'lucide-react';
 import { Language, translations } from '../i18n/translations.ts';
 
@@ -56,6 +58,20 @@ export const AiArogyaDrawer: React.FC<AiArogyaDrawerProps> = ({
 
   if (!isOpen) return null;
 
+  const handlePlayAwareness = () => {
+    if (!('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+    const text =
+      lang === 'te'
+        ? 'నోటి క్యాన్సర్ హెచ్చరిక: నోటిలో రెండు వారాలకు మించి మానని పుండు లేదా తెల్లటి మచ్చ ఉంటే వెంటనే పంచ్ బయాప్సీ చేయించుకోండి. అడ్డా పొగ తక్షణం ఆపండి.'
+        : lang === 'hi'
+        ? 'मुंह के कैंसर से बचाव: यदि दो सप्ताह से अधिक समय से सफेद धब्बा या छाला है, तो तुरंत डॉक्टर से संपर्क करें और बायोप्सी करवाएं।'
+        : 'Oral cancer awareness: Persistent white patch or ulcer over two weeks requires clinical biopsy. Stop reverse smoking to protect oral mucosa.';
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = lang === 'te' ? 'te-IN' : lang === 'hi' ? 'hi-IN' : 'en-IN';
+    window.speechSynthesis.speak(utterance);
+  };
+
   const handleSend = (textToSend?: string) => {
     const query = textToSend || input;
     if (!query.trim()) return;
@@ -91,7 +107,7 @@ export const AiArogyaDrawer: React.FC<AiArogyaDrawerProps> = ({
         reply =
           lang === 'te'
             ? 'మీరు తెలిపిన సమాచారం ఆధారంగా ఆరోగ్య దృష్టి పోర్టల్ ద్వారా లైవ్ ఏఐ నోటి కెమెరా స్క్రీనింగ్ మరియు వెబ్‌ఆర్‌టిసి ద్వారా పాడేరు ఆంకాలజీ వైద్యులతో సంప్రదించండి.'
-            : 'Based on clinical guidelines for ITDA Paderu, please capture an intra-oral image using our Live AI Oral Camera or launch a WebRTC tele-consultation with Dr. S. Rao (Chief Onco-Pathologist).';
+            : 'Based on clinical guidelines for ITDA Paderu, please capture an intra-oral image using our Live AI Oral Camera or launch a WebRTC tele-consultation with Dr. Swapna Devi (Lead Tele-Consultant).';
       }
 
       setMessages((prev) => [
@@ -107,29 +123,44 @@ export const AiArogyaDrawer: React.FC<AiArogyaDrawerProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-hidden bg-black/40 backdrop-blur-sm flex justify-end">
-      <div className="w-full max-w-md bg-[#FAF9F5] h-full shadow-2xl border-l border-amber-300 flex flex-col animate-slideLeft">
-        {/* Drawer Header */}
-        <div className="bg-gradient-to-r from-amber-950 via-amber-900 to-amber-950 text-white p-4 flex items-center justify-between border-b border-amber-600/50">
+    <div className="fixed inset-0 z-50 overflow-hidden bg-slate-900/50 backdrop-blur-sm flex justify-end animate-in fade-in duration-200">
+      <div className="w-full max-w-md bg-white h-full shadow-2xl border-l border-slate-200 flex flex-col">
+        {/* Drawer Header (Royal Blue) */}
+        <div className="bg-royal-700 text-white p-4 flex items-center justify-between border-b border-royal-800">
           <div className="flex items-center space-x-2.5">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-gold-glow">
-              <Sparkles className="w-5 h-5 text-white" />
+            <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center">
+              <Sparkles className="w-5 h-5 text-amber-300" />
             </div>
             <div>
-              <h3 className="font-bold text-sm font-serif-royal">{t.aiArogyaTitle}</h3>
-              <p className="text-[10px] text-amber-200">Trilingual Oral Oncology AI</p>
+              <h3 className="font-extrabold text-sm">{t.aiArogyaTitle}</h3>
+              <p className="text-[10px] text-blue-100">Trilingual Oral Oncology Assistant</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1 rounded-full hover:bg-white/20 transition-colors text-amber-200 hover:text-white"
+            className="p-1 rounded-full hover:bg-white/20 transition-colors text-white"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
+        {/* Oral Health Related Awareness Speeches quick trigger bar */}
+        <div className="p-2.5 bg-blue-50 border-b border-blue-200 flex items-center justify-between">
+          <span className="text-[11px] font-bold text-royal-900 flex items-center space-x-1.5">
+            <Headphones className="w-3.5 h-3.5 text-royal-600" />
+            <span>Oral Health Awareness Speeches</span>
+          </span>
+          <button
+            onClick={handlePlayAwareness}
+            className="px-2.5 py-1 bg-royal-600 hover:bg-royal-700 text-white rounded-lg text-[10px] font-bold transition-all flex items-center space-x-1"
+          >
+            <Volume2 className="w-3 h-3" />
+            <span>Listen Aloud</span>
+          </button>
+        </div>
+
         {/* Message Feed */}
-        <div className="flex-1 p-4 overflow-y-auto space-y-3">
+        <div className="flex-1 p-4 overflow-y-auto space-y-3 bg-slate-50/60">
           {messages.map((m, idx) => (
             <div
               key={idx}
@@ -138,10 +169,10 @@ export const AiArogyaDrawer: React.FC<AiArogyaDrawerProps> = ({
               }`}
             >
               <div
-                className={`w-7 h-7 rounded-full flex items-center justify-center text-xs flex-shrink-0 ${
+                className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
                   m.sender === 'user'
-                    ? 'bg-amber-600 text-white'
-                    : 'bg-emerald-700 text-white'
+                    ? 'bg-royal-600 text-white'
+                    : 'bg-emerald-600 text-white'
                 }`}
               >
                 {m.sender === 'user' ? <User className="w-3.5 h-3.5" /> : <Bot className="w-3.5 h-3.5" />}
@@ -150,14 +181,14 @@ export const AiArogyaDrawer: React.FC<AiArogyaDrawerProps> = ({
               <div
                 className={`p-3 rounded-2xl text-xs max-w-[82%] leading-relaxed ${
                   m.sender === 'user'
-                    ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-tr-none shadow-sm'
-                    : 'bg-white border border-amber-200 text-slate-800 rounded-tl-none shadow-sm'
+                    ? 'bg-royal-600 text-white rounded-tr-none shadow-sm'
+                    : 'bg-white border border-slate-200 text-slate-800 rounded-tl-none shadow-sm'
                 }`}
               >
                 {m.text}
                 <div
                   className={`text-[9px] mt-1 text-right ${
-                    m.sender === 'user' ? 'text-amber-100' : 'text-slate-400'
+                    m.sender === 'user' ? 'text-blue-100' : 'text-slate-400'
                   }`}
                 >
                   {m.time}
@@ -168,20 +199,20 @@ export const AiArogyaDrawer: React.FC<AiArogyaDrawerProps> = ({
 
           {typing && (
             <div className="flex items-center space-x-2 text-slate-400 text-xs italic">
-              <Bot className="w-4 h-4 text-emerald-600 animate-spin" />
+              <Bot className="w-4 h-4 text-royal-600 animate-spin" />
               <span>AI Arogya is reasoning...</span>
             </div>
           )}
         </div>
 
         {/* Quick Suggestion Pills */}
-        <div className="px-4 py-2 border-t border-amber-200/80 bg-white/70 overflow-x-auto">
+        <div className="px-4 py-2 border-t border-slate-200 bg-white overflow-x-auto">
           <div className="flex space-x-1.5 whitespace-nowrap">
             {SAMPLE_PROMPTS.map((prompt, i) => (
               <button
                 key={i}
                 onClick={() => handleSend(prompt)}
-                className="px-2.5 py-1 rounded-full text-[10px] bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-medium transition-colors"
+                className="px-2.5 py-1 rounded-full text-[10px] bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-royal-800 border border-slate-200 font-medium transition-colors"
               >
                 {prompt}
               </button>
@@ -190,18 +221,18 @@ export const AiArogyaDrawer: React.FC<AiArogyaDrawerProps> = ({
         </div>
 
         {/* Input Bar */}
-        <div className="p-3 bg-white border-t border-amber-200 flex items-center space-x-2">
+        <div className="p-3 bg-white border-t border-slate-200 flex items-center space-x-2">
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
             placeholder={t.askQuestion}
-            className="flex-1 bg-[#FAF9F5] border border-amber-300 rounded-full px-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-amber-500"
+            className="flex-1 bg-slate-50 border border-slate-200 rounded-full px-4 py-2 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-royal-500"
           />
           <button
             onClick={() => handleSend()}
-            className="w-9 h-9 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 text-white flex items-center justify-center shadow-gold-glow hover:brightness-105 active:scale-95 transition-all"
+            className="w-9 h-9 rounded-full bg-royal-600 hover:bg-royal-700 text-white flex items-center justify-center shadow-blue-card transition-all active:scale-95"
           >
             <Send className="w-4 h-4" />
           </button>
@@ -212,4 +243,3 @@ export const AiArogyaDrawer: React.FC<AiArogyaDrawerProps> = ({
 };
 
 export default AiArogyaDrawer;
-

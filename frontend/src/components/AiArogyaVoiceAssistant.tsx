@@ -17,7 +17,9 @@ import {
   CheckCircle2,
   Headphones,
   Sliders,
-  Globe
+  Globe,
+  QrCode,
+  MessageSquare
 } from 'lucide-react';
 import { Language, translations } from '../i18n/translations.ts';
 
@@ -48,7 +50,7 @@ export const AiArogyaVoiceAssistant: React.FC<AiArogyaVoiceAssistantProps> = ({
   // Speech Synthesis state
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [activeTopicId, setActiveTopicId] = useState<string | null>(null);
-  const [speechRate, setSpeechRate] = useState<number>(0.9); // Slightly slower for low-literacy clarity
+  const [speechRate, setSpeechRate] = useState<number>(0.9); // Slower for low-literacy clarity
   const [selectedVoiceLang, setSelectedVoiceLang] = useState<Language>(lang);
 
   // Speech Recognition (Mic) state
@@ -75,11 +77,11 @@ export const AiArogyaVoiceAssistant: React.FC<AiArogyaVoiceAssistantProps> = ({
     };
   }, []);
 
-  // Pre-curated bilingual voice guides for tribal civilians
+  // Pre-curated bilingual voice guides for tribal citizens
   const topics: AudioTopic[] = [
     {
       id: 'symptoms',
-      titleEn: '1. Oral Cancer Warning Signs',
+      titleEn: '1. Oral Cancer Warning Signs & Symptoms',
       titleTe: '1. నోటి క్యాన్సర్ హెచ్చరిక లక్షణాలు',
       titleHi: '1. मुँह के कैंसर के चेतावनी लक्षण',
       icon: AlertCircle,
@@ -118,16 +120,42 @@ export const AiArogyaVoiceAssistant: React.FC<AiArogyaVoiceAssistantProps> = ({
     },
     {
       id: 'appointment_guide',
-      titleEn: '4. How to Book Appointment or Tele-Call',
-      titleTe: '4. అపాయింట్‌మెంట్ మరియు వీడియో కాల్ ఎలా చేయాలి',
-      titleHi: '4. अपॉइंटमेंट और वीडियो कॉल कैसे बुक करें',
+      titleEn: '4. How to Apply for Appointment & Check Notifications',
+      titleTe: '4. అపాయింట్‌మెంట్ తీసుకోవడం మరియు నోటిఫికేషన్లు చూడడం',
+      titleHi: '4. अपॉइंटमेंट आवेदन और नोटिफिकेशन देखना',
       icon: Calendar,
       speechTextEn:
-        'To book an appointment, click on Request Appointment, select your nearest Community Health Centre or Area Hospital Paderu, choose General Oral Consultation or Biopsy, and select your date. Once approved, you can talk directly to Dr. Swapna Devi over live WebRTC video.',
+        'To book an appointment, click on Book Doctor, select General Consultation or Biopsy Procedure, choose your nearest PHC and available slot. In the Notifications section, you can see live green APPROVED or amber PENDING status cards with your allotted date, day, time and doctor remarks.',
       speechTextTe:
-        'అపాయింట్‌మెంట్ తీసుకోవడానికి, రిక్వెస్ట్ అపాయింట్‌మెంట్ క్లిక్ చేసి, మీ సమీప కమ్యూనిటీ హెల్త్ సెంటర్ లేదా ఏరియా ఆసుపత్రి పాడేరును ఎంచుకోండి. డాక్టర్ ఆమోదించిన తర్వాత, మీరు డాక్టర్ స్వప్నా దేవితో నేరుగా వీడియో కాల్ ద్వారా మాట్లాడవచ్చు.',
+        'అపాయింట్‌మెంట్ తీసుకోవడానికి బుక్ డాక్టర్ పై క్లిక్ చేసి, జనరల్ సంప్రదింపు లేదా బయాప్సీ ప్రొసీజర్ ఎంచుకోండి. నోటిఫికేషన్ల విభాగంలో ఆమోదించబడిన తేదీ, సమయం మరియు డాక్టర్ సూచనలతో కూడిన గ్రీన్ అప్రూవ్డ్ కార్డును మీరు నేరుగా చూడవచ్చు.',
       speechTextHi:
-        'अपॉइंटमेंट बुक करने के लिए, रिक्वेस्ट अपॉइंटमेंट पर क्लिक करें, अपने नजदीकी स्वास्थ्य केंद्र का चयन करें और तारीख चुनें। डॉक्टर की स्वीकृति के बाद, आप सीधे वीडियो कॉल पर बात कर सकते हैं।'
+        'अपॉइंटमेंट के लिए बुक डॉक्टर पर जाएं, सामान्य परामर्श या बायोप्सी प्रक्रिया चुनें। नोटिफिकेशन सेक्शन में आप स्वीकृत तिथि, समय और डॉक्टर की सलाह सीधे देख सकते हैं।'
+    },
+    {
+      id: 'chat_webrtc',
+      titleEn: '5. Doctor Chat, WebRTC Video Call & Documents File Option',
+      titleTe: '5. డాక్టర్ చాట్, వీడియో కాల్ మరియు ప్రిస్క్రిప్షన్ ఫైల్ పంపడం',
+      titleHi: '5. डॉक्टर चैट, वीडियो कॉल और प्रिस्क्रिप्शन फाइल भेजना',
+      icon: MessageSquare,
+      speechTextEn:
+        'In the Doctor ChatBox, verify if your doctor is active online. You can chat live and click the Send Prescription from History button to automatically attach your official digital prescription to the doctor. Click Launch Video Call to enter the encrypted live WebRTC consultation room.',
+      speechTextTe:
+        'డాక్టర్ చాట్‌బాక్స్‌లో డాక్టర్ ఆన్‌లైన్‌లో ఉన్నారో లేదో చూడవచ్చు. "సెండ్ ప్రిస్క్రిప్షన్ ఫ్రమ్ హిస్టరీ" బటన్ ద్వారా మీ మునుపటి మందుల పత్రాన్ని డాక్టర్‌కు వెంటనే పంపవచ్చు. వీడియో కాల్ ప్రారంభించడానికి లాంచ్ వీడియో కాల్ బటన్ నొక్కండి.',
+      speechTextHi:
+        'डॉक्टर चैटबॉक्स में डॉक्टर की ऑनलाइन स्थिति देखकर लाइव संदेश भेजें और "सेंड प्रिस्क्रिप्शन फ्रॉम हिस्ट्री" बटन दबाकर अपनी पुरानी पर्ची डॉक्टर को भेजें। वीडियो कॉल शुरू करने के लिए लॉन्च वीडियो कॉल पर क्लिक करें।'
+    },
+    {
+      id: 'card_history',
+      titleEn: '6. Check UIDN, Health Card & Download Prescriptions',
+      titleTe: '6. మీ UIDN, హెల్త్ కార్డ్ చూడడం మరియు ప్రిస్క్రిప్షన్ డౌన్‌లోడ్',
+      titleHi: '6. अपना UIDN, हेल्थ कार्ड देखना और पर्ची डाउनलोड करना',
+      icon: QrCode,
+      speechTextEn:
+        'Your assigned Universal Patient ID Number is displayed on your Golden Health Card with ABDM QR code. In the Prescription History section, view your 4-step treatment journey tracking status, tablet course, and click Download Slip to print official bilingual Medical or Biopsy treatment prescriptions.',
+      speechTextTe:
+        'మీ ఆరోగ్య దృష్టి డిజిటల్ కార్డుపై ప్రత్యేకమైన UIDN నంబర్ మరియు క్యూఆర్ కోడ్ ఉంటాయి. ప్రిస్క్రిప్షన్ విభాగంలో 4-దశల చికిత్స ప్రయాణం, మందుల వివరాలు చూడవచ్చు మరియు అధికారిక ప్రిస్క్రిప్షన్ పత్రాన్ని సులభంగా ప్రింట్ లేదా డౌన్‌లోడ్ చేసుకోవచ్చు.',
+      speechTextHi:
+        'आपके डिजिटल हेल्थ कार्ड पर आपका विशेष UIDN नंबर और क्यूआर कोड उपलब्ध है। इतिहास में 4-चरणीय उपचार स्थिति देखें और मेडिकल व बायोप्सी पर्ची को एक क्लिक में डाउनलोड करें।'
     }
   ];
 
@@ -150,7 +178,6 @@ export const AiArogyaVoiceAssistant: React.FC<AiArogyaVoiceAssistantProps> = ({
     utterance.rate = speechRate;
     utterance.pitch = 1.0;
 
-    // Select suitable voice
     if (selectedVoiceLang === 'te') {
       utterance.lang = 'te-IN';
     } else if (selectedVoiceLang === 'hi') {
@@ -184,6 +211,17 @@ export const AiArogyaVoiceAssistant: React.FC<AiArogyaVoiceAssistantProps> = ({
       setIsSpeaking(false);
       setActiveTopicId(null);
     }
+  };
+
+  // Play All Awareness Speeches in Sequence
+  const playAllAwarenessSpeeches = () => {
+    const fullText = topics.map((t) => {
+      if (selectedVoiceLang === 'te') return `${t.titleTe}. ${t.speechTextTe}`;
+      if (selectedVoiceLang === 'hi') return `${t.titleHi}. ${t.speechTextHi}`;
+      return `${t.titleEn}. ${t.speechTextEn}`;
+    }).join(' ... ');
+
+    speakText(fullText, 'master-awareness');
   };
 
   // Speech-to-Text Microphone Engine
@@ -225,13 +263,11 @@ export const AiArogyaVoiceAssistant: React.FC<AiArogyaVoiceAssistantProps> = ({
       };
 
       recognition.onresult = (event: any) => {
-        const transcript = Array.from(event.results)
-          .map((result: any) => result[0].transcript)
-          .join('');
-        setSpokenTranscript(transcript);
-        if (onTranscriptionComplete) {
-          onTranscriptionComplete(transcript);
+        let current = '';
+        for (let i = 0; i < event.results.length; i++) {
+          current += event.results[i][0].transcript;
         }
+        setSpokenTranscript(current);
       };
 
       recognition.onerror = (event: any) => {
@@ -241,93 +277,97 @@ export const AiArogyaVoiceAssistant: React.FC<AiArogyaVoiceAssistantProps> = ({
 
       recognition.onend = () => {
         setIsListening(false);
+        if (spokenTranscript && onTranscriptionComplete) {
+          onTranscriptionComplete(spokenTranscript);
+        }
       };
 
       recognition.start();
     } catch (err) {
-      console.error(err);
+      console.warn('Recognition start exception:', err);
       setIsListening(false);
     }
   };
 
   return (
-    <div className="bg-white rounded-3xl border border-amber-300 p-6 sm:p-8 shadow-luxury space-y-6">
-      {/* 1. Header Banner */}
-      <div className="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-amber-200">
+    <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-luxury space-y-6">
+      {/* Top Header (Royal Blue & White Theme) */}
+      <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-200">
         <div className="flex items-center space-x-3.5">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-white shadow-gold-glow">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-royal-600 to-royal-800 text-white flex items-center justify-center shadow-blue-card">
             <Bot className="w-7 h-7" />
           </div>
           <div>
             <div className="flex items-center space-x-2">
-              <h3 className="text-xl font-bold font-serif-royal text-slate-950">
-                AI Arogya Trilingual Spoken Voice Engine
+              <h3 className="text-xl font-extrabold text-slate-900 tracking-tight">
+                AI Arogya Trilingual Voice Assistant
               </h3>
-              <span className="text-[10px] font-bold bg-amber-100 text-amber-900 px-2.5 py-0.5 rounded-full border border-amber-300">
-                Web Speech API • te-IN / en-IN / hi-IN
+              <span className="text-[10px] font-bold bg-blue-100 text-royal-800 px-2.5 py-0.5 rounded-full border border-blue-200">
+                te-IN • hi-IN • en-IN
               </span>
             </div>
             <p className="text-xs text-slate-500 mt-0.5">
-              Empowering illiterate and tribal citizens with clear native spoken audio and voice-assisted triage
+              Spoken voice assistance & oral cancer awareness designed for low-literacy agency citizens
             </p>
           </div>
         </div>
 
-        {/* Language selector & Speed controls */}
-        <div className="flex flex-wrap items-center gap-3">
-          {/* Language Toggle */}
-          <div className="flex bg-[#FAF9F5] border border-amber-300 rounded-xl p-1 text-xs">
+        {/* Action Controls: Master Awareness Speech Button & Language Selector */}
+        <div className="flex flex-wrap items-center gap-2.5">
+          <button
+            onClick={playAllAwarenessSpeeches}
+            className={`px-4 py-2 rounded-xl text-xs font-extrabold transition-all flex items-center space-x-2 shadow-sm ${
+              activeTopicId === 'master-awareness' && isSpeaking
+                ? 'bg-amber-400 text-slate-950 ring-2 ring-amber-500 animate-pulse'
+                : 'bg-royal-600 hover:bg-royal-700 text-white shadow-blue-card'
+            }`}
+          >
+            <Headphones className="w-4 h-4" />
+            <span>Oral Health Related Awareness Speeches</span>
+          </button>
+
+          {/* Voice Language Buttons */}
+          <div className="flex items-center space-x-1 bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs font-bold">
             <button
-              onClick={() => setSelectedVoiceLang('te')}
-              className={`px-3 py-1 rounded-lg font-bold transition-all ${
-                selectedVoiceLang === 'te'
-                  ? 'bg-amber-500 text-white shadow-sm'
-                  : 'text-slate-600 hover:text-slate-900'
+              onClick={() => {
+                setSelectedVoiceLang('en');
+                stopSpeaking();
+              }}
+              className={`px-2.5 py-1 rounded-lg transition-all ${
+                selectedVoiceLang === 'en' ? 'bg-royal-600 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-200'
               }`}
             >
-              తెలుగు (te)
+              EN
             </button>
             <button
-              onClick={() => setSelectedVoiceLang('en')}
-              className={`px-3 py-1 rounded-lg font-bold transition-all ${
-                selectedVoiceLang === 'en'
-                  ? 'bg-amber-500 text-white shadow-sm'
-                  : 'text-slate-600 hover:text-slate-900'
+              onClick={() => {
+                setSelectedVoiceLang('te');
+                stopSpeaking();
+              }}
+              className={`px-2.5 py-1 rounded-lg transition-all ${
+                selectedVoiceLang === 'te' ? 'bg-royal-600 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-200'
               }`}
             >
-              English
+              తెలుగు
             </button>
             <button
-              onClick={() => setSelectedVoiceLang('hi')}
-              className={`px-3 py-1 rounded-lg font-bold transition-all ${
-                selectedVoiceLang === 'hi'
-                  ? 'bg-amber-500 text-white shadow-sm'
-                  : 'text-slate-600 hover:text-slate-900'
+              onClick={() => {
+                setSelectedVoiceLang('hi');
+                stopSpeaking();
+              }}
+              className={`px-2.5 py-1 rounded-lg transition-all ${
+                selectedVoiceLang === 'hi' ? 'bg-royal-600 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-200'
               }`}
             >
-              हिंदी (hi)
+              हिंदी
             </button>
           </div>
 
-          {/* Speech Rate Slider */}
-          <div className="flex items-center space-x-2 bg-[#FAF9F5] border border-amber-200 px-3 py-1.5 rounded-xl text-xs">
-            <Sliders className="w-3.5 h-3.5 text-amber-700" />
-            <span className="text-slate-600 font-semibold">Speed: {speechRate}x</span>
-            <input
-              type="range"
-              min="0.7"
-              max="1.2"
-              step="0.1"
-              value={speechRate}
-              onChange={(e) => setSpeechRate(parseFloat(e.target.value))}
-              className="w-16 accent-amber-600 cursor-pointer"
-            />
-          </div>
-
+          {/* Global Stop Button */}
           {isSpeaking && (
             <button
               onClick={stopSpeaking}
-              className="px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-xl text-xs font-bold transition-colors flex items-center space-x-1"
+              className="px-3 py-1.5 bg-red-600 hover:bg-red-500 text-white rounded-xl text-xs font-bold transition-all flex items-center space-x-1 shadow-sm"
             >
               <VolumeX className="w-3.5 h-3.5" />
               <span>Stop Voice</span>
@@ -336,146 +376,115 @@ export const AiArogyaVoiceAssistant: React.FC<AiArogyaVoiceAssistantProps> = ({
         </div>
       </div>
 
-      {/* 2. Microphone Speech-to-Text Section */}
-      <div className="bg-gradient-to-r from-amber-500/10 via-amber-100/30 to-emerald-500/10 rounded-2xl p-5 border border-amber-300 flex flex-col md:flex-row items-center justify-between gap-4">
-        <div className="space-y-1">
-          <div className="flex items-center space-x-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-            <h4 className="font-bold text-sm text-slate-900 font-serif-royal">
-              Voice Microphone Input (Symptom Dictation)
-            </h4>
-          </div>
-          <p className="text-xs text-slate-600">
-            Press the mic to speak symptoms in Telugu or English (e.g., "నాకు చెంపపై తెల్ల మచ్చ ఉంది" or "I have burning sensation").
-          </p>
-          {spokenTranscript && (
-            <div className="p-3 bg-white rounded-xl border border-amber-300 text-xs font-semibold text-amber-950 mt-2 shadow-inner">
-              <span className="text-slate-400 font-mono text-[10px] block">Recognized Speech:</span>
-              "{spokenTranscript}"
+      {/* Voice Recognition Microphone Bar */}
+      <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-center space-x-3">
+          <button
+            onClick={toggleListening}
+            className={`w-11 h-11 rounded-2xl flex items-center justify-center transition-all ${
+              isListening
+                ? 'bg-red-600 text-white animate-pulse ring-4 ring-red-300'
+                : 'bg-royal-600 hover:bg-royal-700 text-white shadow-sm'
+            }`}
+            title="Click to speak your symptoms or question"
+          >
+            {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+          </button>
+          <div>
+            <div className="text-xs font-bold text-slate-900">
+              {isListening ? 'Listening to your voice...' : 'Tap microphone to speak in your language'}
             </div>
-          )}
+            <div className="text-[11px] text-slate-500">
+              {spokenTranscript || 'Speak your symptoms, questions about white patch, or how to book doctor'}
+            </div>
+          </div>
         </div>
 
-        <button
-          onClick={toggleListening}
-          className={`px-5 py-3 rounded-2xl font-bold text-xs flex items-center space-x-2 transition-all shadow-md ${
-            isListening
-              ? 'bg-red-600 text-white animate-pulse ring-4 ring-red-300'
-              : 'bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:brightness-110'
-          }`}
-        >
-          {isListening ? (
-            <>
-              <MicOff className="w-4 h-4" />
-              <span>Listening... (Click to Stop)</span>
-            </>
-          ) : (
-            <>
-              <Mic className="w-4 h-4" />
-              <span>Speak Symptoms Now</span>
-            </>
-          )}
-        </button>
+        {spokenTranscript && (
+          <button
+            onClick={() => {
+              if (onTranscriptionComplete) onTranscriptionComplete(spokenTranscript);
+              alert(`Voice Query Recorded: "${spokenTranscript}". AI Arogya is analyzing.`);
+            }}
+            className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm"
+          >
+            Process Query
+          </button>
+        )}
       </div>
 
-      {/* 3. Pre-Recorded / Spoken Awareness Audio Topics */}
-      <div className="space-y-3">
-        <div className="flex justify-between items-center">
-          <h4 className="text-sm font-bold font-serif-royal text-slate-900 flex items-center space-x-2">
-            <Volume2 className="w-4 h-4 text-amber-600" />
-            <span>Spoken Oral Health & System Guides (Play Spoken Audio)</span>
-          </h4>
-          <span className="text-xs text-slate-500 font-medium">Click any topic to hear clear spoken guidance</span>
-        </div>
+      {/* 6 Curated Spoken Topic Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {topics.map((topic) => {
+          const Icon = topic.icon;
+          const isCurrentActive = isSpeaking && activeTopicId === topic.id;
+          const displayTitle =
+            selectedVoiceLang === 'te'
+              ? topic.titleTe
+              : selectedVoiceLang === 'hi'
+              ? topic.titleHi
+              : topic.titleEn;
+          const displayText =
+            selectedVoiceLang === 'te'
+              ? topic.speechTextTe
+              : selectedVoiceLang === 'hi'
+              ? topic.speechTextHi
+              : topic.speechTextEn;
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {topics.map((topic) => {
-            const Icon = topic.icon;
-            const isCurrentPlaying = isSpeaking && activeTopicId === topic.id;
-            const currentTitle =
-              selectedVoiceLang === 'te'
-                ? topic.titleTe
-                : selectedVoiceLang === 'hi'
-                ? topic.titleHi
-                : topic.titleEn;
-            const currentSpeech =
-              selectedVoiceLang === 'te'
-                ? topic.speechTextTe
-                : selectedVoiceLang === 'hi'
-                ? topic.speechTextHi
-                : topic.speechTextEn;
-
-            return (
-              <div
-                key={topic.id}
-                className={`p-4 rounded-2xl border transition-all ${
-                  isCurrentPlaying
-                    ? 'border-amber-500 bg-amber-50/70 shadow-gold-glow'
-                    : 'border-amber-200/80 bg-[#FCFBF7] hover:border-amber-400 hover:bg-white'
-                }`}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-center space-x-3">
-                    <div
-                      className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                        isCurrentPlaying
-                          ? 'bg-amber-500 text-white animate-bounce'
-                          : 'bg-amber-100 text-amber-800'
-                      }`}
-                    >
-                      <Icon className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <h5 className="font-bold text-sm text-slate-900 font-serif-royal">{currentTitle}</h5>
-                      <span className="text-[10px] font-mono text-slate-400">Audio Guide #{topic.id}</span>
-                    </div>
+          return (
+            <div
+              key={topic.id}
+              className={`p-4 rounded-2xl border transition-all flex flex-col justify-between space-y-3 ${
+                isCurrentActive
+                  ? 'bg-blue-50/80 border-royal-500 ring-2 ring-royal-400 shadow-md'
+                  : 'bg-white border-slate-200 hover:border-royal-300 hover:shadow-sm'
+              }`}
+            >
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="w-8 h-8 rounded-xl bg-blue-50 text-royal-700 flex items-center justify-center">
+                    <Icon className="w-4 h-4" />
                   </div>
-
-                  <button
-                    onClick={() => speakText(currentSpeech, topic.id)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center space-x-1.5 transition-all shadow-sm ${
-                      isCurrentPlaying
-                        ? 'bg-amber-600 text-white'
-                        : 'bg-amber-100 hover:bg-amber-200 text-amber-950'
-                    }`}
-                  >
-                    {isCurrentPlaying ? (
-                      <>
-                        <Pause className="w-3.5 h-3.5" />
-                        <span>Pause</span>
-                      </>
-                    ) : (
-                      <>
-                        <Play className="w-3.5 h-3.5 fill-current" />
-                        <span>Play Audio</span>
-                      </>
-                    )}
-                  </button>
+                  {isCurrentActive && (
+                    <span className="flex items-center space-x-1 text-[10px] font-bold text-royal-700 bg-blue-100 px-2 py-0.5 rounded-full">
+                      <span className="w-1.5 h-1.5 rounded-full bg-royal-600 animate-ping" />
+                      <span>Speaking</span>
+                    </span>
+                  )}
                 </div>
 
-                <p className="text-xs text-slate-600 mt-3 line-clamp-3 leading-relaxed">
-                  {currentSpeech}
-                </p>
+                <h4 className="font-extrabold text-xs text-slate-900 leading-snug">
+                  {displayTitle}
+                </h4>
 
-                {/* Animated Audio Equalizer Bars when speaking */}
-                {isCurrentPlaying && (
-                  <div className="mt-3 pt-2 border-t border-amber-300 flex items-center justify-between text-[11px] text-amber-900 font-bold">
-                    <span className="flex items-center space-x-1">
-                      <Volume2 className="w-3.5 h-3.5 animate-pulse" />
-                      <span>Speaking in {selectedVoiceLang === 'te' ? 'Telugu (te-IN)' : selectedVoiceLang === 'hi' ? 'Hindi (hi-IN)' : 'English (en-IN)'}...</span>
-                    </span>
-                    <div className="flex items-end space-x-1 h-4">
-                      <span className="w-1 bg-amber-500 rounded animate-pulse h-3" />
-                      <span className="w-1 bg-amber-600 rounded animate-pulse h-4" style={{ animationDelay: '0.1s' }} />
-                      <span className="w-1 bg-amber-700 rounded animate-pulse h-2" style={{ animationDelay: '0.2s' }} />
-                      <span className="w-1 bg-amber-500 rounded animate-pulse h-4" style={{ animationDelay: '0.3s' }} />
-                    </div>
-                  </div>
-                )}
+                <p className="text-[11px] text-slate-600 leading-relaxed line-clamp-3">
+                  {displayText}
+                </p>
               </div>
-            );
-          })}
-        </div>
+
+              <button
+                onClick={() => speakText(displayText, topic.id)}
+                className={`w-full py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center space-x-1.5 ${
+                  isCurrentActive
+                    ? 'bg-red-600 hover:bg-red-700 text-white'
+                    : 'bg-royal-600 hover:bg-royal-700 text-white shadow-sm'
+                }`}
+              >
+                {isCurrentActive ? (
+                  <>
+                    <Pause className="w-3.5 h-3.5" />
+                    <span>Stop</span>
+                  </>
+                ) : (
+                  <>
+                    <Volume2 className="w-3.5 h-3.5" />
+                    <span>Listen Aloud</span>
+                  </>
+                )}
+              </button>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

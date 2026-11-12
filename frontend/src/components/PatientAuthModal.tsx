@@ -102,22 +102,26 @@ export const PatientAuthModal: React.FC<PatientAuthModalProps> = ({
     }
   };
 
-  // Send OTP
+  // Send Demo OTP
   const handleSendOtp = async () => {
+    if (!phoneNumber || phoneNumber.length < 10) {
+      setStatusMsg('Please enter a valid 10-digit mobile number');
+      return;
+    }
     setLoading(true);
     setStatusMsg(null);
     try {
       const res = await api.sendPhoneOtp(phoneNumber);
       setOtpSent(true);
-      setStatusMsg(res.message);
+      setStatusMsg(`Demo OTP sent to +91-${phoneNumber}. Code: ${res.demoOtp || '123456'}`);
     } catch (err: any) {
-      setStatusMsg(err.message || 'OTP request failed');
+      setStatusMsg(err.response?.data?.message || err.message || 'OTP delivery failed');
     } finally {
       setLoading(false);
     }
   };
 
-  // Verify OTP
+  // Verify Phone OTP
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -128,12 +132,12 @@ export const PatientAuthModal: React.FC<PatientAuthModalProps> = ({
         onAuthenticated(res.patient);
         onClose();
       } else {
-        setStatusMsg('Phone verified. Please complete patient registration.');
-        setRegPhone(phoneNumber);
         setAuthMethod('register');
+        setRegPhone(phoneNumber);
+        setStatusMsg('New mobile verified. Please finish one-time registration profile below.');
       }
     } catch (err: any) {
-      setStatusMsg(err.response?.data?.message || err.message || 'Invalid OTP');
+      setStatusMsg(err.response?.data?.message || err.message || 'OTP verification failed');
     } finally {
       setLoading(false);
     }
@@ -147,6 +151,7 @@ export const PatientAuthModal: React.FC<PatientAuthModalProps> = ({
     try {
       const payload = {
         name: regName,
+        age: calculatedAge,
         dob: regDob,
         gender: regGender,
         bloodGroup: regBloodGroup,
@@ -168,35 +173,35 @@ export const PatientAuthModal: React.FC<PatientAuthModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-      <div className="bg-white max-w-xl w-full rounded-3xl border border-amber-300 shadow-2xl overflow-hidden animate-scaleIn">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-amber-950 via-amber-900 to-amber-950 text-white p-5 flex items-center justify-between border-b border-amber-600/50">
+    <div className="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
+      <div className="bg-white max-w-xl w-full rounded-3xl border border-slate-200 shadow-2xl overflow-hidden">
+        {/* Header (Royal Blue) */}
+        <div className="bg-royal-700 text-white p-5 flex items-center justify-between border-b border-royal-800">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-2xl bg-amber-500/20 border border-amber-400 flex items-center justify-center">
-              <UserCheck className="w-5 h-5 text-amber-300" />
+            <div className="w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center">
+              <UserCheck className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h3 className="font-extrabold text-base font-serif-royal">PATIENT AUTHENTICATION</h3>
-              <p className="text-[11px] text-amber-200">ITDA Paderu Alluri District Care Access</p>
+              <h3 className="font-extrabold text-base tracking-wide">PATIENT AUTHENTICATION</h3>
+              <p className="text-[11px] text-blue-100">ITDA Paderu Alluri District Care Access</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-1 rounded-full hover:bg-white/20 text-white">
+          <button onClick={onClose} className="p-1 rounded-full hover:bg-white/20 text-white transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Auth Method Navigation Tabs */}
-        <div className="p-3 bg-[#FCFBF7] border-b border-amber-200 flex flex-wrap gap-1.5 text-xs font-bold">
+        <div className="p-3 bg-slate-50 border-b border-slate-200 flex flex-wrap gap-1.5 text-xs font-bold">
           <button
             onClick={() => setAuthMethod('roster')}
             className={`px-3 py-1.5 rounded-xl transition-all flex items-center space-x-1.5 ${
               authMethod === 'roster'
-                ? 'bg-amber-500 text-white shadow-sm'
-                : 'text-slate-600 hover:bg-amber-100'
+                ? 'bg-royal-600 text-white shadow-sm'
+                : 'text-slate-600 hover:bg-slate-200'
             }`}
           >
-            <Sparkles className="w-3.5 h-3.5" />
+            <Sparkles className="w-3.5 h-3.5 text-amber-300" />
             <span>1-Click Roster</span>
           </button>
 
@@ -204,8 +209,8 @@ export const PatientAuthModal: React.FC<PatientAuthModalProps> = ({
             onClick={() => setAuthMethod('aadhar')}
             className={`px-3 py-1.5 rounded-xl transition-all flex items-center space-x-1.5 ${
               authMethod === 'aadhar'
-                ? 'bg-amber-500 text-white shadow-sm'
-                : 'text-slate-600 hover:bg-amber-100'
+                ? 'bg-royal-600 text-white shadow-sm'
+                : 'text-slate-600 hover:bg-slate-200'
             }`}
           >
             <CreditCard className="w-3.5 h-3.5" />
@@ -216,8 +221,8 @@ export const PatientAuthModal: React.FC<PatientAuthModalProps> = ({
             onClick={() => setAuthMethod('phone')}
             className={`px-3 py-1.5 rounded-xl transition-all flex items-center space-x-1.5 ${
               authMethod === 'phone'
-                ? 'bg-amber-500 text-white shadow-sm'
-                : 'text-slate-600 hover:bg-amber-100'
+                ? 'bg-royal-600 text-white shadow-sm'
+                : 'text-slate-600 hover:bg-slate-200'
             }`}
           >
             <Phone className="w-3.5 h-3.5" />
@@ -228,8 +233,8 @@ export const PatientAuthModal: React.FC<PatientAuthModalProps> = ({
             onClick={() => setAuthMethod('register')}
             className={`px-3 py-1.5 rounded-xl transition-all flex items-center space-x-1.5 ${
               authMethod === 'register'
-                ? 'bg-amber-500 text-white shadow-sm'
-                : 'text-slate-600 hover:bg-amber-100'
+                ? 'bg-royal-600 text-white shadow-sm'
+                : 'text-slate-600 hover:bg-slate-200'
             }`}
           >
             <UserPlus className="w-3.5 h-3.5" />
@@ -240,8 +245,8 @@ export const PatientAuthModal: React.FC<PatientAuthModalProps> = ({
         {/* Body Content */}
         <div className="p-6 space-y-4">
           {statusMsg && (
-            <div className="p-3 bg-amber-50 border border-amber-300 rounded-xl text-xs text-amber-900 flex items-center space-x-2">
-              <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0" />
+            <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl text-xs text-royal-900 flex items-center space-x-2">
+              <AlertTriangle className="w-4 h-4 text-royal-600 flex-shrink-0" />
               <span>{statusMsg}</span>
             </div>
           )}
@@ -255,57 +260,57 @@ export const PatientAuthModal: React.FC<PatientAuthModalProps> = ({
 
               <div
                 onClick={() => handleRosterClick('UIDN-ASR-2026-GM046')}
-                className="gold-card p-4 cursor-pointer hover:border-amber-500 hover:shadow-md transition-all flex justify-between items-center group"
+                className="bg-white border border-slate-200 p-4 rounded-2xl cursor-pointer hover:border-royal-500 hover:shadow-md transition-all flex justify-between items-center group"
               >
                 <div>
-                  <span className="text-[10px] font-mono font-bold bg-amber-100 text-amber-900 px-2 py-0.5 rounded border border-amber-300">
+                  <span className="text-[10px] font-mono font-bold bg-blue-100 text-royal-800 px-2 py-0.5 rounded border border-blue-200">
                     UIDN-ASR-2026-GM046 • Compulsory Case
                   </span>
-                  <div className="text-sm font-bold text-slate-900 mt-1 font-serif-royal">K. Somanna</div>
+                  <div className="text-sm font-bold text-slate-900 mt-1">K. Somanna</div>
                   <div className="text-xs text-slate-600">46 Yrs • Male • Nurmati, G. Madugula</div>
-                  <div className="text-[11px] text-amber-800 font-semibold mt-1">
+                  <div className="text-[11px] text-royal-700 font-semibold mt-1">
                     Persistent white patch • 18-Yr Reverse Tobacco
                   </div>
                 </div>
-                <button className="px-3 py-1.5 bg-amber-500 group-hover:bg-amber-600 text-white rounded-xl text-xs font-bold transition-colors">
+                <button className="px-3 py-1.5 bg-royal-600 group-hover:bg-royal-700 text-white rounded-xl text-xs font-bold transition-colors">
                   Login
                 </button>
               </div>
 
               <div
                 onClick={() => handleRosterClick('UIDN-ASR-2026-0002')}
-                className="gold-card p-4 cursor-pointer hover:border-amber-500 hover:shadow-md transition-all flex justify-between items-center group"
+                className="bg-white border border-slate-200 p-4 rounded-2xl cursor-pointer hover:border-royal-500 hover:shadow-md transition-all flex justify-between items-center group"
               >
                 <div>
-                  <span className="text-[10px] font-mono font-bold bg-amber-100 text-amber-900 px-2 py-0.5 rounded border border-amber-300">
+                  <span className="text-[10px] font-mono font-bold bg-slate-100 text-slate-800 px-2 py-0.5 rounded border border-slate-300">
                     UIDN-ASR-2026-0002
                   </span>
-                  <div className="text-sm font-bold text-slate-900 mt-1 font-serif-royal">M. Lakshmi</div>
+                  <div className="text-sm font-bold text-slate-900 mt-1">M. Lakshmi</div>
                   <div className="text-xs text-slate-600">32 Yrs • Female • Padmapuram, Araku Valley</div>
-                  <div className="text-[11px] text-amber-800 font-semibold mt-1">
+                  <div className="text-[11px] text-royal-700 font-semibold mt-1">
                     Erythroplakia • Betel Quid & Burning Mucosa
                   </div>
                 </div>
-                <button className="px-3 py-1.5 bg-amber-500 group-hover:bg-amber-600 text-white rounded-xl text-xs font-bold transition-colors">
+                <button className="px-3 py-1.5 bg-royal-600 group-hover:bg-royal-700 text-white rounded-xl text-xs font-bold transition-colors">
                   Login
                 </button>
               </div>
 
               <div
                 onClick={() => handleRosterClick('UIDN-ASR-2026-0003')}
-                className="gold-card p-4 cursor-pointer hover:border-amber-500 hover:shadow-md transition-all flex justify-between items-center group"
+                className="bg-white border border-slate-200 p-4 rounded-2xl cursor-pointer hover:border-royal-500 hover:shadow-md transition-all flex justify-between items-center group"
               >
                 <div>
-                  <span className="text-[10px] font-mono font-bold bg-amber-100 text-amber-900 px-2 py-0.5 rounded border border-amber-300">
+                  <span className="text-[10px] font-mono font-bold bg-slate-100 text-slate-800 px-2 py-0.5 rounded border border-slate-300">
                     UIDN-ASR-2026-0003
                   </span>
-                  <div className="text-sm font-bold text-slate-900 mt-1 font-serif-royal">P. Ramu</div>
+                  <div className="text-sm font-bold text-slate-900 mt-1">P. Ramu</div>
                   <div className="text-xs text-slate-600">58 Yrs • Male • Paderu Tribal Hamlet, Paderu</div>
-                  <div className="text-[11px] text-amber-800 font-semibold mt-1">
+                  <div className="text-[11px] text-royal-700 font-semibold mt-1">
                     Oral Submucous Fibrosis (OSMF) • Trismus
                   </div>
                 </div>
-                <button className="px-3 py-1.5 bg-amber-500 group-hover:bg-amber-600 text-white rounded-xl text-xs font-bold transition-colors">
+                <button className="px-3 py-1.5 bg-royal-600 group-hover:bg-royal-700 text-white rounded-xl text-xs font-bold transition-colors">
                   Login
                 </button>
               </div>
@@ -320,13 +325,13 @@ export const PatientAuthModal: React.FC<PatientAuthModalProps> = ({
                   12-Digit Aadhaar Card Number
                 </label>
                 <div className="relative">
-                  <CreditCard className="w-4 h-4 text-amber-600 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <CreditCard className="w-4 h-4 text-royal-600 absolute left-3 top-1/2 -translate-y-1/2" />
                   <input
                     type="text"
                     value={aadharNumber}
                     onChange={(e) => setAadharNumber(e.target.value)}
                     placeholder="XXXX-XXXX-XXXX"
-                    className="w-full bg-[#FAF9F5] border border-amber-300 rounded-xl pl-9 pr-4 py-2.5 text-xs font-mono font-bold tracking-widest focus:ring-2 focus:ring-amber-500"
+                    className="w-full bg-slate-50 border border-slate-300 rounded-xl pl-9 pr-4 py-2.5 text-xs font-mono font-bold tracking-widest text-slate-900 focus:ring-2 focus:ring-royal-500"
                     required
                   />
                 </div>
@@ -338,7 +343,7 @@ export const PatientAuthModal: React.FC<PatientAuthModalProps> = ({
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-white font-bold text-xs shadow-gold-glow hover:brightness-105 transition-all"
+                className="w-full py-3 rounded-xl bg-gradient-to-r from-royal-600 to-royal-700 text-white font-bold text-xs shadow-blue-card hover:brightness-110 transition-all"
               >
                 {loading ? 'Authenticating Aadhaar...' : 'Sign In with Aadhaar'}
               </button>
@@ -354,13 +359,13 @@ export const PatientAuthModal: React.FC<PatientAuthModalProps> = ({
                 </label>
                 <div className="flex space-x-2">
                   <div className="relative flex-1">
-                    <Phone className="w-4 h-4 text-amber-600 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <Phone className="w-4 h-4 text-royal-600 absolute left-3 top-1/2 -translate-y-1/2" />
                     <input
                       type="tel"
                       value={phoneNumber}
                       onChange={(e) => setPhoneNumber(e.target.value)}
                       placeholder="10-digit mobile number"
-                      className="w-full bg-[#FAF9F5] border border-amber-300 rounded-xl pl-9 pr-4 py-2 text-xs font-mono font-bold"
+                      className="w-full bg-slate-50 border border-slate-300 rounded-xl pl-9 pr-4 py-2 text-xs font-mono font-bold text-slate-900"
                       required
                     />
                   </div>
@@ -368,7 +373,7 @@ export const PatientAuthModal: React.FC<PatientAuthModalProps> = ({
                     type="button"
                     onClick={handleSendOtp}
                     disabled={loading}
-                    className="px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800 transition-colors whitespace-nowrap"
+                    className="px-4 py-2 bg-royal-700 text-white rounded-xl text-xs font-bold hover:bg-royal-800 transition-colors whitespace-nowrap"
                   >
                     Send OTP
                   </button>
@@ -380,13 +385,13 @@ export const PatientAuthModal: React.FC<PatientAuthModalProps> = ({
                   Instant Demo OTP Code (Use: 123456)
                 </label>
                 <div className="relative">
-                  <KeyRound className="w-4 h-4 text-amber-600 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <KeyRound className="w-4 h-4 text-royal-600 absolute left-3 top-1/2 -translate-y-1/2" />
                   <input
                     type="text"
                     value={otpValue}
                     onChange={(e) => setOtpValue(e.target.value)}
                     placeholder="123456"
-                    className="w-full bg-[#FAF9F5] border border-amber-300 rounded-xl pl-9 pr-4 py-2 text-xs font-mono font-bold tracking-widest"
+                    className="w-full bg-slate-50 border border-slate-300 rounded-xl pl-9 pr-4 py-2 text-xs font-mono font-bold tracking-widest text-slate-900"
                     required
                   />
                 </div>
@@ -395,7 +400,7 @@ export const PatientAuthModal: React.FC<PatientAuthModalProps> = ({
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-white font-bold text-xs shadow-gold-glow hover:brightness-105 transition-all"
+                className="w-full py-3 rounded-xl bg-gradient-to-r from-royal-600 to-royal-700 text-white font-bold text-xs shadow-blue-card hover:brightness-110 transition-all"
               >
                 {loading ? 'Verifying OTP...' : 'Verify OTP & Enter Portal'}
               </button>
@@ -412,7 +417,7 @@ export const PatientAuthModal: React.FC<PatientAuthModalProps> = ({
                     type="text"
                     value={regName}
                     onChange={(e) => setRegName(e.target.value)}
-                    className="w-full bg-[#FAF9F5] border border-amber-300 rounded-lg p-2 text-xs"
+                    className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-xs text-slate-900 font-medium"
                     required
                   />
                 </div>
@@ -422,7 +427,7 @@ export const PatientAuthModal: React.FC<PatientAuthModalProps> = ({
                   <select
                     value={regGender}
                     onChange={(e: any) => setRegGender(e.target.value)}
-                    className="w-full bg-[#FAF9F5] border border-amber-300 rounded-lg p-2 text-xs"
+                    className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-xs text-slate-900"
                   >
                     <option value="MALE">Male</option>
                     <option value="FEMALE">Female</option>
@@ -432,24 +437,24 @@ export const PatientAuthModal: React.FC<PatientAuthModalProps> = ({
               </div>
 
               {/* DOB with Automatic Age Calculation */}
-              <div className="grid grid-cols-2 gap-3 bg-amber-50/50 p-2.5 rounded-xl border border-amber-200">
+              <div className="grid grid-cols-2 gap-3 bg-blue-50/60 p-2.5 rounded-xl border border-blue-200">
                 <div>
-                  <label className="text-[11px] font-bold text-amber-950 block mb-0.5 flex items-center space-x-1">
-                    <Calendar className="w-3 h-3 text-amber-600" />
+                  <label className="text-[11px] font-bold text-royal-950 block mb-0.5 flex items-center space-x-1">
+                    <Calendar className="w-3 h-3 text-royal-600" />
                     <span>Date of Birth</span>
                   </label>
                   <input
                     type="date"
                     value={regDob}
                     onChange={(e) => setRegDob(e.target.value)}
-                    className="w-full bg-white border border-amber-300 rounded-lg p-1.5 text-xs font-mono"
+                    className="w-full bg-white border border-blue-200 rounded-lg p-1.5 text-xs font-mono text-slate-900"
                     required
                   />
                 </div>
 
                 <div className="flex flex-col justify-center">
                   <span className="text-[10px] text-slate-500 uppercase font-bold">Auto-Calculated Age</span>
-                  <span className="text-base font-extrabold text-amber-950">
+                  <span className="text-base font-extrabold text-royal-900">
                     {calculatedAge} <span className="text-xs font-normal">Years Old</span>
                   </span>
                 </div>
@@ -461,7 +466,7 @@ export const PatientAuthModal: React.FC<PatientAuthModalProps> = ({
                   <select
                     value={regBloodGroup}
                     onChange={(e) => setRegBloodGroup(e.target.value)}
-                    className="w-full bg-[#FAF9F5] border border-amber-300 rounded-lg p-2 text-xs"
+                    className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-xs text-slate-900"
                   >
                     <option value="A+">A+</option>
                     <option value="A-">A-</option>
@@ -479,7 +484,7 @@ export const PatientAuthModal: React.FC<PatientAuthModalProps> = ({
                   <select
                     value={regMandal}
                     onChange={(e) => setRegMandal(e.target.value)}
-                    className="w-full bg-[#FAF9F5] border border-amber-300 rounded-lg p-2 text-xs font-bold text-amber-950"
+                    className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-xs font-bold text-slate-900"
                   >
                     <option value="G. Madugula">G. Madugula</option>
                     <option value="Paderu">Paderu</option>
@@ -503,7 +508,7 @@ export const PatientAuthModal: React.FC<PatientAuthModalProps> = ({
                     type="text"
                     value={regVillage}
                     onChange={(e) => setRegVillage(e.target.value)}
-                    className="w-full bg-[#FAF9F5] border border-amber-300 rounded-lg p-2 text-xs"
+                    className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-xs text-slate-900"
                     required
                   />
                 </div>
@@ -514,7 +519,7 @@ export const PatientAuthModal: React.FC<PatientAuthModalProps> = ({
                     type="tel"
                     value={regPhone}
                     onChange={(e) => setRegPhone(e.target.value)}
-                    className="w-full bg-[#FAF9F5] border border-amber-300 rounded-lg p-2 text-xs font-mono"
+                    className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-xs font-mono text-slate-900"
                     required
                   />
                 </div>
@@ -526,20 +531,20 @@ export const PatientAuthModal: React.FC<PatientAuthModalProps> = ({
                   type="text"
                   value={regAadhar}
                   onChange={(e) => setRegAadhar(e.target.value)}
-                  className="w-full bg-[#FAF9F5] border border-amber-300 rounded-lg p-2 text-xs font-mono"
+                  className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-xs font-mono text-slate-900"
                   required
                 />
               </div>
 
-              <div className="p-2.5 bg-emerald-50 rounded-xl border border-emerald-200 text-[11px] text-emerald-900 flex items-center space-x-2">
-                <CheckCircle className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+              <div className="p-2.5 bg-blue-50 rounded-xl border border-blue-200 text-[11px] text-royal-900 flex items-center space-x-2">
+                <CheckCircle className="w-4 h-4 text-royal-600 flex-shrink-0" />
                 <span>An official unique identifier (UIDN-ASR-2026-XXXX) will be automatically assigned.</span>
               </div>
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-700 text-white font-bold text-xs shadow-md hover:brightness-105 transition-all"
+                className="w-full py-3 rounded-xl bg-gradient-to-r from-royal-600 to-royal-700 text-white font-bold text-xs shadow-blue-card hover:brightness-110 transition-all"
               >
                 {loading ? 'Creating Patient Profile...' : 'Complete Registration & Generate UIDN'}
               </button>
@@ -552,4 +557,3 @@ export const PatientAuthModal: React.FC<PatientAuthModalProps> = ({
 };
 
 export default PatientAuthModal;
-

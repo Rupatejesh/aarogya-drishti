@@ -3,60 +3,71 @@
 @tailwind utilities;
 
 :root {
-  --gold-primary: #D4AF37;
-  --gold-dark: #AA821C;
-  --gold-light: #F7F3E8;
-  --bg-creme: #FCFBF7;
+  --primary-blue: #1D4ED8;
+  --primary-blue-hover: #2563EB;
+  --bg-clean: #F8FAFC;
+  --card-white: #FFFFFF;
 }
 
 body {
   margin: 0;
   padding: 0;
-  background-color: #FAF9F5;
-  color: #1E293B;
-  font-family: 'Inter', system-ui, sans-serif;
+  background-color: #F8FAFC;
+  color: #0F172A;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
-.font-serif-royal {
-  font-family: 'Cinzel', 'Playfair Display', Georgia, serif;
-}
-
-/* Gold Gradient Shimmer */
-.gold-gradient-text {
-  background: linear-gradient(135deg, #BF953F 0%, #FCF6BA 25%, #B38728 50%, #FBF5B7 75%, #AA771C 100%);
+/* Crisp Royal Blue Text Gradient */
+.royal-gradient-text {
+  background: linear-gradient(135deg, #1E3A8A 0%, #1D4ED8 50%, #2563EB 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-.gold-gradient-bg {
-  background: linear-gradient(135deg, #D4AF37 0%, #AA821C 100%);
+/* Fallback for old references */
+.gold-gradient-text {
+  background: linear-gradient(135deg, #1E3A8A 0%, #1D4ED8 50%, #2563EB 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.medical-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
+  border-radius: 1rem;
+}
+
+.medical-card:hover {
+  border-color: #93C5FD;
+  box-shadow: 0 10px 25px -5px rgba(29, 78, 216, 0.1);
 }
 
 .gold-card {
   background: #FFFFFF;
-  border: 1px solid rgba(212, 175, 55, 0.25);
-  box-shadow: 0 4px 20px -2px rgba(212, 175, 55, 0.1);
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
   border-radius: 1rem;
 }
 
 .gold-card:hover {
-  border-color: rgba(212, 175, 55, 0.5);
-  box-shadow: 0 10px 30px -5px rgba(212, 175, 55, 0.2);
+  border-color: #93C5FD;
+  box-shadow: 0 10px 25px -5px rgba(29, 78, 216, 0.1);
 }
 
-/* Custom Scrollbar */
+/* Crisp Clean Medical Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
 }
 ::-webkit-scrollbar-track {
-  background: #F1EFE7;
+  background: #F1F5F9;
 }
 ::-webkit-scrollbar-thumb {
-  background: #D4AF37;
+  background: #94A3B8;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #AA821C;
+  background: #2563EB;
 }
-

@@ -67,24 +67,24 @@ export const AppointmentRequestModal: React.FC<AppointmentRequestModalProps> = (
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-      <div className="bg-white max-w-lg w-full rounded-3xl border border-amber-300 shadow-2xl overflow-hidden animate-scaleIn">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-amber-950 via-amber-900 to-amber-950 text-white p-5 flex items-center justify-between border-b border-amber-600/50">
+    <div className="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
+      <div className="bg-white max-w-lg w-full rounded-3xl border border-slate-200 shadow-2xl overflow-hidden">
+        {/* Header (Royal Blue) */}
+        <div className="bg-royal-700 text-white p-5 flex items-center justify-between border-b border-royal-800">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-2xl bg-amber-500/20 border border-amber-400 flex items-center justify-center">
-              <Calendar className="w-5 h-5 text-amber-300" />
+            <div className="w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center">
+              <Calendar className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h3 className="font-extrabold text-base font-serif-royal">
+              <h3 className="font-extrabold text-base tracking-wide">
                 REQUEST TELE-ONCOLOGY APPOINTMENT
               </h3>
-              <p className="text-[11px] text-amber-200">
+              <p className="text-[11px] text-blue-100">
                 Patient: {patient?.name} ({patient?.uidn})
               </p>
             </div>
           </div>
-          <button onClick={onClose} className="p-1 rounded-full hover:bg-white/20 text-white">
+          <button onClick={onClose} className="p-1 rounded-full hover:bg-white/20 text-white transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -93,14 +93,14 @@ export const AppointmentRequestModal: React.FC<AppointmentRequestModalProps> = (
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {/* Radio Toggle: General Consultation vs Biopsy Procedure */}
           <div>
-            <label className="text-xs font-bold text-slate-700 block mb-2">
+            <label className="text-xs font-bold text-slate-800 block mb-2">
               Appointment Category
             </label>
             <div className="grid grid-cols-2 gap-3">
               <label
                 className={`p-3 rounded-2xl border cursor-pointer flex flex-col items-center text-center transition-all ${
                   apptType === 'General Oral Consultation'
-                    ? 'bg-amber-50 border-amber-500 ring-2 ring-amber-400 text-amber-950'
+                    ? 'bg-blue-50 border-royal-600 ring-2 ring-royal-400 text-royal-950 font-bold'
                     : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
                 }`}
               >
@@ -112,15 +112,15 @@ export const AppointmentRequestModal: React.FC<AppointmentRequestModalProps> = (
                   onChange={() => setApptType('General Oral Consultation')}
                   className="hidden"
                 />
-                <Stethoscope className="w-5 h-5 text-amber-600 mb-1" />
-                <span className="font-bold text-xs">General Oral Consultation</span>
-                <span className="text-[10px] text-slate-500 mt-0.5">Clinical Examination</span>
+                <Stethoscope className="w-5 h-5 text-royal-600 mb-1" />
+                <span className="text-xs">General Oral Consultation</span>
+                <span className="text-[10px] text-slate-500 mt-0.5 font-normal">Clinical Examination</span>
               </label>
 
               <label
                 className={`p-3 rounded-2xl border cursor-pointer flex flex-col items-center text-center transition-all ${
                   apptType === 'Biopsy Procedure Appointment'
-                    ? 'bg-red-50 border-red-500 ring-2 ring-red-400 text-red-950'
+                    ? 'bg-red-50 border-red-500 ring-2 ring-red-400 text-red-950 font-bold'
                     : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
                 }`}
               >
@@ -133,7 +133,7 @@ export const AppointmentRequestModal: React.FC<AppointmentRequestModalProps> = (
                   className="hidden"
                 />
                 <FileCheck2 className="w-5 h-5 text-red-600 mb-1" />
-                <span className="font-bold text-xs">Biopsy Procedure</span>
+                <span className="text-xs">Biopsy Procedure</span>
                 <span className="text-[10px] text-red-600 font-semibold mt-0.5">Punch Biopsy Protocol</span>
               </label>
             </div>
@@ -146,7 +146,7 @@ export const AppointmentRequestModal: React.FC<AppointmentRequestModalProps> = (
               <select
                 value={mandal}
                 onChange={(e) => setMandal(e.target.value)}
-                className="w-full bg-[#FAF9F5] border border-amber-300 rounded-xl p-2.5 text-xs font-bold text-amber-950"
+                className="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold text-slate-900"
               >
                 <option value="G. Madugula">G. Madugula</option>
                 <option value="Paderu">Paderu</option>
@@ -168,7 +168,7 @@ export const AppointmentRequestModal: React.FC<AppointmentRequestModalProps> = (
                 type="text"
                 value={hospitalName}
                 onChange={(e) => setHospitalName(e.target.value)}
-                className="w-full bg-[#FAF9F5] border border-amber-300 rounded-xl p-2.5 text-xs font-semibold"
+                className="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs text-slate-900 font-medium"
                 required
               />
             </div>
@@ -180,7 +180,7 @@ export const AppointmentRequestModal: React.FC<AppointmentRequestModalProps> = (
             <select
               value={doctorUidn}
               onChange={(e) => setDoctorUidn(e.target.value)}
-              className="w-full bg-[#FAF9F5] border border-amber-300 rounded-xl p-2.5 text-xs font-bold text-slate-800"
+              className="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold text-slate-900"
             >
               <option value="DOC-SWAPNA">Dr. Swapna Devi, MDS (Chief Onco-Pathologist - AH / PHC G. Madugula)</option>
               <option value="DOC-RAJESH">Dr. K. Rajesh, MS ENT (Head & Neck Surgeon - Paderu Hub)</option>
@@ -196,7 +196,7 @@ export const AppointmentRequestModal: React.FC<AppointmentRequestModalProps> = (
                 type="date"
                 value={appointmentDate}
                 onChange={(e) => setAppointmentDate(e.target.value)}
-                className="w-full bg-[#FAF9F5] border border-amber-300 rounded-xl p-2.5 text-xs font-mono font-bold"
+                className="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-mono font-bold text-slate-900"
                 required
               />
             </div>
@@ -206,7 +206,7 @@ export const AppointmentRequestModal: React.FC<AppointmentRequestModalProps> = (
               <select
                 value={timeSlot}
                 onChange={(e) => setTimeSlot(e.target.value)}
-                className="w-full bg-[#FAF9F5] border border-amber-300 rounded-xl p-2.5 text-xs font-bold"
+                className="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold text-slate-900"
               >
                 <option value="09:30 AM - 10:00 AM">09:30 AM - 10:00 AM</option>
                 <option value="10:00 AM - 10:30 AM">10:00 AM - 10:30 AM</option>
@@ -223,14 +223,14 @@ export const AppointmentRequestModal: React.FC<AppointmentRequestModalProps> = (
               value={doctorRemarks}
               onChange={(e) => setDoctorRemarks(e.target.value)}
               rows={2}
-              className="w-full bg-[#FAF9F5] border border-amber-300 rounded-xl p-2.5 text-xs focus:ring-2 focus:ring-amber-500"
+              className="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-royal-500"
             />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 text-white font-extrabold text-xs shadow-gold-glow hover:brightness-105 active:scale-95 transition-all"
+            className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-royal-600 to-royal-700 text-white font-extrabold text-xs shadow-blue-card hover:brightness-110 active:scale-95 transition-all"
           >
             {loading ? 'Submitting Request...' : 'Confirm Appointment Request'}
           </button>
@@ -241,4 +241,3 @@ export const AppointmentRequestModal: React.FC<AppointmentRequestModalProps> = (
 };
 
 export default AppointmentRequestModal;
-

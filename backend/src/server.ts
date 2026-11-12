@@ -53,26 +53,64 @@ io.on('connection', (socket) => {
     socket.to(roomId).emit('user-connected', { socketId: socket.id, userDetails });
   });
 
-  socket.on('signal-offer', ({ targetSocketId, offer, senderDetails }) => {
-    io.to(targetSocketId).emit('signal-offer', {
+  // Room-broadcast WebRTC signaling
+  socket.on('offer', (data: { roomId: string; offer: any; senderDetails?: any }) => {
+    socket.to(data.roomId).emit('offer', {
+      offer: data.offer,
       senderSocketId: socket.id,
-      offer,
-      senderDetails
+      senderDetails: data.senderDetails
     });
   });
 
-  socket.on('signal-answer', ({ targetSocketId, answer }) => {
-    io.to(targetSocketId).emit('signal-answer', {
-      senderSocketId: socket.id,
-      answer
+  socket.on('answer', (data: { roomId: string; answer: any }) => {
+    socket.to(data.roomId).emit('answer', {
+      answer: data.answer,
+      senderSocketId: socket.id
     });
   });
 
-  socket.on('ice-candidate', ({ targetSocketId, candidate }) => {
-    io.to(targetSocketId).emit('ice-candidate', {
-      senderSocketId: socket.id,
-      candidate
-    });
+  socket.on('signal-offer', ({ targetSocketId, offer, senderDetails, roomId }) => {
+    if (targetSocketId) {
+      io.to(targetSocketId).emit('signal-offer', {
+        senderSocketId: socket.id,
+        offer,
+        senderDetails
+      });
+    } else if (roomId) {
+      socket.to(roomId).emit('signal-offer', {
+        senderSocketId: socket.id,
+        offer,
+        senderDetails
+      });
+    }
+  });
+
+  socket.on('signal-answer', ({ targetSocketId, answer, roomId }) => {
+    if (targetSocketId) {
+      io.to(targetSocketId).emit('signal-answer', {
+        senderSocketId: socket.id,
+        answer
+      });
+    } else if (roomId) {
+      socket.to(roomId).emit('signal-answer', {
+        senderSocketId: socket.id,
+        answer
+      });
+    }
+  });
+
+  socket.on('ice-candidate', ({ targetSocketId, candidate, roomId }) => {
+    if (targetSocketId) {
+      io.to(targetSocketId).emit('ice-candidate', {
+        senderSocketId: socket.id,
+        candidate
+      });
+    } else if (roomId) {
+      socket.to(roomId).emit('ice-candidate', {
+        senderSocketId: socket.id,
+        candidate
+      });
+    }
   });
 
   socket.on('disconnecting', () => {

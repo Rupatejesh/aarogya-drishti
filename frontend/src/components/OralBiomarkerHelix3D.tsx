@@ -73,16 +73,16 @@ export const OralBiomarkerHelix3D: React.FC = () => {
     container.appendChild(renderer.domElement);
 
     // 2. Lighting
-    const ambientLight = new THREE.AmbientLight(0xfff7ed, 1.2);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1.3);
     scene.add(ambientLight);
 
-    const goldPointLight = new THREE.PointLight(0xf59e0b, 2.5, 50);
-    goldPointLight.position.set(10, 15, 15);
-    scene.add(goldPointLight);
+    const bluePointLight = new THREE.PointLight(0x2563eb, 3.0, 50);
+    bluePointLight.position.set(10, 15, 15);
+    scene.add(bluePointLight);
 
-    const tealPointLight = new THREE.PointLight(0x0d9488, 2.0, 50);
-    tealPointLight.position.set(-10, -10, 12);
-    scene.add(tealPointLight);
+    const cyanPointLight = new THREE.PointLight(0x0284c7, 2.0, 50);
+    cyanPointLight.position.set(-10, -10, 12);
+    scene.add(cyanPointLight);
 
     // 3. Helix Group Construction
     const helixGroup = new THREE.Group();
@@ -299,7 +299,7 @@ export const OralBiomarkerHelix3D: React.FC = () => {
 
   return (
     <div
-      className="relative w-full h-[400px] sm:h-[440px] rounded-3xl bg-gradient-to-b from-white/90 via-[#FCFBF7]/80 to-amber-50/40 border border-amber-300/50 shadow-luxury overflow-hidden group"
+      className="relative w-full h-[400px] sm:h-[440px] rounded-3xl bg-gradient-to-b from-white via-slate-50 to-blue-50/40 border border-slate-200 shadow-luxury overflow-hidden group"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -307,17 +307,17 @@ export const OralBiomarkerHelix3D: React.FC = () => {
       <div ref={containerRef} className="w-full h-full cursor-grab active:cursor-grabbing" />
 
       {/* Top Overlay Badge */}
-      <div className="absolute top-4 left-4 z-10 flex items-center space-x-2 bg-white/90 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-amber-300/80 shadow-sm">
-        <Dna className="w-4 h-4 text-amber-600 animate-spin" style={{ animationDuration: '8s' }} />
-        <span className="text-[11px] font-bold text-amber-950 tracking-wide uppercase">
+      <div className="absolute top-4 left-4 z-10 flex items-center space-x-2 bg-white/95 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-blue-200 shadow-sm">
+        <Dna className="w-4 h-4 text-royal-600 animate-spin" style={{ animationDuration: '8s' }} />
+        <span className="text-[11px] font-extrabold text-slate-900 tracking-wide uppercase">
           Oral Onco-Biomarker 3D Helix
         </span>
         <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
       </div>
 
       {/* Rotate hint badge */}
-      <div className="absolute top-4 right-4 z-10 hidden sm:flex items-center space-x-1.5 bg-white/80 backdrop-blur-sm px-3 py-1 rounded-full text-[10px] text-slate-500 border border-slate-200">
-        <RotateCw className="w-3 h-3 text-amber-600" />
+      <div className="absolute top-4 right-4 z-10 hidden sm:flex items-center space-x-1.5 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-[10px] text-slate-600 border border-slate-200 shadow-sm">
+        <RotateCw className="w-3 h-3 text-royal-600" />
         <span>Drag 360°</span>
       </div>
 
@@ -330,25 +330,25 @@ export const OralBiomarkerHelix3D: React.FC = () => {
               onClick={() => setSelectedMarker(marker)}
               className={`px-3 py-1 rounded-full text-[11px] font-bold transition-all shadow-sm flex items-center space-x-1 ${
                 selectedMarker.name === marker.name
-                  ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-gold-glow scale-105'
-                  : 'bg-white/90 hover:bg-amber-50 text-slate-700 border border-amber-200'
+                  ? 'bg-royal-600 text-white shadow-blue-card scale-105'
+                  : 'bg-white hover:bg-blue-50 text-slate-700 border border-slate-200'
               }`}
             >
               <span>{marker.name}</span>
-              {selectedMarker.name === marker.name && <Sparkles className="w-3 h-3 ml-0.5 text-amber-100" />}
+              {selectedMarker.name === marker.name && <Sparkles className="w-3 h-3 ml-0.5 text-amber-300" />}
             </button>
           ))}
         </div>
 
         {/* Selected Biomarker Information Card */}
         {selectedMarker && (
-          <div className="bg-white/95 backdrop-blur-md p-3.5 rounded-2xl border border-amber-200 shadow-md transition-all text-xs">
+          <div className="bg-white/95 backdrop-blur-md p-3.5 rounded-2xl border border-slate-200 shadow-md transition-all text-xs">
             <div className="flex items-center justify-between mb-1">
-              <span className="font-bold text-amber-900 flex items-center space-x-1.5">
-                <Info className="w-3.5 h-3.5 text-amber-600" />
+              <span className="font-bold text-slate-900 flex items-center space-x-1.5">
+                <Info className="w-3.5 h-3.5 text-royal-600" />
                 <span>{selectedMarker.fullName}</span>
               </span>
-              <span className="text-[10px] font-semibold bg-emerald-50 text-emerald-800 px-2 py-0.5 rounded-full border border-emerald-200">
+              <span className="text-[10px] font-semibold bg-blue-50 text-royal-800 px-2 py-0.5 rounded-full border border-blue-200">
                 {selectedMarker.role}
               </span>
             </div>

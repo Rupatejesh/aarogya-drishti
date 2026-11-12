@@ -35,7 +35,7 @@ export const HabitCessationTracker: React.FC<HabitCessationTrackerProps> = ({
     {
       day: 3,
       title: 'Day 3: Chemical Clearance',
-      mucosalHealing: 'Nicotine metabolites clear from salivary gland secretions; taste bud receptors begin regeneration.',
+      mucosalHealing: 'Nicotine metabolites clear from salivary secretions; mucosal micro-circulation begins recovery.',
       achieved: streakDays >= 3
     },
     {
@@ -71,39 +71,39 @@ export const HabitCessationTracker: React.FC<HabitCessationTrackerProps> = ({
       particleCount: 60,
       spread: 70,
       origin: { y: 0.6 },
-      colors: ['#F59E0B', '#10B981', '#D4AF37']
+      colors: ['#2563EB', '#10B981', '#FACC15']
     });
   };
 
   return (
-    <div className="bg-white rounded-3xl border border-amber-300 p-6 shadow-luxury space-y-6">
+    <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm space-y-6">
       {/* Tracker Header */}
       <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
           <div className="flex items-center space-x-2">
-            <span className="w-8 h-8 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600">
-              <Flame className="w-5 h-5" />
+            <span className="w-8 h-8 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-royal-700">
+              <Flame className="w-5 h-5 text-royal-600" />
             </span>
-            <h3 className="text-lg font-bold font-serif-royal text-slate-900">
+            <h3 className="text-base font-extrabold text-slate-900">
               Tribal Habit Cessation & Mucosal Healing Tracker
             </h3>
           </div>
           <p className="text-xs text-slate-500 mt-1">
-            Tracking abstinence from reverse smoking (Adda Poga), raw tobacco, and gutkha.
+            Tracking abstinence from reverse smoking (Adda Poga), raw khaini tobacco, and gutkha.
           </p>
         </div>
 
         {/* Counter Badge */}
-        <div className="flex items-center space-x-3 bg-gradient-to-r from-amber-50 to-emerald-50 px-4 py-2 rounded-2xl border border-amber-300">
+        <div className="flex items-center space-x-3 bg-blue-50/70 px-4 py-2 rounded-2xl border border-blue-200">
           <div className="text-right">
             <div className="text-[10px] uppercase font-bold text-slate-500">Tobacco-Free Streak</div>
-            <div className="text-2xl font-black text-amber-950 font-serif-royal">
+            <div className="text-2xl font-black text-royal-950">
               {streakDays} <span className="text-xs font-semibold text-emerald-700">Days Clean</span>
             </div>
           </div>
           <button
             onClick={handleIncrementStreak}
-            className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold text-xs shadow-gold-glow flex items-center space-x-1.5 active:scale-95 transition-all"
+            className="px-3.5 py-2 rounded-xl bg-royal-600 hover:bg-royal-700 text-white font-bold text-xs shadow-sm flex items-center space-x-1.5 active:scale-95 transition-all"
           >
             <Sparkles className="w-3.5 h-3.5" />
             <span>+1 Day Streak</span>
@@ -115,11 +115,11 @@ export const HabitCessationTracker: React.FC<HabitCessationTrackerProps> = ({
       <div className="space-y-1.5">
         <div className="flex justify-between text-xs font-semibold text-slate-600">
           <span>Goal: 30-Day Mucosal Healing Milestone</span>
-          <span className="font-bold text-amber-900">{Math.min(100, Math.round((streakDays / 30) * 100))}% Completed</span>
+          <span className="font-bold text-royal-800">{Math.min(100, Math.round((streakDays / 30) * 100))}% Completed</span>
         </div>
-        <div className="w-full h-3 bg-amber-100 rounded-full overflow-hidden p-0.5 border border-amber-200">
+        <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200">
           <div
-            className="h-full bg-gradient-to-r from-amber-500 to-emerald-500 rounded-full transition-all duration-700"
+            className="h-full bg-gradient-to-r from-royal-600 to-emerald-500 rounded-full transition-all duration-700"
             style={{ width: `${Math.min(100, (streakDays / 30) * 100)}%` }}
           />
         </div>
@@ -164,4 +164,3 @@ export const HabitCessationTracker: React.FC<HabitCessationTrackerProps> = ({
 };
 
 export default HabitCessationTracker;
-

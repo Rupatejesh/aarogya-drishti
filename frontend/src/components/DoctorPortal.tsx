@@ -14,7 +14,8 @@ import {
   ShieldCheck,
   Calendar,
   AlertTriangle,
-  QrCode
+  QrCode,
+  Plus
 } from 'lucide-react';
 import api from '../services/api.ts';
 import { Language, translations } from '../i18n/translations.ts';
@@ -35,7 +36,7 @@ export const DoctorPortal: React.FC<DoctorPortalProps> = ({
   const t = translations[lang];
 
   // Auth States
-  const [isAuthenticated, setIsAuthenticated] = useState(true); // Default logged in for smooth hackathon evaluation
+  const [isAuthenticated, setIsAuthenticated] = useState(true);
   const [doctorIdInput, setDoctorIdInput] = useState('DOC-SWAPNA');
   const [doctorPassword, setDoctorPassword] = useState('Aarogya@2026');
   const [activeDoctor, setActiveDoctor] = useState<any>(
@@ -94,21 +95,6 @@ export const DoctorPortal: React.FC<DoctorPortalProps> = ({
     }
   };
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const res = await api.doctorLogin(doctorIdInput, doctorPassword);
-      setActiveDoctor(res.doctor);
-      setIsAuthenticated(true);
-      loadDoctorData();
-    } catch (err: any) {
-      alert(`Doctor login failed: ${err.message}`);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -125,7 +111,7 @@ export const DoctorPortal: React.FC<DoctorPortalProps> = ({
 
   const handleUpdateStatus = async (appointmentId: string, status: 'APPROVED' | 'REJECTED') => {
     try {
-      const remarks = status === 'APPROVED' ? 'Approved by Dr. Swapna Devi, MDS for Saturday 10:30 AM at PHC G. Madugula.' : 'Rejected due to schedule conflict.';
+      const remarks = status === 'APPROVED' ? 'Approved by Dr. Swapna Devi, MDS for Saturday 10:30 AM at PHC G. Madugula.' : 'Rejected due to slot availability.';
       await api.updateAppointmentStatus(appointmentId, status, remarks);
       setIncomingQueue((prev) =>
         prev.map((a) => (a.appointmentId === appointmentId ? { ...a, status, doctorRemarks: remarks } : a))
@@ -144,23 +130,23 @@ export const DoctorPortal: React.FC<DoctorPortalProps> = ({
 
   return (
     <div className="space-y-8">
-      {/* Doctor Header Banner */}
-      <div className="bg-gradient-to-r from-slate-900 via-amber-950 to-slate-950 text-white rounded-3xl p-6 sm:p-8 border border-amber-400 shadow-luxury flex flex-wrap items-center justify-between gap-6">
+      {/* Doctor Header Banner (Royal Blue) */}
+      <div className="bg-royal-700 text-white rounded-3xl p-6 sm:p-8 border border-royal-800 shadow-xl flex flex-wrap items-center justify-between gap-6">
         <div className="flex items-center space-x-4">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-slate-950 font-black text-2xl shadow-gold-glow">
+          <div className="w-16 h-16 rounded-2xl bg-white/20 flex items-center justify-center text-white font-black text-2xl shadow-md">
             <Stethoscope className="w-8 h-8 text-white" />
           </div>
           <div>
             <div className="flex items-center space-x-3">
-              <h2 className="text-2xl font-bold font-serif-royal">{activeDoctor.name}</h2>
-              <span className="text-xs font-bold bg-amber-500/20 text-amber-300 px-3 py-0.5 rounded-full border border-amber-400/40">
+              <h2 className="text-2xl font-extrabold">{activeDoctor.name}</h2>
+              <span className="text-xs font-bold bg-white/20 text-white px-3 py-0.5 rounded-full border border-white/30">
                 {activeDoctor.uidn}
               </span>
             </div>
-            <p className="text-xs text-amber-200 mt-1">
+            <p className="text-xs text-blue-100 mt-1">
               {activeDoctor.designation} • {activeDoctor.hospitalDuty}
             </p>
-            <div className="text-[11px] text-slate-400 font-mono mt-0.5">
+            <div className="text-[11px] text-blue-200 font-mono mt-0.5">
               ABDM Provider: {activeDoctor.abdmCode}
             </div>
           </div>
@@ -170,7 +156,7 @@ export const DoctorPortal: React.FC<DoctorPortalProps> = ({
         <div className="flex items-center space-x-3">
           <button
             onClick={() => setIsForgotModalOpen(true)}
-            className="px-3.5 py-2 bg-white/10 hover:bg-white/20 text-amber-200 rounded-xl text-xs font-semibold transition-all duration-200 hover:-translate-y-0.5 active:scale-95 flex items-center space-x-1.5"
+            className="px-3.5 py-2 bg-white/10 hover:bg-white/20 text-blue-100 rounded-xl text-xs font-semibold transition-all flex items-center space-x-1.5"
           >
             <KeyRound className="w-3.5 h-3.5" />
             <span>Reset Password</span>
@@ -178,7 +164,7 @@ export const DoctorPortal: React.FC<DoctorPortalProps> = ({
 
           <button
             onClick={loadDoctorData}
-            className="px-3.5 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-xl text-xs font-bold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:shadow-amber-500/30 active:scale-95 flex items-center space-x-1.5 shadow-sm"
+            className="px-3.5 py-2 bg-white text-royal-700 hover:bg-blue-50 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 shadow-sm"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             <span>Refresh Queue</span>
@@ -186,34 +172,34 @@ export const DoctorPortal: React.FC<DoctorPortalProps> = ({
         </div>
       </div>
 
-      {/* 1. UIDN PATIENT SEARCH BAR */}
-      <div className="bg-white rounded-2xl p-4 border border-amber-300 shadow-sm flex items-center space-x-3">
-        <Search className="w-5 h-5 text-amber-600" />
+      {/* 1. UIDN PATIENT SEARCH ENGINE */}
+      <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex items-center space-x-3">
+        <Search className="w-5 h-5 text-royal-600" />
         <input
           type="text"
           value={searchUidn}
           onChange={(e) => setSearchUidn(e.target.value)}
-          placeholder="Lookup Patient Case History by UIDN (e.g. UIDN-ASR-2026-GM046, Somanna)..."
-          className="flex-1 bg-transparent text-xs font-semibold focus:outline-none"
+          placeholder="Lookup Patient Case History by Patient UIDN (e.g. UIDN-ASR-2026-GM046, Somanna)..."
+          className="flex-1 bg-transparent text-xs font-semibold text-slate-900 focus:outline-none placeholder-slate-400"
         />
         {searchUidn && (
-          <button onClick={() => setSearchUidn('')} className="text-xs text-slate-400 hover:text-slate-600">
+          <button onClick={() => setSearchUidn('')} className="text-xs text-slate-400 hover:text-slate-600 font-bold">
             Clear
           </button>
         )}
       </div>
 
-      {/* 2. INCOMING CONSULTATION & BIOPSY QUEUE */}
-      <div className="bg-white rounded-3xl border border-amber-300 p-6 shadow-luxury space-y-4">
+      {/* 2. INCOMING CONSULTATION & BIOPSY QUEUE (APPOINTMENT NOTIFICATIONS) */}
+      <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-luxury space-y-4">
         <div className="flex justify-between items-center">
           <div>
-            <h3 className="text-lg font-bold font-serif-royal text-slate-900 flex items-center space-x-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse" />
-              <span>Incoming Tele-Consultation & Biopsy Queue</span>
+            <h3 className="text-lg font-extrabold text-slate-900 flex items-center space-x-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-royal-600 animate-pulse" />
+              <span>Incoming Appointment Notifications & Review Queue</span>
             </h3>
-            <p className="text-xs text-slate-500">Live triage review for ITDA Paderu 11 Mandals</p>
+            <p className="text-xs text-slate-500">View patient appointment requests for nearby PHCs and approve/reject live</p>
           </div>
-          <span className="text-xs font-bold bg-amber-100 text-amber-900 px-3 py-1 rounded-full border border-amber-300">
+          <span className="text-xs font-bold bg-blue-50 text-royal-900 px-3 py-1 rounded-full border border-blue-200">
             {incomingQueue.length} Requests Active
           </span>
         </div>
@@ -222,7 +208,7 @@ export const DoctorPortal: React.FC<DoctorPortalProps> = ({
           {incomingQueue.map((appt) => (
             <div
               key={appt.appointmentId}
-              className="p-4 rounded-2xl border border-amber-200 bg-[#FCFBF7] flex flex-wrap items-center justify-between gap-4 hover:border-amber-400 transition-all"
+              className="p-4 rounded-2xl border border-slate-200 bg-slate-50/70 flex flex-wrap items-center justify-between gap-4 hover:border-royal-300 transition-all"
             >
               <div className="space-y-1">
                 <div className="flex items-center space-x-2">
@@ -232,15 +218,15 @@ export const DoctorPortal: React.FC<DoctorPortalProps> = ({
                   <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded ${
                     appt.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' :
                     appt.status === 'REJECTED' ? 'bg-red-100 text-red-800 border border-red-300' :
-                    'bg-amber-100 text-amber-900 border border-amber-300'
+                    'bg-amber-100 text-slate-900 border border-amber-300'
                   }`}>
                     {appt.status}
                   </span>
-                  <span className="text-xs font-bold text-amber-950 font-serif-royal">{appt.apptType}</span>
+                  <span className="text-xs font-bold text-slate-900">{appt.apptType}</span>
                 </div>
 
                 <div className="text-xs text-slate-700">
-                  Patient UIDN: <strong>{appt.patientUidn}</strong> • Mandal: <strong>{appt.mandal}</strong> • Facility: <strong>{appt.hospitalName}</strong>
+                  Patient UIDN: <strong className="font-mono text-royal-700">{appt.patientUidn}</strong> • Mandal: <strong>{appt.mandal}</strong> • Facility: <strong>{appt.hospitalName}</strong>
                 </div>
 
                 <div className="text-[11px] text-slate-500">
@@ -252,15 +238,15 @@ export const DoctorPortal: React.FC<DoctorPortalProps> = ({
               <div className="flex items-center space-x-2">
                 <button
                   onClick={() => handleUpdateStatus(appt.appointmentId, 'APPROVED')}
-                  className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-700 hover:brightness-110 text-white rounded-xl text-xs font-extrabold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-emerald-500/30 active:scale-95 flex items-center space-x-1.5 shadow-sm"
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 shadow-sm"
                 >
                   <CheckCircle className="w-3.5 h-3.5" />
-                  <span>Approve Appointment Slot</span>
+                  <span>Approve Slot</span>
                 </button>
 
                 <button
                   onClick={() => handleUpdateStatus(appt.appointmentId, 'REJECTED')}
-                  className="px-3.5 py-2 bg-red-600 hover:bg-red-500 text-white rounded-xl text-xs font-bold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:shadow-red-500/30 active:scale-95 flex items-center space-x-1 shadow-sm"
+                  className="px-3.5 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold transition-all flex items-center space-x-1 shadow-sm"
                 >
                   <XCircle className="w-3.5 h-3.5" />
                   <span>Reject</span>
@@ -271,46 +257,46 @@ export const DoctorPortal: React.FC<DoctorPortalProps> = ({
         </div>
       </div>
 
-      {/* 3. PATIENT LIST UNDER CARE & TELEMEDICINE LAUNCHER */}
-      <div className="bg-white rounded-3xl border border-amber-300 p-6 shadow-luxury space-y-4">
+      {/* 3. MY PATIENT LIST UNDER CARE & 1-CLICK WEBRTC VIDEO CALL */}
+      <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-luxury space-y-4">
         <div className="flex justify-between items-center">
           <div>
-            <h3 className="text-lg font-bold font-serif-royal text-slate-900 flex items-center space-x-2">
-              <UserCheck className="w-5 h-5 text-amber-600" />
-              <span>Tribal Patients Under Care</span>
+            <h3 className="text-lg font-extrabold text-slate-900 flex items-center space-x-2">
+              <UserCheck className="w-5 h-5 text-royal-600" />
+              <span>My Patient List & Video Call</span>
             </h3>
-            <p className="text-xs text-slate-500">Direct WebRTC consultation & prescription authoring</p>
+            <p className="text-xs text-slate-500">Patients under this doctor's care with 1-click WebRTC Tele-Consultation</p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {filteredPatients.map((pat) => (
-            <div key={pat.uidn} className="gold-card p-4 space-y-3 flex flex-col justify-between">
+            <div key={pat.uidn} className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-3 flex flex-col justify-between hover:border-royal-400 transition-all">
               <div>
                 <div className="flex justify-between items-start">
-                  <span className="text-[10px] font-mono font-bold bg-amber-100 text-amber-900 px-2 py-0.5 rounded">
+                  <span className="text-[10px] font-mono font-bold bg-blue-100 text-royal-800 px-2 py-0.5 rounded border border-blue-200">
                     {pat.uidn}
                   </span>
                   <span className="text-xs font-semibold text-slate-500">{pat.mandal}</span>
                 </div>
-                <h4 className="text-base font-bold font-serif-royal text-slate-900 mt-2">{pat.name}</h4>
+                <h4 className="text-base font-bold text-slate-900 mt-2">{pat.name}</h4>
                 <p className="text-xs text-slate-600">{pat.age} Yrs • {pat.village}</p>
-                <div className="text-[11px] text-amber-900 font-bold mt-1">{pat.condition}</div>
+                <div className="text-[11px] text-royal-700 font-semibold mt-1">{pat.condition}</div>
               </div>
 
-              <div className="pt-2 border-t border-amber-200 flex gap-2">
+              <div className="pt-2 border-t border-slate-200 flex gap-2">
                 <button
                   onClick={() => onLaunchTelemedicine(pat, activeDoctor)}
-                  className="flex-1 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-700 hover:brightness-110 text-white font-extrabold text-xs rounded-xl flex items-center justify-center space-x-1.5 shadow-sm hover:-translate-y-0.5 hover:shadow-lg hover:shadow-emerald-500/30 active:scale-95 transition-all duration-200"
+                  className="flex-1 py-2.5 bg-royal-600 hover:bg-royal-700 text-white font-bold text-xs rounded-xl flex items-center justify-center space-x-1.5 shadow-sm transition-all"
                 >
                   <Video className="w-3.5 h-3.5" />
-                  <span>Call WebRTC</span>
+                  <span>Start WebRTC Call</span>
                 </button>
 
                 <button
                   onClick={() => onViewPrescription(null, pat)}
-                  className="px-3 py-2 bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold text-xs rounded-xl flex items-center justify-center space-x-1 hover:-translate-y-0.5 active:scale-95 transition-all duration-200 shadow-sm"
-                  title="View Rx Slip"
+                  className="px-3 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold text-xs rounded-xl flex items-center justify-center space-x-1 transition-all"
+                  title="View Medical Reports & Rx"
                 >
                   <FileText className="w-3.5 h-3.5" />
                 </button>
@@ -321,34 +307,34 @@ export const DoctorPortal: React.FC<DoctorPortalProps> = ({
       </div>
 
       {/* 4. BIOPSY & PATHOLOGY REPORTS VAULT */}
-      <div className="bg-white rounded-3xl border border-amber-300 p-6 shadow-luxury space-y-4">
+      <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-luxury space-y-4">
         <div className="flex justify-between items-center">
           <div className="flex items-center space-x-2.5">
-            <div className="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center text-amber-700">
+            <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center text-royal-700">
               <FolderLock className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-lg font-bold font-serif-royal text-slate-900">
-                Biopsy & Histopathology Reports Vault
+              <h3 className="text-lg font-extrabold text-slate-900">
+                Biopsy & Pathology Reports Vault
               </h3>
-              <p className="text-xs text-slate-500">Indexed securely under Patient UIDN with barcode audit verification</p>
+              <p className="text-xs text-slate-500">Securely stored and organized under Patient UIDN</p>
             </div>
           </div>
-          <span className="text-xs font-bold bg-amber-100 text-amber-900 px-3 py-1 rounded-full border border-amber-300">
+          <span className="text-xs font-bold bg-blue-50 text-royal-800 px-3 py-1 rounded-full border border-blue-200">
             {biopsyVault.length} Indexed Cases
           </span>
         </div>
 
-        <div className="divide-y divide-amber-200/80 border border-amber-200 rounded-2xl overflow-hidden">
+        <div className="divide-y divide-slate-200 border border-slate-200 rounded-2xl overflow-hidden">
           {biopsyVault.map((rx) => (
-            <div key={rx.rxId} className="p-4 bg-[#FCFBF7] hover:bg-white flex flex-wrap items-center justify-between gap-4 transition-colors">
+            <div key={rx.rxId} className="p-4 bg-slate-50/50 hover:bg-white flex flex-wrap items-center justify-between gap-4 transition-colors">
               <div className="space-y-1">
                 <div className="flex items-center space-x-2">
                   <span className="font-mono text-xs font-bold text-slate-900">{rx.rxId}</span>
-                  <span className="font-mono text-xs text-amber-800 bg-amber-100 px-2 py-0.5 rounded font-bold">
+                  <span className="font-mono text-xs text-royal-800 bg-blue-100 px-2 py-0.5 rounded font-bold border border-blue-200">
                     UIDN: {rx.patientUidn}
                   </span>
-                  <span className="bg-amber-200 text-amber-950 font-bold text-[10px] px-2 py-0.5 rounded">
+                  <span className="bg-emerald-100 text-emerald-800 font-bold text-[10px] px-2 py-0.5 rounded border border-emerald-200">
                     {rx.trackingStatus}
                   </span>
                 </div>
@@ -356,14 +342,14 @@ export const DoctorPortal: React.FC<DoctorPortalProps> = ({
                   {rx.biopsyProcedureDetails || 'Biopsy order recorded with histopathological follow-up'}
                 </div>
                 <div className="text-[10px] text-slate-400 font-mono flex items-center space-x-1">
-                  <QrCode className="w-3 h-3 text-amber-700" />
+                  <QrCode className="w-3 h-3 text-royal-600" />
                   <span>Barcode: {rx.printableBarcodeId}</span>
                 </div>
               </div>
 
               <button
                 onClick={() => onViewPrescription(rx, { uidn: rx.patientUidn, name: 'K. Somanna', age: 46, mandal: 'G. Madugula' })}
-                className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition-colors flex items-center space-x-1.5"
+                className="px-4 py-2 bg-royal-700 hover:bg-royal-800 text-white rounded-xl text-xs font-bold transition-colors flex items-center space-x-1.5"
               >
                 <FileText className="w-3.5 h-3.5" />
                 <span>Open Biopsy Slip</span>
@@ -375,11 +361,11 @@ export const DoctorPortal: React.FC<DoctorPortalProps> = ({
 
       {/* Forgot Password Modal */}
       {isForgotModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white max-w-md w-full rounded-3xl p-6 border border-amber-300 shadow-2xl space-y-4">
+        <div className="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white max-w-md w-full rounded-3xl p-6 border border-slate-200 shadow-2xl space-y-4">
             <div className="flex justify-between items-center">
-              <h4 className="font-bold text-base text-slate-900 font-serif-royal">Doctor Password Reset</h4>
-              <button onClick={() => setIsForgotModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+              <h4 className="font-bold text-base text-slate-900">Doctor Password Reset</h4>
+              <button onClick={() => setIsForgotModalOpen(false)} className="text-slate-400 hover:text-slate-600 font-bold">
                 ✕
               </button>
             </div>
@@ -397,7 +383,7 @@ export const DoctorPortal: React.FC<DoctorPortalProps> = ({
                     type="text"
                     value={doctorIdInput}
                     onChange={(e) => setDoctorIdInput(e.target.value)}
-                    className="w-full bg-[#FAF9F5] border border-amber-300 rounded-xl p-2.5 text-xs font-mono font-bold"
+                    className="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-mono font-bold text-slate-900"
                     required
                   />
                 </div>
@@ -410,7 +396,7 @@ export const DoctorPortal: React.FC<DoctorPortalProps> = ({
                     type="text"
                     value={forgotSecurityCode}
                     onChange={(e) => setForgotSecurityCode(e.target.value)}
-                    className="w-full bg-[#FAF9F5] border border-amber-300 rounded-xl p-2.5 text-xs font-mono"
+                    className="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-mono text-slate-900"
                     required
                   />
                 </div>
@@ -422,14 +408,14 @@ export const DoctorPortal: React.FC<DoctorPortalProps> = ({
                     value={forgotNewPassword}
                     onChange={(e) => setForgotNewPassword(e.target.value)}
                     placeholder="Enter new password"
-                    className="w-full bg-[#FAF9F5] border border-amber-300 rounded-xl p-2.5 text-xs"
+                    className="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs text-slate-900"
                     required
                   />
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-white font-bold text-xs rounded-xl shadow-gold-glow hover:brightness-105 transition-all"
+                  className="w-full py-3 bg-royal-600 hover:bg-royal-700 text-white font-bold text-xs rounded-xl shadow-blue-card transition-all"
                 >
                   Verify & Reset Password
                 </button>
@@ -443,4 +429,3 @@ export const DoctorPortal: React.FC<DoctorPortalProps> = ({
 };
 
 export default DoctorPortal;
-
