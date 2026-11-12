@@ -48,11 +48,7 @@ export const AiArogyaAarohiBot: React.FC<AiArogyaAarohiBotProps> = ({
   lang,
   onLanguageChange
 }) => {
-  // Positioning & State
-  const [position, setPosition] = useState<{ x: number; y: number }>({
-    x: typeof window !== 'undefined' ? Math.max(20, window.innerWidth - 380) : 800,
-    y: typeof window !== 'undefined' ? Math.max(20, window.innerHeight - 440) : 400
-  });
+  // Positioning & State: Locked firmly to bottom-right corner of web application
   const [isMinimized, setIsMinimized] = useState(false);
   const [isInspectorActive, setIsInspectorActive] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -97,18 +93,6 @@ export const AiArogyaAarohiBot: React.FC<AiArogyaAarohiBotProps> = ({
         }
       }
     };
-  }, []);
-
-  // Window resize bounds handler
-  useEffect(() => {
-    const handleResize = () => {
-      setPosition((prev) => ({
-        x: Math.max(20, Math.min(prev.x, window.innerWidth - 380)),
-        y: Math.max(20, Math.min(prev.y, window.innerHeight - 380))
-      }));
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   // Stop Voice speech synthesis & audio elements immediately
@@ -813,11 +797,6 @@ export const AiArogyaAarohiBot: React.FC<AiArogyaAarohiBotProps> = ({
       const rect = el.getBoundingClientRect();
       setHighlightRect(rect);
 
-      // Glide Aarohi Bot smoothly next to the inspected element
-      const targetX = Math.max(20, Math.min(window.innerWidth - 380, rect.right + 20));
-      const targetY = Math.max(20, Math.min(window.innerHeight - 380, rect.top - 20));
-      setPosition({ x: targetX, y: targetY });
-
       // Retrieve clinical explanation
       const explanation = getClinicalExplanation(el);
       setInspectedElementTitle(explanation.title);
@@ -906,14 +885,10 @@ export const AiArogyaAarohiBot: React.FC<AiArogyaAarohiBotProps> = ({
         </div>
       )}
 
-      {/* 2. Floating AI Aarohi Bot Container */}
+      {/* 2. Floating AI Aarohi Bot Container - Fixed to Right Corner of Web Application */}
       <div
         ref={botRef}
-        className="fixed z-50 transition-transform duration-500 ease-out select-none print:hidden"
-        style={{
-          left: `${position.x}px`,
-          top: `${position.y}px`
-        }}
+        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 select-none print:hidden"
       >
         <div className="relative flex flex-col items-end">
           {/* A. Speech & Interactive Communication Bubble */}
