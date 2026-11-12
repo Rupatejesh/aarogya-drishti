@@ -1,6 +1,11 @@
 import { v2 as cloudinary, UploadApiResponse, UploadApiOptions } from 'cloudinary';
 import fs from 'fs';
 import path from 'path';
+import dotenv from 'dotenv';
+
+dotenv.config();
+dotenv.config({ path: path.resolve(process.cwd(), 'backend', '.env') });
+dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 
 export interface CloudinaryUploadResult {
   success: boolean;
@@ -72,6 +77,9 @@ export class CloudinaryService {
    * Check if Cloudinary is configured with valid credentials
    */
   public isConfigured(): boolean {
+    if (!this.configured) {
+      this.init();
+    }
     return this.configured;
   }
 
@@ -97,6 +105,10 @@ export class CloudinaryService {
 
     if (options.public_id) {
       uploadOptions.public_id = options.public_id;
+    }
+
+    if (!this.configured) {
+      this.init();
     }
 
     if (this.configured) {
@@ -267,3 +279,4 @@ export class CloudinaryService {
 }
 
 export default CloudinaryService.getInstance();
+
