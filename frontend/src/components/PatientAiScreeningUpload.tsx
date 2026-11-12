@@ -23,7 +23,8 @@ import {
   FileText,
   ScanLine,
   Target,
-  Maximize2
+  Maximize2,
+  HelpCircle
 } from 'lucide-react';
 import api from '../services/api.ts';
 import { Language, translations } from '../i18n/translations.ts';
@@ -861,6 +862,50 @@ export const PatientAiScreeningUpload: React.FC<PatientAiScreeningUploadProps> =
             </div>
           </div>
 
+          {/* AI Arogya Interactive Symptom Questions */}
+          <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-2.5 text-xs">
+            <div className="text-[11px] font-bold text-slate-700 uppercase flex items-center justify-between">
+              <span className="flex items-center space-x-1.5">
+                <HelpCircle className="w-3.5 h-3.5 text-royal-600" />
+                <span>AI Arogya Clinical Symptom Questions</span>
+              </span>
+              <span className="text-[10px] text-slate-500 font-medium">Click to select active symptoms</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {[
+                'Persistent white cheek patch (>3 weeks)',
+                'Burning sensation with spicy food',
+                'Difficulty opening mouth / jaw stiffness (OSMF)',
+                'Non-healing oral ulcer or indurated lump'
+              ].map((sym) => {
+                const isSelected = symptoms.includes(sym);
+                return (
+                  <button
+                    key={sym}
+                    type="button"
+                    onClick={() => {
+                      setSymptoms(prev =>
+                        prev.includes(sym) ? prev.filter(s => s !== sym) : [...prev, sym]
+                      );
+                    }}
+                    className={`p-2 rounded-xl text-left text-[11px] font-bold border transition-all flex items-center justify-between ${
+                      isSelected
+                        ? 'bg-blue-50 text-royal-900 border-royal-400 shadow-sm'
+                        : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                    }`}
+                  >
+                    <span>{sym}</span>
+                    <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] ${
+                      isSelected ? 'bg-royal-600 text-white font-black' : 'bg-slate-200 text-slate-500'
+                    }`}>
+                      {isSelected ? '✓' : '+'}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           {/* ===================================================================== */}
           {/* PROMINENT AI DISEASE DECLARATION CARD */}
           {/* ===================================================================== */}
@@ -923,6 +968,9 @@ export const PatientAiScreeningUpload: React.FC<PatientAiScreeningUploadProps> =
                   <span className="text-xs font-extrabold bg-emerald-100 text-emerald-900 px-2.5 py-0.5 rounded-full border border-emerald-300">
                     Confidence: {analysisResult.aiConfidenceScore}% Accuracy
                   </span>
+                  <span className="text-[10px] font-bold text-slate-700 bg-slate-100 px-2.5 py-0.5 rounded-full border border-slate-300">
+                    Advisory Screening — Not for Clinical Diagnosis
+                  </span>
                   <span className="text-[10px] font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full border border-slate-200">
                     {analysisResult.modelUsed || 'Gemini Multimodal Live Vision'}
                   </span>
@@ -954,28 +1002,73 @@ export const PatientAiScreeningUpload: React.FC<PatientAiScreeningUploadProps> =
                   </p>
                 </div>
               ) : (
-                <div className="space-y-2 pt-1 border-t border-slate-200">
-                  <div className="text-[10px] font-extrabold uppercase text-slate-500 tracking-wider">
-                    RECOMMENDED CLINICAL PATHWAY:
+                <div className="space-y-2.5 pt-2 border-t border-slate-200">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-black uppercase text-slate-700 tracking-wider">
+                      RECOMMENDED CLINICAL PATHWAY (NEARBY SPECIALISTS):
+                    </span>
+                    <span className="text-[10px] text-royal-700 font-bold bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                      Nearby PHC / CHC Specialists
+                    </span>
                   </div>
 
-                  {/* Specialist & Facility Card */}
-                  <div className="p-3 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-1.5 text-xs">
-                    <div className="flex items-center justify-between">
-                      <strong className="text-slate-900 font-extrabold flex items-center space-x-1">
-                        <MapPin className="w-3.5 h-3.5 text-royal-600" />
-                        <span>PHC G. Madugula / GGH Paderu</span>
-                      </strong>
-                      <span className="text-[10px] font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded">
-                        4mm Punch Biopsy
+                  <div className="grid grid-cols-1 gap-2">
+                    {/* 1. Oral Onco-Pathologist */}
+                    <div className="p-3 bg-white rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between text-xs">
+                      <div className="space-y-0.5">
+                        <div className="flex items-center space-x-1.5">
+                          <span className="text-[10px] font-bold bg-blue-100 text-royal-800 px-1.5 py-0.5 rounded">Oral Specialist</span>
+                          <strong className="text-slate-900 font-bold">Dr. Swapna Devi, MDS</strong>
+                        </div>
+                        <div className="text-[11px] text-slate-600">
+                          PHC G. Madugula / GGH Paderu Tele-Lab Hub • 4mm Punch Biopsy
+                        </div>
+                        <div className="text-[10px] text-emerald-700 font-bold flex items-center space-x-1">
+                          <Calendar className="w-3 h-3" />
+                          <span>Saturday 10:30 AM Slot Available</span>
+                        </div>
+                      </div>
+                      <span className="text-[11px] font-bold text-royal-700 bg-blue-50 px-2.5 py-1 rounded-xl border border-blue-200">
+                        Primary Referral
                       </span>
                     </div>
-                    <div className="text-[11px] text-slate-600">
-                      Assigned Specialist: <strong>Dr. Swapna Devi, MDS</strong> (Chief Onco-Pathologist)
+
+                    {/* 2. ENT Specialist */}
+                    <div className="p-3 bg-white rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between text-xs">
+                      <div className="space-y-0.5">
+                        <div className="flex items-center space-x-1.5">
+                          <span className="text-[10px] font-bold bg-purple-100 text-purple-800 px-1.5 py-0.5 rounded">ENT Specialist</span>
+                          <strong className="text-slate-900 font-bold">Dr. K. Rajesh, MS ENT</strong>
+                        </div>
+                        <div className="text-[11px] text-slate-600">
+                          Area Hospital Paderu Hub • Head & Neck Oncology
+                        </div>
+                        <div className="text-[10px] text-slate-500 font-medium">
+                          Mon-Fri 09:30 AM - 01:00 PM
+                        </div>
+                      </div>
+                      <span className="text-[11px] font-bold text-slate-700 bg-slate-100 px-2.5 py-1 rounded-xl border border-slate-200">
+                        Surgical Opinion
+                      </span>
                     </div>
-                    <div className="text-[10px] text-emerald-700 font-bold flex items-center space-x-1">
-                      <Calendar className="w-3 h-3" />
-                      <span>Saturday 10:30 AM Slot Reserved</span>
+
+                    {/* 3. Dental Medical Officer */}
+                    <div className="p-3 bg-white rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between text-xs">
+                      <div className="space-y-0.5">
+                        <div className="flex items-center space-x-1.5">
+                          <span className="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded">Dental MO</span>
+                          <strong className="text-slate-900 font-bold">Dr. Anand Kumar, MDS</strong>
+                        </div>
+                        <div className="text-[11px] text-slate-600">
+                          CHC G. Madugula • Oral Medicine & Tobacco Intervention
+                        </div>
+                        <div className="text-[10px] text-slate-500 font-medium">
+                          Daily 10:00 AM - 04:00 PM
+                        </div>
+                      </div>
+                      <span className="text-[11px] font-bold text-slate-700 bg-slate-100 px-2.5 py-1 rounded-xl border border-slate-200">
+                        Local Follow-Up
+                      </span>
                     </div>
                   </div>
                 </div>

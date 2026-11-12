@@ -433,7 +433,7 @@ export const WebRTCTelemedicineRoom: React.FC<WebRTCTelemedicineRoomProps> = ({
               <Activity className="w-3 h-3 text-emerald-600" />
               <span>SpO2: 98%</span>
             </span>
-            <span className="bg-amber-100 text-slate-900 px-2.5 py-0.5 rounded-full font-sans font-bold border border-amber-300">
+            <span className="bg-yellow-100 text-slate-900 px-2.5 py-0.5 rounded-full font-sans font-bold border border-yellow-300">
               Habit: 18-Yr Chewing Tobacco
             </span>
           </div>

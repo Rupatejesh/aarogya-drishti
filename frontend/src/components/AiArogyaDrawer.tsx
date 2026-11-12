@@ -10,7 +10,14 @@ import {
   Stethoscope,
   Info,
   Headphones,
-  Volume2
+  Volume2,
+  Paperclip,
+  FileText,
+  CheckCircle,
+  Calendar,
+  Video,
+  Activity,
+  QrCode
 } from 'lucide-react';
 import { Language, translations } from '../i18n/translations.ts';
 
@@ -18,6 +25,11 @@ interface Message {
   sender: 'ai' | 'user';
   text: string;
   time: string;
+  attachment?: {
+    type: 'prescription';
+    title: string;
+    details: string;
+  };
 }
 
 interface AiArogyaDrawerProps {
@@ -25,6 +37,81 @@ interface AiArogyaDrawerProps {
   onClose: () => void;
   lang: Language;
 }
+
+const SPOKEN_GUIDES = [
+  {
+    id: 'guide-appt',
+    titleEn: '1. Apply for Appointment',
+    titleTe: '1. అపాయింట్‌మెంట్ బుకింగ్',
+    titleHi: '1. अपॉइंटमेंट बुक करना',
+    speechEn: 'To apply for an appointment: Click on Core Health Action 2 or the Book Doctor button. Choose General Oral Consultation or Biopsy Procedure, select your Mandal, PHC, Doctor, Date, and Time Slot, then submit.',
+    speechTe: 'అపాయింట్‌మెంట్ కోసం: కోర్ యాక్షన్ 2 క్లిక్ చేసి జనరల్ కన్సల్టేషన్ లేదా బయాప్సీ ఎంచుకోండి. మీ మండలం, పిహెచ్‌సి, డాక్టర్ మరియు సమయం సెలెక్ట్ చేసి కన్ఫర్మ్ చేయండి.',
+    speechHi: 'अपॉइंटमेंट के लिए: कोर एक्शन 2 पर क्लिक करें, जनरल जांच या बायोप्सी चुनें, अपना मंडल, पीएचसी, डॉक्टर और समय चुनकर सबमिट करें।'
+  },
+  {
+    id: 'guide-notif',
+    titleEn: '2. Check Notifications',
+    titleTe: '2. నోటిఫికేషన్లు చూడటం',
+    titleHi: '2. नोटिफिकेशन चेक करना',
+    speechEn: 'To check appointment notifications: View the Live Appointment Notifications section on your dashboard. You will see real-time status badges for Approved, Rejected, or Pending, with date, day, time, doctor name, and facility.',
+    speechTe: 'నోటిఫికేషన్ల కోసం: మీ డ్యాష్‌బోర్డ్‌లోని లైవ్ అపాయింట్‌మెంట్ కార్డ్స్ చూడండి. డాక్టర్ అప్రూవ్ చేసిన తేదీ, రోజు, సమయం మరియు స్టేటస్ కనిపిస్తాయి.',
+    speechHi: 'नोटिफिकेशन के लिए: अपने डैशबोर्ड पर लाइव अपॉइंटमेंट सेक्शन देखें, जहां अप्रूव्ड, रिजेक्टेड या पेंडिंग स्टेटस तारीख और समय के साथ दिखेगा।'
+  },
+  {
+    id: 'guide-chat',
+    titleEn: '3. Chat with Doctor',
+    titleTe: '3. డాక్టర్‌తో చాట్',
+    titleHi: '3. डॉक्टर से चैट करना',
+    speechEn: 'To chat with the doctor: Scroll to Doctor Live ChatBox. The green dot confirms the doctor is Active Online. Type your message or click Send Prescription from History to send your e-prescription.',
+    speechTe: 'డాక్టర్‌తో చాట్ కోసం: డ్యాష్‌బోర్డ్‌లోని డాక్టర్ చాట్‌బాక్స్‌కు వెళ్లండి. గ్రీన్ డాట్ డాక్టర్ ఆన్‌లైన్‌లో ఉన్నారని తెలుపుతుంది. మీ సందేహం టైప్ చేయండి లేదా ప్రిస్క్రిప్షన్ పంపండి.',
+    speechHi: 'डॉक्टर से चैट के लिए: चैटबॉक्स में जाएं, ग्रीन डॉट से डॉक्टर की लाइव उपस्थिति देखें और अपना संदेश या पर्चा भेजें।'
+  },
+  {
+    id: 'guide-video',
+    titleEn: '4. Join Video Call',
+    titleTe: '4. వీడియో కాల్‌లో చేరడం',
+    titleHi: '4. वीडियो कॉल में जुड़ना',
+    speechEn: 'To join a video call: Click Core Health Action 3 Start Video Call. The two-system WebRTC room connects you directly with Dr. Swapna Devi with live camera and microphone controls.',
+    speechTe: 'వీడియో కాల్ కోసం: కోర్ యాక్షన్ 3 స్టార్ట్ వీడియో కాల్ క్లిక్ చేయండి. వెబ్‌ఆర్‌టిసి ద్వారా పాడేరు ఆంకాలజిస్ట్ డాక్టర్ స్వప్నా దేవితో నేరుగా మాట్లాడవచ్చు.',
+    speechHi: 'वीडियो कॉल के लिए: कोर एक्शन 3 स्टार्ट वीडियो कॉल पर क्लिक करें। वेबआरटीसी से डॉक्टर स्वप्ना देवी से लाइव परामर्श प्राप्त करें।'
+  },
+  {
+    id: 'guide-history',
+    titleEn: '5. History & Tracking',
+    titleTe: '5. హిస్టరీ & ట్రాకింగ్',
+    titleHi: '5. हिस्ट्री और ट्रैकिंग',
+    speechEn: 'To check history and tracking: View the 4-Step Onco-Care Treatment Journey bar: Screening Triage, Medical Rx Dispensed, Biopsy Scheduled, and Histopathology Review.',
+    speechTe: 'ట్రాకింగ్ స్టేటస్ కోసం: 4-దశల ఆంకో-కేర్ జర్నీ బార్ చూడండి: స్క్రీనింగ్, ప్రిస్క్రిప్షన్, బయాప్సీ షెడ్యూల్ మరియు పాథాలజీ రివ్యూ వివరాలు కనిపిస్తాయి.',
+    speechHi: 'हिस्ट्री और ट्रैकिंग के लिए: 4-चरणीय ऑन्को-केयर जर्नी बार देखें जिसमें स्क्रीनिंग, दवा, बायोप्सी और रिपोर्ट की स्थिति दिखती है।'
+  },
+  {
+    id: 'guide-card',
+    titleEn: '6. UIDN & Health Card',
+    titleTe: '6. ఆరోగ్య దృష్టి కార్డు',
+    titleHi: '6. आरोग्य दृष्टि कार्ड',
+    speechEn: 'To view UIDN and Arogya Card: Scroll to Arogya Drishti Health Card. Your unique tribal UIDN, age, blood group, village, and ABDM QR code are displayed with 1-click Download and Print buttons.',
+    speechTe: 'హెల్త్ కార్డు కోసం: ఆరోగ్య దృష్టి కార్డు విభాగంలో మీ యుఐడిఎన్, రక్త వర్గం, గ్రామం మరియు క్యూఆర్ కోడ్ ఉంటాయి. డౌన్‌లోడ్ లేదా ప్రింట్ చేసుకోవచ్చు.',
+    speechHi: 'हेल्थ कार्ड के लिए: आरोग्य दृष्टि डिजिटल कार्ड देखें जिसमें आपका यूआईडीएन, ब्लड ग्रुप और क्यूआर कोड डाउनलोड और प्रिंट के लिए उपलब्ध है।'
+  },
+  {
+    id: 'guide-download',
+    titleEn: '7. Download Prescriptions',
+    titleTe: '7. ప్రిస్క్రిప్షన్ డౌన్‌లోడ్',
+    titleHi: '7. दवा पर्चा डाउनलोड',
+    speechEn: 'To download medical and biopsy prescriptions: In the Verified e-Prescription card, click Print Official Slip to view and download your official bilingual PDF with barcode.',
+    speechTe: 'ప్రిస్క్రిప్షన్ డౌన్‌లోడ్ కోసం: ఇ-ప్రిస్క్రిప్షన్ కార్డులోని ప్రింట్ స్లిప్ బటన్ క్లిక్ చేసి బార్‌కోడ్‌తో కూడిన అధికారిక పిడిఎఫ్ పొందండి.',
+    speechHi: 'दवा पर्चा डाउनलोड के लिए: प्रिंट ऑफिशियल स्लिप बटन पर क्लिक करके बारकोड युक्त पर्चा डाउनलोड करें।'
+  },
+  {
+    id: 'guide-sendfile',
+    titleEn: '8. Send Rx from History',
+    titleTe: '8. డాక్టర్‌కు ప్రిస్క్రిప్షన్ పంపడం',
+    titleHi: '8. डॉक्टर को पर्चा भेजना',
+    speechEn: 'To send downloaded prescriptions directly to the doctor: Click the Paperclip Document icon inside this AI Arogya chat or the Send Prescription from History button in the doctor chat.',
+    speechTe: 'డాక్టర్‌కు ఫైల్ పంపడానికి: ఈ ఏఐ ఆరోగ్యా చాట్‌లోని డాక్యుమెంట్ పిన్ క్లిక్ చేయండి లేదా డాక్టర్ చాట్‌బాక్స్‌లోని సెండ్ ప్రిస్క్రిప్షన్ బటన్ ఉపయోగించండి.',
+    speechHi: 'डॉक्टर को पर्चा भेजने के लिए: इस चैट में दिए गए पेपरक्लिप आइकन पर क्लिक करें या डॉक्टर चैटबॉक्स का बटन दबाएं।'
+  }
+];
 
 const SAMPLE_PROMPTS = [
   'నా నోటిలో తెల్లటి మచ్చ ఉంది, ప్రమాదకరమా? (Is white patch dangerous?)',
@@ -70,6 +157,69 @@ export const AiArogyaDrawer: React.FC<AiArogyaDrawerProps> = ({
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = lang === 'te' ? 'te-IN' : lang === 'hi' ? 'hi-IN' : 'en-IN';
     window.speechSynthesis.speak(utterance);
+  };
+
+  const handlePlayGuide = (guide: typeof SPOKEN_GUIDES[0]) => {
+    const text = lang === 'te' ? guide.speechTe : lang === 'hi' ? guide.speechHi : guide.speechEn;
+    const title = lang === 'te' ? guide.titleTe : lang === 'hi' ? guide.titleHi : guide.titleEn;
+
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = lang === 'te' ? 'te-IN' : lang === 'hi' ? 'hi-IN' : 'en-IN';
+      window.speechSynthesis.speak(utterance);
+    }
+
+    setMessages((prev) => [
+      ...prev,
+      {
+        sender: 'user',
+        text: `Tell me how to: ${title}`,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      },
+      {
+        sender: 'ai',
+        text: text,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      }
+    ]);
+  };
+
+  const handleSendPrescriptionDocument = () => {
+    const docInfo = {
+      type: 'prescription' as const,
+      title: 'Verified e-Prescription (RX-ASR-2026-0001)',
+      details: '4mm Punch Biopsy Scheduled • Kenacort 0.1% Paste + Lycopene 8mg'
+    };
+
+    const confirmMsg =
+      lang === 'te'
+        ? 'మీ సేవ్ చేసిన ప్రిస్క్రిప్షన్ ఫైల్ (RX-ASR-2026-0001) డాక్టర్ స్వప్నా దేవికి నేరుగా పంపబడింది.'
+        : lang === 'hi'
+        ? 'आपकी सहेजी गई दवा पर्ची (RX-ASR-2026-0001) डॉक्टर स्वप्ना देवी को भेज दी गई है।'
+        : 'Your saved e-Prescription file (RX-ASR-2026-0001) has been sent directly to Dr. Swapna Devi in Doctor Chat.';
+
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(confirmMsg);
+      utterance.lang = lang === 'te' ? 'te-IN' : lang === 'hi' ? 'hi-IN' : 'en-IN';
+      window.speechSynthesis.speak(utterance);
+    }
+
+    setMessages((prev) => [
+      ...prev,
+      {
+        sender: 'user',
+        text: '📎 Sent saved prescription from History to doctor',
+        attachment: docInfo,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      },
+      {
+        sender: 'ai',
+        text: confirmMsg,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      }
+    ]);
   };
 
   const handleSend = (textToSend?: string) => {
@@ -152,11 +302,31 @@ export const AiArogyaDrawer: React.FC<AiArogyaDrawerProps> = ({
           </span>
           <button
             onClick={handlePlayAwareness}
-            className="px-2.5 py-1 bg-royal-600 hover:bg-royal-700 text-white rounded-lg text-[10px] font-bold transition-all flex items-center space-x-1"
+            className="px-2.5 py-1 bg-royal-600 hover:bg-royal-700 text-white rounded-lg text-[10px] font-bold transition-all flex items-center space-x-1 active:scale-95 shadow-sm"
           >
             <Volume2 className="w-3 h-3" />
             <span>Listen Aloud</span>
           </button>
+        </div>
+
+        {/* Spoken Step-by-Step Interactive Guides Carousel */}
+        <div className="p-2.5 bg-slate-50 border-b border-slate-200 space-y-1.5">
+          <div className="text-[10px] font-extrabold uppercase text-slate-500 tracking-wider flex items-center justify-between">
+            <span>Spoken Step-by-Step Guides (Click to Listen)</span>
+            <span className="text-[9px] bg-royal-100 text-royal-800 px-1.5 py-0.2 rounded font-mono">8 Flows</span>
+          </div>
+          <div className="flex space-x-1.5 overflow-x-auto pb-1 scrollbar-thin">
+            {SPOKEN_GUIDES.map((g) => (
+              <button
+                key={g.id}
+                onClick={() => handlePlayGuide(g)}
+                className="px-2.5 py-1 rounded-xl text-[10px] font-bold bg-white hover:bg-blue-50 text-slate-800 hover:text-royal-800 border border-slate-200 transition-all flex items-center space-x-1 flex-shrink-0 shadow-sm active:scale-95"
+              >
+                <Volume2 className="w-2.5 h-2.5 text-royal-600" />
+                <span>{lang === 'te' ? g.titleTe : lang === 'hi' ? g.titleHi : g.titleEn}</span>
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Message Feed */}
@@ -186,6 +356,21 @@ export const AiArogyaDrawer: React.FC<AiArogyaDrawerProps> = ({
                 }`}
               >
                 {m.text}
+
+                {m.attachment && (
+                  <div className="mt-2 p-2.5 bg-blue-50/90 rounded-xl border border-blue-200 space-y-1 text-royal-950">
+                    <div className="font-bold flex items-center space-x-1 text-[11px]">
+                      <FileText className="w-3.5 h-3.5 text-royal-600" />
+                      <span>{m.attachment.title}</span>
+                    </div>
+                    <div className="text-[10px] text-slate-600">{m.attachment.details}</div>
+                    <div className="text-[9px] font-bold text-emerald-700 flex items-center space-x-1 pt-0.5">
+                      <CheckCircle className="w-3 h-3 text-emerald-600" />
+                      <span>Transmitted to Doctor Clinical Workspace</span>
+                    </div>
+                  </div>
+                )}
+
                 <div
                   className={`text-[9px] mt-1 text-right ${
                     m.sender === 'user' ? 'text-blue-100' : 'text-slate-400'
@@ -222,6 +407,14 @@ export const AiArogyaDrawer: React.FC<AiArogyaDrawerProps> = ({
 
         {/* Input Bar */}
         <div className="p-3 bg-white border-t border-slate-200 flex items-center space-x-2">
+          <button
+            type="button"
+            onClick={handleSendPrescriptionDocument}
+            className="w-9 h-9 rounded-full bg-slate-100 hover:bg-blue-50 text-slate-600 hover:text-royal-700 flex items-center justify-center border border-slate-300 transition-all active:scale-95 flex-shrink-0"
+            title="Documents File Option: Send Saved Prescription from History to Doctor"
+          >
+            <Paperclip className="w-4 h-4" />
+          </button>
           <input
             type="text"
             value={input}
@@ -232,7 +425,7 @@ export const AiArogyaDrawer: React.FC<AiArogyaDrawerProps> = ({
           />
           <button
             onClick={() => handleSend()}
-            className="w-9 h-9 rounded-full bg-royal-600 hover:bg-royal-700 text-white flex items-center justify-center shadow-blue-card transition-all active:scale-95"
+            className="w-9 h-9 rounded-full bg-royal-600 hover:bg-royal-700 text-white flex items-center justify-center shadow-blue-card transition-all active:scale-95 flex-shrink-0"
           >
             <Send className="w-4 h-4" />
           </button>

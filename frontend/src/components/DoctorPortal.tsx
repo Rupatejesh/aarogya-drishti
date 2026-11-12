@@ -57,6 +57,18 @@ export const DoctorPortal: React.FC<DoctorPortalProps> = ({
     }
   }, [initialDoctor]);
 
+  // Status toggle
+  const [isOnline, setIsOnline] = useState(true);
+
+  // New Prescription / Biopsy Modal state
+  const [isCreateRxModalOpen, setIsCreateRxModalOpen] = useState(false);
+  const [newRxPatientUidn, setNewRxPatientUidn] = useState('UIDN-ASR-2026-GM046');
+  const [newRxType, setNewRxType] = useState<'tablet' | 'biopsy'>('biopsy');
+  const [newRxMedicines, setNewRxMedicines] = useState('Lycopene 8mg, Kenacort 0.1% Dental Paste, Chlorhexidine 0.2% Rinse');
+  const [newRxInstructions, setNewRxInstructions] = useState('Apply paste topically twice daily after meals. Avoid tobacco/smoking completely.');
+  const [newRxBiopsyDetails, setNewRxBiopsyDetails] = useState('Diagnostic 4mm punch biopsy of right buccal mucosa under local anesthesia at PHC G. Madugula.');
+  const [submittingRx, setSubmittingRx] = useState(false);
+
   // Forgot password modal
   const [isForgotModalOpen, setIsForgotModalOpen] = useState(false);
   const [forgotSecurityCode, setForgotSecurityCode] = useState('ASR-DOC-2026');
@@ -121,6 +133,35 @@ export const DoctorPortal: React.FC<DoctorPortalProps> = ({
     }
   };
 
+  const handleCreatePrescription = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmittingRx(true);
+    try {
+      const rxPayload = {
+        patientUidn: newRxPatientUidn,
+        doctorUidn: activeDoctor.uidn || 'DOC-SWAPNA',
+        doctorName: activeDoctor.name || 'Dr. Swapna Devi, MDS',
+        facilityName: activeDoctor.hospitalDuty || 'PHC G. Madugula',
+        medicines: newRxMedicines.split(',').map((m) => ({ name: m.trim(), dosage: '1 unit', duration: '14 days' })),
+        instructions: newRxInstructions,
+        biopsyRecommended: newRxType === 'biopsy',
+        biopsyProcedureDetails: newRxType === 'biopsy' ? newRxBiopsyDetails : 'No biopsy required.',
+        trackingStatus: newRxType === 'biopsy' ? 'Biopsy Scheduled' : 'Medical Rx Dispensed'
+      };
+
+      const res = await api.createPrescription(rxPayload);
+      if (res.prescription) {
+        setBiopsyVault((prev) => [res.prescription, ...prev]);
+        alert(`Prescription ${res.prescription.rxId} saved successfully for ${newRxPatientUidn}!`);
+        setIsCreateRxModalOpen(false);
+      }
+    } catch (err: any) {
+      alert(`Error saving prescription: ${err.message}`);
+    } finally {
+      setSubmittingRx(false);
+    }
+  };
+
   // Filtered patients by UIDN search
   const filteredPatients = patientsUnderCare.filter(
     (p) =>
@@ -153,7 +194,20 @@ export const DoctorPortal: React.FC<DoctorPortalProps> = ({
         </div>
 
         {/* Action Controls */}
-        <div className="flex items-center space-x-3">
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Active / Inactive Telemedicine Status Toggle */}
+          <button
+            onClick={() => setIsOnline(!isOnline)}
+            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-2 border shadow-sm ${
+              isOnline
+                ? 'bg-emerald-500 hover:bg-emerald-600 text-white border-emerald-400'
+                : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700'
+            }`}
+          >
+            <span className={`w-2.5 h-2.5 rounded-full ${isOnline ? 'bg-white animate-pulse' : 'bg-slate-500'}`} />
+            <span>{isOnline ? 'Active for Tele-Consultation (Online)' : 'Status: Inactive (Offline)'}</span>
+          </button>
+
           <button
             onClick={() => setIsForgotModalOpen(true)}
             className="px-3.5 py-2 bg-white/10 hover:bg-white/20 text-blue-100 rounded-xl text-xs font-semibold transition-all flex items-center space-x-1.5"
@@ -320,9 +374,18 @@ export const DoctorPortal: React.FC<DoctorPortalProps> = ({
               <p className="text-xs text-slate-500">Securely stored and organized under Patient UIDN</p>
             </div>
           </div>
-          <span className="text-xs font-bold bg-blue-50 text-royal-800 px-3 py-1 rounded-full border border-blue-200">
-            {biopsyVault.length} Indexed Cases
-          </span>
+          <div className="flex items-center space-x-2">
+            <span className="text-xs font-bold bg-blue-50 text-royal-800 px-3 py-1 rounded-full border border-blue-200">
+              {biopsyVault.length} Indexed Cases
+            </span>
+            <button
+              onClick={() => setIsCreateRxModalOpen(true)}
+              className="px-3.5 py-1.5 bg-royal-600 hover:bg-royal-700 text-white rounded-xl text-xs font-bold transition-all flex items-center space-x-1 shadow-sm active:scale-95"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Issue Prescription / Biopsy</span>
+            </button>
+          </div>
         </div>
 
         <div className="divide-y divide-slate-200 border border-slate-200 rounded-2xl overflow-hidden">
@@ -422,6 +485,121 @@ export const DoctorPortal: React.FC<DoctorPortalProps> = ({
                 </button>
               </form>
             )}
+          </div>
+        </div>
+      )}
+      {/* Create Prescription / Biopsy Order Modal */}
+      {isCreateRxModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white max-w-lg w-full rounded-3xl p-6 border border-slate-200 shadow-2xl space-y-4">
+            <div className="flex justify-between items-center border-b pb-3 border-slate-100">
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 rounded-xl bg-royal-100 text-royal-700 flex items-center justify-center">
+                  <FileText className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="font-extrabold text-base text-slate-900">Issue Prescription / Biopsy Referral</h4>
+                  <p className="text-[11px] text-slate-500">Saved to both Doctor Vault and Patient Health Record</p>
+                </div>
+              </div>
+              <button onClick={() => setIsCreateRxModalOpen(false)} className="text-slate-400 hover:text-slate-600 font-bold text-lg">
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleCreatePrescription} className="space-y-3">
+              <div>
+                <label className="text-xs font-bold text-slate-700 block mb-1">Target Patient UIDN</label>
+                <input
+                  type="text"
+                  value={newRxPatientUidn}
+                  onChange={(e) => setNewRxPatientUidn(e.target.value)}
+                  placeholder="e.g. UIDN-ASR-2026-GM046"
+                  className="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-mono font-bold text-slate-900 focus:ring-2 focus:ring-royal-500 focus:outline-none"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-700 block mb-1">Prescription Type</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setNewRxType('tablet')}
+                    className={`py-2 px-3 rounded-xl text-xs font-bold border transition-all ${
+                      newRxType === 'tablet'
+                        ? 'bg-blue-50 text-royal-800 border-royal-400 shadow-sm'
+                        : 'bg-white text-slate-600 border-slate-200'
+                    }`}
+                  >
+                    💊 Tablet Course Only
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setNewRxType('biopsy')}
+                    className={`py-2 px-3 rounded-xl text-xs font-bold border transition-all ${
+                      newRxType === 'biopsy'
+                        ? 'bg-red-50 text-red-800 border-red-400 shadow-sm'
+                        : 'bg-white text-slate-600 border-slate-200'
+                    }`}
+                  >
+                    🔬 Biopsy Procedure Order
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-700 block mb-1">Medicines / Dosage (Comma Separated)</label>
+                <input
+                  type="text"
+                  value={newRxMedicines}
+                  onChange={(e) => setNewRxMedicines(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs text-slate-900 font-medium focus:ring-2 focus:ring-royal-500 focus:outline-none"
+                  required
+                />
+              </div>
+
+              {newRxType === 'biopsy' && (
+                <div>
+                  <label className="text-xs font-bold text-red-700 block mb-1">Biopsy Procedure Protocol & Facility</label>
+                  <input
+                    type="text"
+                    value={newRxBiopsyDetails}
+                    onChange={(e) => setNewRxBiopsyDetails(e.target.value)}
+                    className="w-full bg-red-50/50 border border-red-200 rounded-xl p-2.5 text-xs text-slate-900 font-medium focus:ring-2 focus:ring-red-500 focus:outline-none"
+                    required
+                  />
+                </div>
+              )}
+
+              <div>
+                <label className="text-xs font-bold text-slate-700 block mb-1">Patient Instructions</label>
+                <textarea
+                  value={newRxInstructions}
+                  onChange={(e) => setNewRxInstructions(e.target.value)}
+                  rows={2}
+                  className="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs text-slate-900 focus:ring-2 focus:ring-royal-500 focus:outline-none"
+                  required
+                />
+              </div>
+
+              <div className="pt-2 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsCreateRxModalOpen(false)}
+                  className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={submittingRx}
+                  className="px-5 py-2.5 bg-royal-600 hover:bg-royal-700 text-white rounded-xl text-xs font-bold transition-all shadow-md active:scale-95 disabled:opacity-50"
+                >
+                  {submittingRx ? 'Saving Record...' : 'Issue & Sign Official Rx'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

@@ -38,6 +38,16 @@ export const AppointmentRequestModal: React.FC<AppointmentRequestModalProps> = (
   const [doctorRemarks, setDoctorRemarks] = useState('Urgent consultation for persistent indurated buccal patch.');
   const [loading, setLoading] = useState(false);
 
+  const getDayOfWeek = (dateStr: string) => {
+    try {
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return 'Friday';
+      return d.toLocaleDateString('en-US', { weekday: 'long' });
+    } catch {
+      return 'Saturday';
+    }
+  };
+
   if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -51,6 +61,7 @@ export const AppointmentRequestModal: React.FC<AppointmentRequestModalProps> = (
         hospitalName,
         apptType,
         appointmentDate: new Date(appointmentDate).toISOString(),
+        appointmentDay: getDayOfWeek(appointmentDate),
         timeSlot,
         doctorRemarks
       };
@@ -191,7 +202,9 @@ export const AppointmentRequestModal: React.FC<AppointmentRequestModalProps> = (
           {/* Date & Time Slot */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-bold text-slate-700 block mb-1">Appointment Date</label>
+              <label className="text-xs font-bold text-slate-700 block mb-1">
+                Appointment Date ({getDayOfWeek(appointmentDate)})
+              </label>
               <input
                 type="date"
                 value={appointmentDate}

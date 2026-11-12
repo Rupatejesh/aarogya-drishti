@@ -318,7 +318,7 @@ export const AiArogyaVoiceAssistant: React.FC<AiArogyaVoiceAssistantProps> = ({
             onClick={playAllAwarenessSpeeches}
             className={`px-4 py-2 rounded-xl text-xs font-extrabold transition-all flex items-center space-x-2 shadow-sm ${
               activeTopicId === 'master-awareness' && isSpeaking
-                ? 'bg-amber-400 text-slate-950 ring-2 ring-amber-500 animate-pulse'
+                ? 'bg-yellow-400 text-slate-950 ring-2 ring-yellow-500 animate-pulse'
                 : 'bg-royal-600 hover:bg-royal-700 text-white shadow-blue-card'
             }`}
           >

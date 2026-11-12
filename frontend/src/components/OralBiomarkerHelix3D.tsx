@@ -102,12 +102,12 @@ export const OralBiomarkerHelix3D: React.FC = () => {
     const sphereGeom = new THREE.SphereGeometry(0.3, 16, 16);
     const biomarkerGeom = new THREE.SphereGeometry(0.55, 24, 24);
 
-    const goldMaterial = new THREE.MeshStandardMaterial({
-      color: 0xf59e0b,
-      metalness: 0.8,
+    const royalBlueMaterial = new THREE.MeshStandardMaterial({
+      color: 0x1d4ed8,
+      metalness: 0.7,
       roughness: 0.2,
-      emissive: 0x78350f,
-      emissiveIntensity: 0.25
+      emissive: 0x1e3a8a,
+      emissiveIntensity: 0.3
     });
 
     const emeraldMaterial = new THREE.MeshStandardMaterial({
@@ -119,11 +119,11 @@ export const OralBiomarkerHelix3D: React.FC = () => {
     });
 
     const rungMaterial = new THREE.MeshStandardMaterial({
-      color: 0xfef3c7,
-      metalness: 0.4,
-      roughness: 0.4,
+      color: 0xbfdbfe,
+      metalness: 0.3,
+      roughness: 0.3,
       transparent: true,
-      opacity: 0.8
+      opacity: 0.85
     });
 
     for (let i = 0; i <= pointsCount; i++) {
@@ -144,7 +144,7 @@ export const OralBiomarkerHelix3D: React.FC = () => {
       const isSpecial = i % 8 === 0;
       const node1 = new THREE.Mesh(
         isSpecial ? biomarkerGeom : sphereGeom,
-        isSpecial ? goldMaterial : emeraldMaterial
+        isSpecial ? royalBlueMaterial : emeraldMaterial
       );
       node1.position.copy(p1);
       helixGroup.add(node1);
@@ -152,7 +152,7 @@ export const OralBiomarkerHelix3D: React.FC = () => {
       // Node on Strand 2
       const node2 = new THREE.Mesh(
         isSpecial ? biomarkerGeom : sphereGeom,
-        isSpecial ? emeraldMaterial : goldMaterial
+        isSpecial ? emeraldMaterial : royalBlueMaterial
       );
       node2.position.copy(p2);
       helixGroup.add(node2);

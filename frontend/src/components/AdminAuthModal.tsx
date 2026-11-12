@@ -204,6 +204,7 @@ export const AdminAuthModal: React.FC<AdminAuthModalProps> = ({
           <button
             type="submit"
             disabled={loading}
+            style={{ backgroundColor: '#1D4ED8', color: '#FFFFFF' }}
             className="bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 px-6 rounded-xl shadow-md w-full flex items-center justify-center gap-2 transition-all duration-200 cursor-pointer disabled:opacity-50 active:scale-95 text-sm"
           >
             {loading ? (

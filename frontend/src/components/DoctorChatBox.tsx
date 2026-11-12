@@ -137,7 +137,7 @@ export const DoctorChatBox: React.FC<DoctorChatBoxProps> = ({
         {/* Quick action button to send prescription file from history */}
         <button
           onClick={handleSendPrescriptionFile}
-          className="px-3 py-1.5 rounded-xl bg-amber-200 hover:bg-amber-300 text-slate-900 font-bold text-xs shadow-sm transition-all flex items-center space-x-1.5"
+          className="px-3 py-1.5 rounded-xl bg-yellow-300 hover:bg-yellow-400 text-slate-950 font-extrabold text-xs shadow-sm transition-all flex items-center space-x-1.5 active:scale-95"
           title="Send Prescription from History to Doctor"
         >
           <FileText className="w-3.5 h-3.5 text-royal-700" />

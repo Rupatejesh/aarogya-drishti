@@ -6,7 +6,7 @@ import { ASR_MANDALS } from '../models/Patient.js';
 export const get11MandalsHospitals = async (_req: Request, res: Response): Promise<void> => {
   try {
     const hospitals = await store.findHospitals();
-    
+
     // Group by mandal for administrative oversight
     const mandalSummary: Record<string, any> = {};
     for (const mandal of ASR_MANDALS) {

@@ -341,7 +341,7 @@ export default function App() {
           <div className="flex items-center space-x-3">
             <span
               className={`w-7 h-7 rounded-xl flex items-center justify-center text-xs font-black ${
-                role === 'admin' ? 'bg-amber-400 text-slate-950 shadow-sm' : 'bg-slate-100 text-slate-700 border border-slate-200'
+                role === 'admin' ? 'bg-yellow-400 text-slate-950 font-bold shadow-sm' : 'bg-slate-100 text-slate-700 border border-slate-200'
               }`}
             >
               4
@@ -688,10 +688,11 @@ export default function App() {
                   <div className="pt-6 space-y-2.5">
                     <button
                       onClick={() => setIsAdminAuthModalOpen(true)}
-                      className="w-full py-3 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs shadow-sm active:scale-95 transition-all flex items-center justify-center space-x-2"
+                      style={{ backgroundColor: '#1D4ED8', color: '#FFFFFF' }}
+                      className="w-full py-3 rounded-2xl bg-blue-700 hover:bg-blue-800 text-white font-extrabold text-xs shadow-md active:scale-95 transition-all flex items-center justify-center space-x-2"
                     >
-                      <ShieldCheck className="w-4 h-4 text-blue-300" />
-                      <span>Admin Sign-In (admin123)</span>
+                      <ShieldCheck className="w-4 h-4 text-white" />
+                      <span>Sign In to Admin Portal (admin123)</span>
                     </button>
 
                     <button
@@ -1025,45 +1026,67 @@ export default function App() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      {patientAppointments.slice(0, 2).map((a) => (
-                        <div
-                          key={a.appointmentId}
-                          className={`p-3.5 rounded-2xl border flex items-center justify-between gap-3 ${
-                            a.status === 'APPROVED'
-                              ? 'bg-emerald-50/80 border-emerald-300 text-emerald-950'
-                              : a.status === 'REJECTED'
-                              ? 'bg-red-50/80 border-red-300 text-red-950'
-                              : 'bg-amber-50/80 border-amber-300 text-amber-950'
-                          }`}
-                        >
-                          <div className="space-y-0.5">
-                            <div className="flex items-center space-x-2">
-                              <span className="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded bg-white/70">
-                                {a.appointmentId}
-                              </span>
-                              <span className="font-bold text-xs">{a.apptType}</span>
-                            </div>
-                            <div className="text-[11px] opacity-80">
-                              {a.hospitalName} • Slot: <strong>{a.timeSlot}</strong>
-                            </div>
-                            <div className="text-[10px] italic">
-                              Remarks: {a.doctorRemarks || 'Awaiting specialist review'}
-                            </div>
-                          </div>
+                      {patientAppointments.slice(0, 4).map((a) => {
+                        const apptDateObj = a.appointmentDate ? new Date(a.appointmentDate) : null;
+                        const formattedDate = apptDateObj && !isNaN(apptDateObj.getTime())
+                          ? apptDateObj.toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' })
+                          : 'Nov 21, 2026';
+                        const dayOfWeek = a.appointmentDay || (apptDateObj && !isNaN(apptDateObj.getTime())
+                          ? apptDateObj.toLocaleDateString('en-US', { weekday: 'long' })
+                          : 'Saturday');
+                        const docDisplayName = a.doctorName || (a.doctorUidn === 'DOC-SWAPNA' ? 'Dr. Swapna Devi, MDS' : a.doctorUidn === 'DOC-RAJESH' ? 'Dr. K. Rajesh, MS ENT' : 'Dr. Anand Kumar, MDS');
 
-                          <span
-                            className={`text-[10px] font-extrabold px-2.5 py-1 rounded-full border shadow-sm ${
+                        return (
+                          <div
+                            key={a.appointmentId}
+                            className={`p-4 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
                               a.status === 'APPROVED'
-                                ? 'bg-emerald-600 text-white border-emerald-700'
+                                ? 'bg-emerald-50/80 border-emerald-300 text-emerald-950'
                                 : a.status === 'REJECTED'
-                                ? 'bg-red-600 text-white border-red-700'
-                                : 'bg-amber-500 text-white border-amber-600'
+                                ? 'bg-red-50/80 border-red-300 text-red-950'
+                                : 'bg-yellow-50 border-yellow-300 text-slate-900'
                             }`}
                           >
-                            {a.status}
-                          </span>
-                        </div>
-                      ))}
+                            <div className="space-y-1.5">
+                              <div className="flex items-center space-x-2">
+                                <span className="font-mono text-[10px] font-bold px-2 py-0.5 rounded bg-white border border-slate-200 text-slate-800 shadow-sm">
+                                  {a.appointmentId}
+                                </span>
+                                <span className="font-bold text-xs text-slate-900">{a.apptType}</span>
+                              </div>
+
+                              <div className="text-xs text-slate-700 flex flex-wrap gap-x-3 gap-y-1">
+                                <span>📅 Date: <strong>{formattedDate} ({dayOfWeek})</strong></span>
+                                <span>⏰ Time: <strong>{a.timeSlot}</strong></span>
+                              </div>
+
+                              <div className="text-xs text-slate-600 flex flex-wrap gap-x-3 gap-y-1">
+                                <span>👨‍⚕️ Specialist: <strong>{docDisplayName}</strong></span>
+                                <span>🏥 Facility: <strong>{a.hospitalName}</strong></span>
+                                <span>📍 Mandal: <strong>{a.mandal || 'G. Madugula'}</strong></span>
+                              </div>
+
+                              <div className="text-[11px] text-slate-500 italic pt-0.5">
+                                Remarks: {a.doctorRemarks || 'Awaiting specialist review'}
+                              </div>
+                            </div>
+
+                            <div className="flex sm:flex-col items-end justify-between sm:justify-center gap-1.5 flex-shrink-0">
+                              <span
+                                className={`text-[10px] font-extrabold px-3 py-1 rounded-full border shadow-sm ${
+                                  a.status === 'APPROVED'
+                                    ? 'bg-emerald-600 text-white border-emerald-700'
+                                    : a.status === 'REJECTED'
+                                    ? 'bg-red-600 text-white border-red-700'
+                                    : 'bg-yellow-400 text-slate-950 font-bold border-yellow-500'
+                                }`}
+                              >
+                                {a.status}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 )}

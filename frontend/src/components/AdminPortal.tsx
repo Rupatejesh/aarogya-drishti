@@ -337,34 +337,42 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ lang }) => {
                       <span className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded ${
                         h.bloodBankAvailable ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'
                       }`}>
-                        {h.bloodBankAvailable ? 'Available' : 'Absent'}
+                        {h.bloodBankAvailable ? 'Available (1 Hub)' : 'Absent (0)'}
                       </span>
                     </td>
 
+                    <td className="py-3.5 px-4 font-mono text-[11px]">
+                      <div className="font-semibold text-slate-900">108: 1 Unit</div>
+                      <div className="text-slate-500 text-[10px]">104 Mobile: 1 Unit</div>
+                    </td>
+
                     <td className="py-3.5 px-4">
-                      <div className="text-[11px] font-mono font-semibold text-slate-800">
-                        {h.ambulance108_104_Unit || 'Unit AP-108-ASR'}
+                      <div className="space-y-1">
+                        <span className={`inline-flex items-center space-x-1 text-[10px] font-extrabold px-2 py-0.5 rounded ${
+                          h.biopsyEquipStatus === 'AVAILABLE'
+                            ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                            : 'bg-yellow-100 text-slate-900 border border-yellow-300'
+                        }`}>
+                          {h.biopsyEquipStatus === 'AVAILABLE' ? (
+                            <>
+                              <CheckCircle className="w-3 h-3 text-emerald-600" />
+                              <span>Equipped (Present)</span>
+                            </>
+                          ) : (
+                            <>
+                              <AlertTriangle className="w-3 h-3 text-slate-700" />
+                              <span>Referral (Absent)</span>
+                            </>
+                          )}
+                        </span>
+                        <div className="text-[10px] font-medium leading-tight">
+                          {h.biopsyEquipStatus === 'AVAILABLE' ? (
+                            <span className="text-emerald-700 font-semibold">✓ 4mm Punch Kit • ✓ Formalin 10% • ✓ Scalpels</span>
+                          ) : (
+                            <span className="text-slate-500">✗ Punch Kit • ✗ Vials (Referred to AH Paderu)</span>
+                          )}
+                        </div>
                       </div>
-                    </td>
-
-                    <td className="py-3.5 px-4">
-                      <span className={`inline-flex items-center space-x-1 text-[10px] font-extrabold px-2 py-0.5 rounded ${
-                        h.biopsyEquipStatus === 'AVAILABLE'
-                          ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
-                          : 'bg-amber-100 text-amber-900 border border-amber-300'
-                      }`}>
-                        {h.biopsyEquipStatus === 'AVAILABLE' ? (
-                          <>
-                            <CheckCircle className="w-3 h-3 text-emerald-600" />
-                            <span>Present</span>
-                          </>
-                        ) : (
-                          <>
-                            <AlertTriangle className="w-3 h-3 text-amber-600" />
-                            <span>Absent</span>
-                          </>
-                        )}
-                      </span>
                     </td>
 
                     <td className="py-3.5 px-4 font-mono text-[11px]">
@@ -421,12 +429,12 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ lang }) => {
             <table className="w-full text-left text-xs">
               <thead className="bg-slate-100 text-slate-700 font-bold uppercase tracking-wider text-[10px] border-b border-slate-200">
                 <tr>
-                  <th className="py-3.5 px-4">Doctor & Designation</th>
-                  <th className="py-3.5 px-4">Doctor Login ID</th>
-                  <th className="py-3.5 px-4">Login Password</th>
-                  <th className="py-3.5 px-4">Duty Hospital & Mandal</th>
-                  <th className="py-3.5 px-4">Contact (Email & Phone)</th>
-                  <th className="py-3.5 px-4">Degree & Alma Mater</th>
+                  <th className="py-3.5 px-4">Doctor & Specialization</th>
+                  <th className="py-3.5 px-4">Login Credentials</th>
+                  <th className="py-3.5 px-4">Duty Hospital & PHC</th>
+                  <th className="py-3.5 px-4">Contact & Direct Call</th>
+                  <th className="py-3.5 px-4">Degree & Academic Relieving</th>
+                  <th className="py-3.5 px-4">Consultations & Appts</th>
                   <th className="py-3.5 px-4 text-center">Status</th>
                   <th className="py-3.5 px-4 text-center">Copy Login</th>
                 </tr>
@@ -435,38 +443,58 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ lang }) => {
                 {doctors.map((d) => (
                   <tr key={d.uidn} className="hover:bg-blue-50/40 transition-colors">
                     <td className="py-3.5 px-4">
-                      <div className="font-extrabold text-slate-900">{d.name}</div>
-                      <div className="text-[11px] text-royal-700 font-semibold">{d.designation}</div>
-                      <div className="text-[10px] text-slate-400 font-mono">{d.abdmCode}</div>
-                    </td>
-
-                    <td className="py-3.5 px-4">
-                      <div className="inline-flex items-center space-x-1.5 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded-xl">
-                        <KeyRound className="w-3 h-3 text-royal-600" />
-                        <span className="font-mono text-xs font-black text-royal-800">{d.uidn}</span>
+                      <div className="flex items-center space-x-1.5">
+                        <span className="font-extrabold text-slate-900">{d.name}</span>
+                        <span className="text-[9px] bg-blue-100 text-royal-800 font-extrabold px-1.5 py-0.2 rounded border border-blue-200">
+                          {d.uidn === 'DOC-SWAPNA' ? 'Lead Specialist' : 'Mandal Medical Officer'}
+                        </span>
                       </div>
+                      <div className="text-[11px] text-royal-700 font-semibold">{d.designation}</div>
+                      <div className="text-[10px] text-slate-400 font-mono">ABDM: {d.abdmCode || 'ABDM-DOC-AP-7821'}</div>
                     </td>
 
                     <td className="py-3.5 px-4">
-                      <div className="inline-flex items-center space-x-1.5 bg-slate-100 border border-slate-300 px-2.5 py-1 rounded-xl">
-                        <Lock className="w-3 h-3 text-slate-600" />
-                        <span className="font-mono text-xs font-bold text-slate-900">{d.password || 'Doctor@2026'}</span>
+                      <div className="space-y-1">
+                        <div className="inline-flex items-center space-x-1.5 bg-blue-50 border border-blue-200 px-2.5 py-0.5 rounded-lg">
+                          <KeyRound className="w-3 h-3 text-royal-600" />
+                          <span className="font-mono text-xs font-black text-royal-800">{d.uidn}</span>
+                        </div>
+                        <div>
+                          <span className="text-[10px] text-slate-500 font-bold">Pass: </span>
+                          <span className="font-mono text-xs font-bold text-slate-900 bg-slate-100 px-1.5 py-0.2 rounded border border-slate-200">{d.password || 'Doctor@2026'}</span>
+                        </div>
                       </div>
                     </td>
 
                     <td className="py-3.5 px-4 text-xs font-medium text-slate-700">
                       <div className="font-bold text-slate-900">{d.hospitalDuty}</div>
-                      <div className="text-[10px] font-semibold text-royal-700">{d.mandal} Mandal</div>
+                      <div className="text-[10px] font-semibold text-royal-700">PHC {d.mandal || 'G. Madugula'} • {d.mandal || 'G. Madugula'} Mandal</div>
+                      <div className="text-[10px] text-slate-400">Facility Type: Area Hospital / CHC Hub</div>
                     </td>
 
                     <td className="py-3.5 px-4 text-xs">
                       <div className="font-mono text-slate-800">{d.email}</div>
                       <div className="text-slate-500 font-mono text-[11px]">{d.phone}</div>
+                      <a
+                        href={`tel:${d.phone}`}
+                        className="inline-flex items-center space-x-1 px-2 py-0.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold rounded-lg text-[10px] border border-emerald-200 mt-1 transition-all"
+                      >
+                        <PhoneCall className="w-2.5 h-2.5 text-emerald-600" />
+                        <span>Direct Call (Ready)</span>
+                      </a>
                     </td>
 
                     <td className="py-3.5 px-4">
-                      <div className="font-semibold text-slate-900">{d.degreeCertificate}</div>
-                      <div className="text-[10px] text-slate-500">{d.university}</div>
+                      <div className="font-semibold text-slate-900">{d.degreeCertificate || 'MDS Oral Pathology - AMC (2011)'}</div>
+                      <div className="text-[10px] text-slate-500">{d.university || 'Andhra Medical College / Dr. NTR UHS'}</div>
+                      <div className="text-[10px] text-slate-600 mt-0.5">
+                        Passing: <strong>{d.passingYear || 2011}</strong> • Relieving: <strong>{d.relievingYear || 2014}</strong> ({d.experienceYears || 15} Yrs Exp)
+                      </div>
+                    </td>
+
+                    <td className="py-3.5 px-4 font-mono text-xs">
+                      <div>Consulting: <strong className="text-royal-800">{d.consultationsCount || 142}</strong></div>
+                      <div className="text-slate-500 text-[11px]">Total Appts: {Math.floor((d.consultationsCount || 142) * 1.4)}</div>
                     </td>
 
                     <td className="py-3.5 px-4 text-center">

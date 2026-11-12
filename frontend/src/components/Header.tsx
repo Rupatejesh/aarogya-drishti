@@ -104,7 +104,7 @@ export const Header: React.FC<HeaderProps> = ({
               <h1 className="text-xl font-extrabold tracking-tight text-slate-900">
                 AAROGYA DRISHTI
               </h1>
-              <span className="text-[10px] font-extrabold bg-amber-100 text-slate-900 px-2.5 py-0.5 rounded-full border border-amber-300 shadow-sm">
+              <span className="text-[10px] font-extrabold bg-yellow-100 text-slate-900 px-2.5 py-0.5 rounded-full border border-yellow-300 shadow-sm">
                 AAROHAN 2026
               </span>
             </div>
@@ -183,7 +183,7 @@ export const Header: React.FC<HeaderProps> = ({
               onClick={onOpenAiArogya}
               className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-royal-600 via-royal-700 to-royal-800 text-white font-extrabold text-xs shadow-blue-glow hover:brightness-110 hover:-translate-y-0.5 active:scale-95 transition-all duration-200 flex items-center space-x-1.5 border border-royal-500 animate-pulse"
             >
-              <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+              <Sparkles className="w-3.5 h-3.5 text-yellow-300" />
               <span>AI AROGYA</span>
             </button>
           )}
