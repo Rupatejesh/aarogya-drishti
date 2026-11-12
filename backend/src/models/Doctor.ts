@@ -1,5 +1,13 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
+export interface IDoctorSlot {
+  date: string;
+  dayOfWeek?: string;
+  timeSlot: string;
+  isAvailable: boolean;
+  maxPatients?: number;
+}
+
 export interface IDoctor extends Document {
   uidn: string;
   name: string;
@@ -16,6 +24,7 @@ export interface IDoctor extends Document {
   email: string;
   phone: string;
   credentials: string[];
+  availabilitySlots?: IDoctorSlot[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -98,7 +107,16 @@ const DoctorSchema = new Schema<IDoctor>(
     credentials: {
       type: [String],
       default: []
-    }
+    },
+    availabilitySlots: [
+      {
+        date: { type: String, required: true },
+        dayOfWeek: { type: String },
+        timeSlot: { type: String, required: true },
+        isAvailable: { type: Boolean, default: true },
+        maxPatients: { type: Number, default: 1 }
+      }
+    ]
   },
   {
     timestamps: true

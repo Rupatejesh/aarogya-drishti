@@ -7,7 +7,9 @@ import {
   updateAppointmentStatus,
   getActiveCallByPatient,
   registerActiveCall,
-  endActiveCall
+  endActiveCall,
+  getDoctorAvailability,
+  updateDoctorAvailability
 } from '../controllers/appointment.controller.js';
 
 const router = Router();
@@ -18,6 +20,8 @@ router.post('/active-call', registerActiveCall);
 router.delete('/active-call/:patientUidn', endActiveCall);
 router.get('/patient/:uidn', getAppointmentsByPatient);
 router.get('/doctor/:doctorId', getAppointmentsByDoctor);
+router.get('/doctor/:doctorId/availability', getDoctorAvailability);
+router.post('/doctor/:doctorId/availability', updateDoctorAvailability);
 router.post('/request', requestAppointment);
 router.put('/:id/status', updateAppointmentStatus);
 

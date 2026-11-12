@@ -143,6 +143,39 @@ export const api = {
     return res.data;
   },
 
+  // Doctor Availability Slots Management
+  getDoctorAvailability: async (doctorId: string, date?: string) => {
+    try {
+      const url = date
+        ? `/appointments/doctor/${encodeURIComponent(doctorId)}/availability?date=${encodeURIComponent(date)}`
+        : `/appointments/doctor/${encodeURIComponent(doctorId)}/availability`;
+      const res = await apiClient.get(url);
+      return res.data;
+    } catch {
+      return {
+        success: false,
+        freeSlots: [
+          '09:30 AM - 10:00 AM',
+          '10:00 AM - 10:30 AM',
+          '10:30 AM - 11:00 AM',
+          '11:30 AM - 12:00 PM',
+          '02:00 PM - 02:30 PM',
+          '03:00 PM - 03:30 PM',
+          '04:00 PM - 04:30 PM'
+        ],
+        slots: []
+      };
+    }
+  },
+
+  updateDoctorAvailability: async (doctorId: string, date: string, slots: string[]) => {
+    const res = await apiClient.post(`/appointments/doctor/${encodeURIComponent(doctorId)}/availability`, {
+      date,
+      slots
+    });
+    return res.data;
+  },
+
   // Appointments
   getActiveCall: async (patientUidn: string) => {
     try {

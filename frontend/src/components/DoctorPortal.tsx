@@ -15,7 +15,11 @@ import {
   Calendar,
   AlertTriangle,
   QrCode,
-  Plus
+  Plus,
+  Clock,
+  Check,
+  Trash2,
+  Sparkles
 } from 'lucide-react';
 import api from '../services/api.ts';
 import { Language, translations } from '../i18n/translations.ts';
@@ -88,6 +92,102 @@ export const DoctorPortal: React.FC<DoctorPortalProps> = ({
   const [biopsyVault, setBiopsyVault] = useState<any[]>([]);
   const [searchUidn, setSearchUidn] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Doctor Availability Slots State
+  const PRESET_TIME_SLOTS = [
+    '09:00 AM - 09:30 AM',
+    '09:30 AM - 10:00 AM',
+    '10:00 AM - 10:30 AM',
+    '10:30 AM - 11:00 AM',
+    '11:00 AM - 11:30 AM',
+    '11:30 AM - 12:00 PM',
+    '12:00 PM - 12:30 PM',
+    '02:00 PM - 02:30 PM',
+    '02:30 PM - 03:00 PM',
+    '03:00 PM - 03:30 PM',
+    '03:30 PM - 04:00 PM',
+    '04:00 PM - 04:30 PM',
+    '04:30 PM - 05:00 PM',
+    '05:00 PM - 05:30 PM'
+  ];
+
+  const [slotDate, setSlotDate] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    return d.toISOString().split('T')[0];
+  });
+  const [selectedSlots, setSelectedSlots] = useState<string[]>([
+    '09:30 AM - 10:00 AM',
+    '10:00 AM - 10:30 AM',
+    '11:00 AM - 11:30 AM',
+    '02:00 PM - 02:30 PM',
+    '03:30 PM - 04:00 PM'
+  ]);
+  const [customSlotInput, setCustomSlotInput] = useState('');
+  const [loadingSlots, setLoadingSlots] = useState(false);
+  const [savingSlots, setSavingSlots] = useState(false);
+  const [slotSaveSuccess, setSlotSaveSuccess] = useState(false);
+  const [bookedSlotsForDay, setBookedSlotsForDay] = useState<any[]>([]);
+
+  const loadDoctorAvailability = async (targetDate: string) => {
+    const docCode = activeDoctor?.uidn || activeDoctor?.doctorId;
+    if (!docCode) return;
+    setLoadingSlots(true);
+    try {
+      const res = await api.getDoctorAvailability(docCode, targetDate);
+      if (res && res.slots && res.slots.length > 0) {
+        const availableOnes = res.slots.filter((s: any) => !s.isBooked).map((s: any) => s.timeSlot);
+        const bookedOnes = res.slots.filter((s: any) => s.isBooked);
+        setSelectedSlots(availableOnes);
+        setBookedSlotsForDay(bookedOnes);
+      } else if (res && res.freeSlots && res.freeSlots.length > 0) {
+        setSelectedSlots(res.freeSlots);
+        setBookedSlotsForDay([]);
+      }
+    } catch (e) {
+      console.warn('Availability load notice:', e);
+    } finally {
+      setLoadingSlots(false);
+    }
+  };
+
+  useEffect(() => {
+    loadDoctorAvailability(slotDate);
+  }, [slotDate, activeDoctor]);
+
+  const handleSaveSlots = async () => {
+    const docCode = activeDoctor?.uidn || activeDoctor?.doctorId;
+    if (!docCode) return;
+    setSavingSlots(true);
+    try {
+      await api.updateDoctorAvailability(docCode, slotDate, selectedSlots);
+      setSlotSaveSuccess(true);
+      setTimeout(() => setSlotSaveSuccess(false), 3000);
+      loadDoctorAvailability(slotDate);
+    } catch (err: any) {
+      alert(`Error saving availability: ${err.message}`);
+    } finally {
+      setSavingSlots(false);
+    }
+  };
+
+  const toggleSlot = (slot: string) => {
+    if (selectedSlots.includes(slot)) {
+      setSelectedSlots(selectedSlots.filter((s) => s !== slot));
+    } else {
+      setSelectedSlots([...selectedSlots, slot]);
+    }
+  };
+
+  const handleAddCustomSlot = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!customSlotInput.trim()) return;
+    const formatted = customSlotInput.trim();
+    if (!selectedSlots.includes(formatted)) {
+      setSelectedSlots([...selectedSlots, formatted]);
+    }
+    setCustomSlotInput('');
+  };
 
   useEffect(() => {
     loadDoctorData();
@@ -290,7 +390,143 @@ export const DoctorPortal: React.FC<DoctorPortalProps> = ({
         )}
       </div>
 
-      {/* 2. INCOMING CONSULTATION & BIOPSY QUEUE (APPOINTMENT NOTIFICATIONS) */}
+      {/* 2. DOCTOR FREE AVAILABILITY SLOTS MANAGER */}
+      <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-luxury space-y-5">
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 pb-4">
+          <div className="space-y-1">
+            <h3 className="text-lg font-extrabold text-slate-900 flex items-center space-x-2">
+              <Clock className="w-5 h-5 text-royal-600" />
+              <span>Manage Free Tele-Consultation Availability Slots</span>
+            </h3>
+            <p className="text-xs text-slate-500">
+              Declare your free consulting hours for each day. Patients booking appointments will strictly choose from your declared free slots.
+            </p>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <label className="text-xs font-bold text-slate-700 flex items-center space-x-1.5 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200">
+              <Calendar className="w-3.5 h-3.5 text-royal-600" />
+              <span>Select Date:</span>
+              <input
+                type="date"
+                value={slotDate}
+                onChange={(e) => setSlotDate(e.target.value)}
+                className="bg-white border border-slate-300 rounded-lg px-2 py-0.5 text-xs font-mono font-bold text-slate-900 focus:outline-none"
+              />
+            </label>
+          </div>
+        </div>
+
+        {/* Selected Date Summary & Booked Slots */}
+        <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200 flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div className="flex items-center space-x-3 flex-wrap gap-y-1">
+            <span className="font-bold text-slate-900">
+              Availability for {new Date(slotDate).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' })}:
+            </span>
+            <span className="bg-emerald-100 text-emerald-800 font-extrabold px-2.5 py-0.5 rounded-full border border-emerald-300 flex items-center space-x-1">
+              <CheckCircle className="w-3 h-3 text-emerald-700" />
+              <span>{selectedSlots.length} Free Slots Active</span>
+            </span>
+            {bookedSlotsForDay.length > 0 && (
+              <span className="bg-red-100 text-red-800 font-extrabold px-2.5 py-0.5 rounded-full border border-red-300 flex items-center space-x-1">
+                <AlertTriangle className="w-3 h-3 text-red-700" />
+                <span>{bookedSlotsForDay.length} Patient Bookings Reserved</span>
+              </span>
+            )}
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => {
+                setSelectedSlots([
+                  '09:30 AM - 10:00 AM',
+                  '10:00 AM - 10:30 AM',
+                  '10:30 AM - 11:00 AM',
+                  '11:30 AM - 12:00 PM',
+                  '02:00 PM - 02:30 PM',
+                  '03:00 PM - 03:30 PM',
+                  '04:00 PM - 04:30 PM'
+                ]);
+              }}
+              className="text-[11px] text-slate-600 hover:text-royal-700 font-bold underline cursor-pointer"
+            >
+              Reset to Standard OPD Hours
+            </button>
+          </div>
+        </div>
+
+        {/* Preset Slot Chips Grid */}
+        <div className="space-y-2">
+          <label className="text-xs font-bold text-slate-700 block">
+            Click to Toggle Free Slots for {new Date(slotDate).toLocaleDateString('en-US', { weekday: 'long' })}:
+          </label>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2">
+            {PRESET_TIME_SLOTS.map((slot) => {
+              const isSelected = selectedSlots.includes(slot);
+              const isBooked = bookedSlotsForDay.some((b) => b.timeSlot === slot);
+              return (
+                <button
+                  key={slot}
+                  type="button"
+                  onClick={() => toggleSlot(slot)}
+                  className={`p-2.5 rounded-xl border text-xs font-bold flex flex-col items-center justify-center transition-all cursor-pointer ${
+                    isBooked
+                      ? 'bg-red-50 border-red-300 text-red-700 cursor-not-allowed'
+                      : isSelected
+                      ? 'bg-emerald-600 border-emerald-700 text-white shadow-sm ring-2 ring-emerald-300 scale-[1.02]'
+                      : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300'
+                  }`}
+                >
+                  <div className="flex items-center space-x-1">
+                    {isSelected && !isBooked && <Check className="w-3.5 h-3.5 text-white" />}
+                    <span>{slot.split(' - ')[0]}</span>
+                  </div>
+                  <span className={`text-[10px] mt-0.5 ${isSelected && !isBooked ? 'text-emerald-100 font-normal' : isBooked ? 'text-red-600 font-bold' : 'text-slate-500 font-normal'}`}>
+                    {isBooked ? 'Booked' : isSelected ? 'Free' : 'Unavailable'}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Custom Slot Addition */}
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+          <form onSubmit={handleAddCustomSlot} className="flex items-center space-x-2">
+            <input
+              type="text"
+              value={customSlotInput}
+              onChange={(e) => setCustomSlotInput(e.target.value)}
+              placeholder="Custom slot e.g. 05:30 PM - 06:00 PM"
+              className="bg-slate-50 border border-slate-300 rounded-xl px-3 py-1.5 text-xs text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-royal-500 w-64"
+            />
+            <button
+              type="submit"
+              className="px-3 py-1.5 bg-royal-600 hover:bg-royal-700 text-white font-bold text-xs rounded-xl shadow-sm cursor-pointer flex items-center space-x-1"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Add Custom Slot</span>
+            </button>
+          </form>
+
+          <button
+            onClick={handleSaveSlots}
+            disabled={savingSlots}
+            className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-extrabold text-xs rounded-xl shadow-md transition-all flex items-center space-x-2 cursor-pointer"
+          >
+            {savingSlots ? (
+              <RefreshCw className="w-4 h-4 animate-spin" />
+            ) : slotSaveSuccess ? (
+              <CheckCircle className="w-4 h-4 text-emerald-200" />
+            ) : (
+              <Clock className="w-4 h-4" />
+            )}
+            <span>{savingSlots ? 'Saving...' : slotSaveSuccess ? 'Availability Saved!' : `Save Free Slots for ${slotDate}`}</span>
+          </button>
+        </div>
+      </div>
+
+      {/* 3. INCOMING CONSULTATION & BIOPSY QUEUE (APPOINTMENT NOTIFICATIONS) */}
       <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-luxury space-y-4">
         <div className="flex justify-between items-center">
           <div>

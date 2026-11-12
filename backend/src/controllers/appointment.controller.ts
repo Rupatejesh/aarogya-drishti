@@ -210,3 +210,156 @@ export const endActiveCall = async (req: Request, res: Response): Promise<void> 
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+const DEFAULT_OPD_SLOTS = [
+  '09:30 AM - 10:00 AM',
+  '10:00 AM - 10:30 AM',
+  '10:30 AM - 11:00 AM',
+  '11:30 AM - 12:00 PM',
+  '02:00 PM - 02:30 PM',
+  '03:00 PM - 03:30 PM',
+  '04:00 PM - 04:30 PM'
+];
+
+export const getDoctorAvailability = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const doctorId = String(req.params.doctorId || req.params.doctorUidn || '').trim();
+    const queryDate = req.query.date ? String(req.query.date).trim() : new Date().toISOString().split('T')[0];
+
+    const allDoctors = await store.findDoctors();
+    const doctor = (await store.findDoctorByUidn(doctorId)) || allDoctors.find((d: any) => d.uidn === doctorId || d.doctorId === doctorId);
+
+    // Find all appointments for this doctor on queryDate
+    const allAppointments = await store.findAppointments({
+      $or: [{ doctorUidn: doctorId }, { doctorId }]
+    });
+
+    const bookedOnDate = allAppointments.filter((a: any) => {
+      if (a.status === 'REJECTED') return false;
+      if (!a.appointmentDate) return false;
+      const aDate = new Date(a.appointmentDate).toISOString().split('T')[0];
+      return aDate === queryDate;
+    });
+
+    const bookedTimeSlots = new Map<string, any>();
+    bookedOnDate.forEach((a: any) => {
+      if (a.timeSlot) {
+        bookedTimeSlots.set(a.timeSlot.trim(), a);
+      }
+    });
+
+    // Check if doctor has custom configured availability for queryDate
+    const customDaySlots = doctor?.availabilitySlots?.filter((s: any) => s.date === queryDate) || [];
+
+    let configuredSlots: string[] = [];
+    if (customDaySlots.length > 0) {
+      configuredSlots = customDaySlots.filter((s: any) => s.isAvailable !== false).map((s: any) => s.timeSlot);
+    } else {
+      configuredSlots = [...DEFAULT_OPD_SLOTS];
+    }
+
+    const dayName = new Date(queryDate).toLocaleDateString('en-US', { weekday: 'long' });
+
+    const slots = configuredSlots.map((timeSlot) => {
+      const bookedAppt = bookedTimeSlots.get(timeSlot.trim());
+      return {
+        timeSlot,
+        isAvailable: !bookedAppt,
+        isBooked: !!bookedAppt,
+        bookedPatientUidn: bookedAppt?.patientUidn || null,
+        appointmentId: bookedAppt?.appointmentId || null
+      };
+    });
+
+    const freeSlots = slots.filter((s) => s.isAvailable).map((s) => s.timeSlot);
+
+    res.status(200).json({
+      success: true,
+      doctorUidn: doctorId,
+      doctorName: doctor?.name || 'Consultant Specialist',
+      hospitalDuty: doctor?.hospitalDuty || 'Area Hospital',
+      date: queryDate,
+      dayOfWeek: dayName,
+      isCustomSchedule: customDaySlots.length > 0,
+      totalSlots: slots.length,
+      freeSlotsCount: freeSlots.length,
+      slots,
+      freeSlots
+    });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const updateDoctorAvailability = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const doctorId = String(req.params.doctorId || req.params.doctorUidn || '').trim();
+    const { date, slots } = req.body;
+
+    if (!doctorId || !date || !slots || !Array.isArray(slots)) {
+      res.status(400).json({
+        success: false,
+        message: 'doctorId, date (YYYY-MM-DD), and slots array are required.'
+      });
+      return;
+    }
+
+    const allDoctors = await store.findDoctors();
+    let doctor = (await store.findDoctorByUidn(doctorId)) || allDoctors.find((d: any) => d.uidn === doctorId || d.doctorId === doctorId);
+    if (!doctor) {
+      doctor = {
+        uidn: doctorId,
+        name: doctorId === 'DOC-ANIL' ? 'Dr. Anil Kumar, MBBS, MS' : `Doctor ${doctorId}`,
+        hospitalDuty: 'Area Hospital Chintapalli / GGH Paderu Tele-Lab Hub',
+        designation: 'Specialist Tele-Consultant',
+        activeStatus: true,
+        abdmCode: `ABDM-${doctorId}`,
+        availabilitySlots: []
+      };
+    }
+
+    const dayName = new Date(date).toLocaleDateString('en-US', { weekday: 'long' });
+
+    const existingSlots = (doctor.availabilitySlots || []).filter((s: any) => s.date !== date);
+
+    const newSlots = slots.map((s: any) => {
+      if (typeof s === 'string') {
+        return {
+          date,
+          dayOfWeek: dayName,
+          timeSlot: s.trim(),
+          isAvailable: true,
+          maxPatients: 1
+        };
+      }
+      return {
+        date,
+        dayOfWeek: dayName,
+        timeSlot: s.timeSlot.trim(),
+        isAvailable: s.isAvailable !== false,
+        maxPatients: s.maxPatients || 1
+      };
+    });
+
+    doctor.availabilitySlots = [...existingSlots, ...newSlots];
+    await store.saveDoctor(doctor);
+
+    await store.logAction({
+      actorId: doctorId,
+      role: 'doctor',
+      action: 'DOCTOR_AVAILABILITY_UPDATED',
+      targetUidn: doctorId,
+      details: { date, slotsCount: newSlots.length }
+    });
+
+    res.status(200).json({
+      success: true,
+      message: `Availability slots updated successfully for ${date}.`,
+      doctorUidn: doctorId,
+      date,
+      slots: newSlots
+    });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};

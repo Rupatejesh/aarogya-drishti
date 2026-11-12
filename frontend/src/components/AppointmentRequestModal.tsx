@@ -54,6 +54,17 @@ export const AppointmentRequestModal: React.FC<AppointmentRequestModalProps> = (
   const [doctorRemarks, setDoctorRemarks] = useState('');
   const [loading, setLoading] = useState(false);
 
+  // Live Doctor Availability Slots States
+  const [availableSlots, setAvailableSlots] = useState<string[]>([
+    '09:30 AM - 10:00 AM',
+    '10:00 AM - 10:30 AM',
+    '11:30 AM - 12:00 PM',
+    '02:30 PM - 03:00 PM',
+    '03:30 PM - 04:00 PM'
+  ]);
+  const [loadingSlots, setLoadingSlots] = useState(false);
+  const [isDoctorCustomSchedule, setIsDoctorCustomSchedule] = useState(false);
+
   // Live Doctors list loaded from database
   const [doctorsList, setDoctorsList] = useState<any[]>([]);
   const [loadingDoctors, setLoadingDoctors] = useState(false);
@@ -113,6 +124,40 @@ export const AppointmentRequestModal: React.FC<AppointmentRequestModalProps> = (
 
     fetchAllDoctors();
   }, [isOpen, latestScreening]);
+
+  // Fetch selected doctor's live availability slots for the chosen date
+  useEffect(() => {
+    if (!isOpen || !doctorUidn || !appointmentDate) return;
+
+    const fetchDoctorSlots = async () => {
+      setLoadingSlots(true);
+      try {
+        const res = await api.getDoctorAvailability(doctorUidn, appointmentDate);
+        if (res && res.freeSlots && res.freeSlots.length > 0) {
+          setAvailableSlots(res.freeSlots);
+          setIsDoctorCustomSchedule(!!res.isCustomSchedule);
+          if (!res.freeSlots.includes(timeSlot)) {
+            setTimeSlot(res.freeSlots[0]);
+          }
+        } else if (res && res.slots && res.slots.length > 0) {
+          const frees = res.slots.filter((s: any) => !s.isBooked).map((s: any) => s.timeSlot);
+          setAvailableSlots(frees);
+          setIsDoctorCustomSchedule(!!res.isCustomSchedule);
+          if (frees.length > 0 && !frees.includes(timeSlot)) {
+            setTimeSlot(frees[0]);
+          }
+        } else {
+          setAvailableSlots([]);
+        }
+      } catch (err) {
+        console.warn('Could not fetch doctor availability slots:', err);
+      } finally {
+        setLoadingSlots(false);
+      }
+    };
+
+    fetchDoctorSlots();
+  }, [isOpen, doctorUidn, appointmentDate]);
 
   // Pre-fill remarks and category based on mouth disease screening
   useEffect(() => {
@@ -440,18 +485,40 @@ export const AppointmentRequestModal: React.FC<AppointmentRequestModalProps> = (
             </div>
 
             <div>
-              <label className="text-xs font-bold text-slate-700 block mb-1">Time Slot</label>
-              <select
-                value={timeSlot}
-                onChange={(e) => setTimeSlot(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold text-slate-900"
-              >
-                <option value="09:30 AM - 10:00 AM">09:30 AM - 10:00 AM</option>
-                <option value="10:00 AM - 10:30 AM">10:00 AM - 10:30 AM</option>
-                <option value="11:30 AM - 12:00 PM">11:30 AM - 12:00 PM</option>
-                <option value="02:30 PM - 03:00 PM">02:30 PM - 03:00 PM</option>
-                <option value="03:30 PM - 04:00 PM">03:30 PM - 04:00 PM</option>
-              </select>
+              <div className="flex justify-between items-center mb-1">
+                <label className="text-xs font-bold text-slate-700 block">Available Time Slot *</label>
+                {loadingSlots ? (
+                  <span className="text-[10px] text-royal-600 font-semibold animate-pulse">Loading slots...</span>
+                ) : isDoctorCustomSchedule ? (
+                  <span className="text-[10px] text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full font-bold border border-emerald-200">
+                    🟢 Doctor Free ({availableSlots.length})
+                  </span>
+                ) : (
+                  <span className="text-[10px] text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full font-medium">
+                    Standard OPD ({availableSlots.length})
+                  </span>
+                )}
+              </div>
+
+              {availableSlots.length > 0 ? (
+                <select
+                  value={timeSlot}
+                  onChange={(e) => setTimeSlot(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold text-slate-900 focus:ring-2 focus:ring-royal-500"
+                  required
+                >
+                  {availableSlots.map((slot) => (
+                    <option key={slot} value={slot}>
+                      {slot} {isDoctorCustomSchedule ? '• Declared Free Slot' : ''}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <div className="p-2 bg-red-50 border border-red-200 rounded-xl text-[11px] text-red-700 font-bold flex items-center space-x-1">
+                  <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span>No free slots on this date. Please pick another date or doctor.</span>
+                </div>
+              )}
             </div>
           </div>
 

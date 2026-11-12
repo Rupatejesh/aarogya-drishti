@@ -121,6 +121,10 @@ io.on('connection', (socket) => {
     socket.to(roomId).emit('video-frame', { frame, senderRole });
   });
 
+  socket.on('audio-chunk', ({ roomId, chunk, mimeType, senderRole }) => {
+    socket.to(roomId).emit('audio-chunk', { chunk, mimeType, senderRole });
+  });
+
   socket.on('call-started', ({ patientUidn, doctorUidn, doctorName, roomId }) => {
     console.log(`[WebRTC] Doctor ${doctorName} started call for patient ${patientUidn} in ${roomId}`);
     if (patientUidn && roomId) {

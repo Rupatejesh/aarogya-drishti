@@ -116,13 +116,16 @@ export const WebRTCTelemedicineRoom: React.FC<WebRTCTelemedicineRoomProps> = ({
   // Video stream refs & state
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
+  const remoteAudioRef = useRef<HTMLAudioElement>(null);
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
   const socketRef = useRef<Socket | null>(null);
   const localStreamRef = useRef<MediaStream | null>(null);
+  const audioRecorderRef = useRef<MediaRecorder | null>(null);
   const iceCandidatesQueue = useRef<any[]>([]);
 
   // Fallback real-time frame relay state (ensures live video even across restrictive firewalls)
   const [remoteFallbackFrame, setRemoteFallbackFrame] = useState<string | null>(null);
+  const [audioBlockedByAutoplay, setAudioBlockedByAutoplay] = useState(false);
 
   // Room ID strictly scoped to Patient UIDN & Doctor UIDN, or explicit passed roomId
   const docUid = (activeDoc?.uidn || activeDoc?.doctorId || 'DOC-ANIL').replace(/[^a-zA-Z0-9_-]/g, '_');
@@ -246,7 +249,11 @@ export const WebRTCTelemedicineRoom: React.FC<WebRTCTelemedicineRoomProps> = ({
           if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
             stream = await navigator.mediaDevices.getUserMedia({
               video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' },
-              audio: true
+              audio: {
+                echoCancellation: true,
+                noiseSuppression: true,
+                autoGainControl: true
+              }
             });
             localStreamRef.current = stream;
             if (localVideoRef.current) {
@@ -255,8 +262,27 @@ export const WebRTCTelemedicineRoom: React.FC<WebRTCTelemedicineRoomProps> = ({
             }
           }
         } catch (mediaErr) {
-          console.warn('[WebRTC] Camera access warning:', mediaErr);
-          setConnectionStatus('Local Camera Access Restricted • Audio Only');
+          console.warn('[WebRTC] Combined getUserMedia failed, attempting separate audio/video:', mediaErr);
+          try {
+            const aStream = await navigator.mediaDevices.getUserMedia({
+              audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
+            });
+            const vStream = await navigator.mediaDevices.getUserMedia({
+              video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' }
+            }).catch(() => null);
+
+            stream = new MediaStream();
+            aStream.getAudioTracks().forEach((t) => stream!.addTrack(t));
+            if (vStream) vStream.getVideoTracks().forEach((t) => stream!.addTrack(t));
+            localStreamRef.current = stream;
+            if (localVideoRef.current && stream) {
+              localVideoRef.current.srcObject = stream;
+              localVideoRef.current.play().catch(() => {});
+            }
+          } catch (e2) {
+            console.error('[WebRTC] Microphone / Camera access denied:', e2);
+            setConnectionStatus('Local Media Access Restricted');
+          }
         }
 
         // 2. Connect to Socket.io Signaling Engine
@@ -284,16 +310,33 @@ export const WebRTCTelemedicineRoom: React.FC<WebRTCTelemedicineRoomProps> = ({
 
         // Handle remote stream incoming tracks
         pc.ontrack = (event) => {
-          console.log('[WebRTC] Received remote stream track:', event.streams);
+          console.log('[WebRTC] Received remote stream track:', event.track?.kind, event.streams);
           if (event.streams && event.streams[0]) {
+            const remoteMediaStream = event.streams[0];
+
+            // 1. Bind to Video Element
             if (remoteVideoRef.current) {
-              remoteVideoRef.current.srcObject = event.streams[0];
+              remoteVideoRef.current.srcObject = remoteMediaStream;
               remoteVideoRef.current.play().catch(() => {});
               remoteVideoRef.current.onplaying = () => {
                 console.log('[WebRTC] Native P2P stream playing, clearing fallback frames');
                 setRemoteFallbackFrame(null);
               };
             }
+
+            // 2. Bind to Dedicated Offscreen Audio Element (Guarantees uninterrupted audio playback)
+            if (remoteAudioRef.current) {
+              remoteAudioRef.current.srcObject = remoteMediaStream;
+              remoteAudioRef.current.volume = 1.0;
+              remoteAudioRef.current.muted = false;
+              remoteAudioRef.current.play().then(() => {
+                setAudioBlockedByAutoplay(false);
+              }).catch((audioErr) => {
+                console.warn('[WebRTC Audio] Autoplay policy prevented immediate playback, awaiting gesture:', audioErr);
+                setAudioBlockedByAutoplay(true);
+              });
+            }
+
             setRemoteStreamAvailable(true);
             setPeerConnected(true);
             setConnectionStatus('Live Real-Time P2P Connected (<20ms)');
@@ -497,6 +540,77 @@ export const WebRTCTelemedicineRoom: React.FC<WebRTCTelemedicineRoomProps> = ({
           }
         });
 
+        // Direct Audio Chunk Relay Failsafe (guarantees voice transmission even across restrictive firewalls)
+        if (stream && stream.getAudioTracks().length > 0 && typeof MediaRecorder !== 'undefined') {
+          try {
+            const audioStream = new MediaStream(stream.getAudioTracks());
+            const supportedMime = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+              ? 'audio/webm;codecs=opus'
+              : MediaRecorder.isTypeSupported('audio/webm')
+              ? 'audio/webm'
+              : MediaRecorder.isTypeSupported('audio/ogg;codecs=opus')
+              ? 'audio/ogg;codecs=opus'
+              : '';
+
+            const recorder = new MediaRecorder(
+              audioStream,
+              supportedMime ? { mimeType: supportedMime, audioBitsPerSecond: 24000 } : undefined
+            );
+            audioRecorderRef.current = recorder;
+
+            recorder.ondataavailable = async (e) => {
+              if (e.data && e.data.size > 0 && socketRef.current?.connected && !isMuted) {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                  const base64Data = (reader.result as string)?.split(',')[1];
+                  if (base64Data) {
+                    socketRef.current?.emit('audio-chunk', {
+                      roomId,
+                      chunk: base64Data,
+                      mimeType: recorder.mimeType || 'audio/webm',
+                      senderRole: isDoctorUser ? 'doctor' : 'patient'
+                    });
+                  }
+                };
+                reader.readAsDataURL(e.data);
+              }
+            };
+
+            recorder.start(300); // 300ms audio slice
+          } catch (recErr) {
+            console.warn('[WebRTC Audio Relay] MediaRecorder setup notice:', recErr);
+          }
+        }
+
+        // Receiving real-time voice chunks over socket
+        socket.on('audio-chunk', ({ chunk, mimeType, senderRole }: { chunk: string; mimeType: string; senderRole: string }) => {
+          const expectedRole = isDoctorUser ? 'patient' : 'doctor';
+          if (senderRole !== expectedRole && senderRole) return;
+          if (isMuted) return;
+
+          // If native WebRTC P2P ICE is already connected and audio is flowing, skip socket chunk to prevent echo
+          if (peerConnectionRef.current?.iceConnectionState === 'connected' && remoteAudioRef.current && !remoteAudioRef.current.paused) {
+            return;
+          }
+
+          try {
+            const binary = window.atob(chunk);
+            const len = binary.length;
+            const bytes = new Uint8Array(len);
+            for (let i = 0; i < len; i++) {
+              bytes[i] = binary.charCodeAt(i);
+            }
+            const blob = new Blob([bytes.buffer], { type: mimeType || 'audio/webm' });
+            const url = URL.createObjectURL(blob);
+            const audioEl = new Audio(url);
+            audioEl.volume = 1.0;
+            audioEl.play().catch(() => {});
+            setTimeout(() => URL.revokeObjectURL(url), 3000);
+          } catch (audioErr) {
+            console.warn('[Audio Relay] Chunk decode notice:', audioErr);
+          }
+        });
+
         // Live Chat message handler
         socket.on('receive-message', (msg: ChatMessage) => {
           setChatMessages((prev) => [...prev, msg]);
@@ -532,6 +646,11 @@ export const WebRTCTelemedicineRoom: React.FC<WebRTCTelemedicineRoomProps> = ({
       isMounted = false;
       if (frameInterval) {
         clearInterval(frameInterval);
+      }
+      if (audioRecorderRef.current && audioRecorderRef.current.state !== 'inactive') {
+        try {
+          audioRecorderRef.current.stop();
+        } catch (e) {}
       }
       if (localStreamRef.current) {
         localStreamRef.current.getTracks().forEach((t) => t.stop());
@@ -583,6 +702,11 @@ export const WebRTCTelemedicineRoom: React.FC<WebRTCTelemedicineRoomProps> = ({
   };
 
   const handleEndCall = () => {
+    if (audioRecorderRef.current && audioRecorderRef.current.state !== 'inactive') {
+      try {
+        audioRecorderRef.current.stop();
+      } catch (e) {}
+    }
     if (activePat?.uidn) {
       api.endActiveCall(activePat.uidn).catch(console.warn);
     }
@@ -692,7 +816,14 @@ export const WebRTCTelemedicineRoom: React.FC<WebRTCTelemedicineRoomProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-1 sm:p-4 overflow-y-auto animate-in fade-in duration-200">
+    <div
+      onClick={() => {
+        if (remoteAudioRef.current && remoteAudioRef.current.paused) {
+          remoteAudioRef.current.play().then(() => setAudioBlockedByAutoplay(false)).catch(() => {});
+        }
+      }}
+      className="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-1 sm:p-4 overflow-y-auto animate-in fade-in duration-200"
+    >
       <div className="bg-white w-full max-w-7xl rounded-2xl sm:rounded-3xl border border-slate-200 shadow-2xl overflow-hidden flex flex-col max-h-[98vh] h-[98vh] sm:h-auto sm:max-h-[96vh]">
         {/* Top Header (Responsive Medical Header) */}
         <div className="bg-royal-700 text-white px-3 sm:px-5 py-2.5 sm:py-3.5 flex flex-wrap items-center justify-between gap-2 border-b border-royal-800">
@@ -778,7 +909,7 @@ export const WebRTCTelemedicineRoom: React.FC<WebRTCTelemedicineRoomProps> = ({
                   playsInline
                   autoPlay
                   className={`w-full h-full object-cover ${
-                    remoteStreamAvailable && !remoteFallbackFrame ? 'block' : 'hidden'
+                    remoteStreamAvailable && !remoteFallbackFrame ? 'block' : 'absolute opacity-0 pointer-events-none'
                   }`}
                 />
 
@@ -789,6 +920,28 @@ export const WebRTCTelemedicineRoom: React.FC<WebRTCTelemedicineRoomProps> = ({
                     alt="Remote Peer Live Stream"
                     className="w-full h-full object-cover"
                   />
+                )}
+
+                {/* 3. Dedicated Offscreen Audio Element (Always Active & Unmuted) */}
+                <audio
+                  ref={remoteAudioRef}
+                  autoPlay
+                  playsInline
+                  style={{ position: 'fixed', top: -9999, left: -9999, width: 1, height: 1, opacity: 0.001, pointerEvents: 'none' }}
+                />
+
+                {/* 4. Autoplay Unmute Prompt */}
+                {audioBlockedByAutoplay && (
+                  <button
+                    onClick={() => {
+                      if (remoteAudioRef.current) {
+                        remoteAudioRef.current.play().then(() => setAudioBlockedByAutoplay(false)).catch(() => {});
+                      }
+                    }}
+                    className="absolute top-2 left-2 z-30 px-3 py-1 bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-black rounded-full shadow-lg border border-amber-500 animate-bounce flex items-center space-x-1 cursor-pointer"
+                  >
+                    <span>🔊 Click to Unmute Remote Voice</span>
+                  </button>
                 )}
 
                 {/* 3. Waiting Screen when Neither Stream has arrived yet */}
