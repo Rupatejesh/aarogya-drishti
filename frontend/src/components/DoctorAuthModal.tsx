@@ -159,6 +159,7 @@ export const DoctorAuthModal: React.FC<DoctorAuthModalProps> = ({
               <input
                 type="text"
                 value={doctorIdOrEmail}
+                autoComplete="username"
                 onChange={(e) => setDoctorIdOrEmail(e.target.value)}
                 placeholder="DOC-SWAPNA or doctor@aarogyadrishti.org"
                 className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:ring-2 focus:ring-royal-500 focus:outline-none"
@@ -183,6 +184,7 @@ export const DoctorAuthModal: React.FC<DoctorAuthModalProps> = ({
               <input
                 type="password"
                 value={password}
+                autoComplete="current-password"
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
                 className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:ring-2 focus:ring-royal-500 focus:outline-none"
@@ -262,6 +264,7 @@ export const DoctorAuthModal: React.FC<DoctorAuthModalProps> = ({
                     <input
                       type="password"
                       value={forgotNewPass}
+                      autoComplete="new-password"
                       onChange={(e) => setForgotNewPass(e.target.value)}
                       placeholder="Enter new password"
                       className="w-full p-2 bg-slate-50 border border-slate-300 rounded-xl text-xs"

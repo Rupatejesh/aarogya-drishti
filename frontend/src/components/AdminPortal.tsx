@@ -552,6 +552,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ lang }) => {
                     <input
                       type="text"
                       value={newDoctor.password}
+                      autoComplete="new-password"
                       onChange={(e) => setNewDoctor({ ...newDoctor, password: e.target.value })}
                       className="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-mono font-bold text-slate-900"
                       required

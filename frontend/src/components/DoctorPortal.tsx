@@ -406,6 +406,7 @@ export const DoctorPortal: React.FC<DoctorPortalProps> = ({
                   <input
                     type="password"
                     value={forgotNewPassword}
+                    autoComplete="new-password"
                     onChange={(e) => setForgotNewPassword(e.target.value)}
                     placeholder="Enter new password"
                     className="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs text-slate-900"

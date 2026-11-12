@@ -43,6 +43,19 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   const t = translations[lang];
 
+  const getRoleSubtitle = () => {
+    switch (currentRole) {
+      case 'patient':
+        return 'Tribal Citizen Patient Care & Health Portal';
+      case 'doctor':
+        return 'Medical Officer & Tele-Oncology Command';
+      case 'admin':
+        return 'District Health Administration & 11 Mandals Registry';
+      default:
+        return 'ITDA Paderu • Oral Cancer Detection & Care System';
+    }
+  };
+
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm transition-all">
       {/* 1. Top District Logistics & Latency Bar (Deep Royal Blue & Slate) */}
@@ -95,11 +108,8 @@ export const Header: React.FC<HeaderProps> = ({
                 AAROHAN 2026
               </span>
             </div>
-            <p className="text-[11px] text-slate-500 font-medium">
-              {currentRole === 'landing' && 'ITDA Paderu • Oral Cancer Detection & Care System'}
-              {currentRole === 'patient' && 'Tribal Citizen Patient Care & Health Portal'}
-              {currentRole === 'doctor' && 'Medical Officer & Tele-Oncology Command'}
-              {currentRole === 'admin' && 'District Health Administration & 11 Mandals Registry'}
+            <p className="text-[11px] text-slate-500 font-medium notranslate">
+              <span key={`header-sub-${currentRole}`}>{getRoleSubtitle()}</span>
             </p>
           </div>
         </div>

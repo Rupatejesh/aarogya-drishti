@@ -173,6 +173,7 @@ export const AdminAuthModal: React.FC<AdminAuthModalProps> = ({
               <input
                 type="email"
                 value={email}
+                autoComplete="username"
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="admin@aarogyadrishti.in"
                 className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:ring-2 focus:ring-blue-600 focus:outline-none"
@@ -190,6 +191,7 @@ export const AdminAuthModal: React.FC<AdminAuthModalProps> = ({
               <input
                 type="password"
                 value={password}
+                autoComplete="current-password"
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
                 className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:ring-2 focus:ring-blue-600 focus:outline-none"
