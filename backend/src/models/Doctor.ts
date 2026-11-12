@@ -18,6 +18,8 @@ export interface IDoctor extends Document {
   experienceYears: number;
   designation: string;
   hospitalDuty: string;
+  mandal?: string;
+  status?: 'Active' | 'Inactive' | 'On Visit';
   activeStatus: boolean;
   consultationsCount: number;
   abdmCode: string;
@@ -75,6 +77,17 @@ const DoctorSchema = new Schema<IDoctor>(
       type: String,
       required: true,
       trim: true,
+      index: true
+    },
+    mandal: {
+      type: String,
+      trim: true,
+      index: true
+    },
+    status: {
+      type: String,
+      enum: ['Active', 'Inactive', 'On Visit'],
+      default: 'Active',
       index: true
     },
     activeStatus: {

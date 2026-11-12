@@ -53,6 +53,7 @@ import PatientAiScreeningUpload from './components/PatientAiScreeningUpload.tsx'
 import WebRTCTelemedicineRoom from './components/WebRTCTelemedicineRoom.tsx';
 import EmergencySosModal from './components/EmergencySosModal.tsx';
 import AiArogyaDrawer from './components/AiArogyaDrawer.tsx';
+import AiArogyaAarohiBot from './components/AiArogyaAarohiBot.tsx';
 import GoldenHealthCard from './components/GoldenHealthCard.tsx';
 import HabitCessationTracker from './components/HabitCessationTracker.tsx';
 import DoctorChatBox from './components/DoctorChatBox.tsx';
@@ -1263,6 +1264,12 @@ export default function App() {
         isOpen={isAiArogyaOpen}
         onClose={() => setIsAiArogyaOpen(false)}
         lang={lang}
+      />
+
+      {/* 11. AI AAROHI BOT (Female Robot Doctor Assistant & Element Inspector) */}
+      <AiArogyaAarohiBot
+        lang={lang}
+        onLanguageChange={setLang}
       />
 
       {/* 11. Crisp Executive Footer */}

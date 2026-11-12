@@ -241,6 +241,11 @@ export const api = {
     return res.data;
   },
 
+  updateDoctor: async (uidn: string, updateData: any) => {
+    const res = await apiClient.put(`/admin/doctors/${uidn}`, updateData);
+    return res.data;
+  },
+
   // Omnibar Search
   searchOmnibar: async (query: string) => {
     const res = await apiClient.get(`/search/omnibar?q=${encodeURIComponent(query)}`);

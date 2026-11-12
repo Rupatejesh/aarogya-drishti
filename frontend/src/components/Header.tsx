@@ -149,31 +149,40 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           )}
 
-          {/* Trilingual Language Selector */}
-          <div className="flex items-center space-x-1 bg-slate-100 border border-slate-200 rounded-xl p-1 text-[11px] font-bold">
-            <button
-              onClick={() => onLanguageChange('en')}
-              className={`px-2.5 py-1 rounded-lg transition-all duration-200 hover:-translate-y-0.5 active:scale-95 ${
-                lang === 'en' ? 'bg-blue-700 text-white font-bold shadow-sm' : 'text-slate-600 hover:bg-slate-200'
-              }`}
-            >
-              EN
-            </button>
+          {/* Trilingual Language Selector (తెలుగు, English, हिन्दी) */}
+          <div className="flex items-center space-x-1.5 bg-slate-100 border border-slate-300 rounded-2xl p-1 text-xs font-black shadow-sm">
             <button
               onClick={() => onLanguageChange('te')}
-              className={`px-2.5 py-1 rounded-lg transition-all duration-200 hover:-translate-y-0.5 active:scale-95 ${
-                lang === 'te' ? 'bg-blue-700 text-white font-bold shadow-sm' : 'text-slate-600 hover:bg-slate-200'
+              className={`px-3 py-1.5 rounded-xl transition-all duration-200 hover:-translate-y-0.5 active:scale-95 flex items-center space-x-1 ${
+                lang === 'te'
+                  ? 'bg-blue-700 text-white font-extrabold shadow-md'
+                  : 'text-slate-700 hover:bg-slate-200'
               }`}
+              title="తెలుగులోకి మార్చండి"
             >
-              తెలుగు
+              <span>తెలుగు</span>
+            </button>
+            <button
+              onClick={() => onLanguageChange('en')}
+              className={`px-3 py-1.5 rounded-xl transition-all duration-200 hover:-translate-y-0.5 active:scale-95 flex items-center space-x-1 ${
+                lang === 'en'
+                  ? 'bg-blue-700 text-white font-extrabold shadow-md'
+                  : 'text-slate-700 hover:bg-slate-200'
+              }`}
+              title="Switch to English"
+            >
+              <span>English</span>
             </button>
             <button
               onClick={() => onLanguageChange('hi')}
-              className={`px-2.5 py-1 rounded-lg transition-all duration-200 hover:-translate-y-0.5 active:scale-95 ${
-                lang === 'hi' ? 'bg-blue-700 text-white font-bold shadow-sm' : 'text-slate-600 hover:bg-slate-200'
+              className={`px-3 py-1.5 rounded-xl transition-all duration-200 hover:-translate-y-0.5 active:scale-95 flex items-center space-x-1 ${
+                lang === 'hi'
+                  ? 'bg-blue-700 text-white font-extrabold shadow-md'
+                  : 'text-slate-700 hover:bg-slate-200'
               }`}
+              title="हिन्दी में बदलें"
             >
-              हिंदी
+              <span>हिन्दी</span>
             </button>
           </div>
 

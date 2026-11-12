@@ -132,3 +132,100 @@ export const getAllDoctors = async (_req: Request, res: Response): Promise<void>
   }
 };
 
+export const updateDoctor = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const doctorUidn = String(req.params.uidn || '').trim();
+    if (!doctorUidn) {
+      res.status(400).json({ success: false, message: 'Doctor UIDN is required.' });
+      return;
+    }
+
+    const existingDoctor = await store.findDoctorByUidn(doctorUidn);
+    if (!existingDoctor) {
+      res.status(404).json({ success: false, message: `Doctor with UIDN ${doctorUidn} not found.` });
+      return;
+    }
+
+    const {
+      name,
+      designation,
+      hospitalDuty,
+      mandal,
+      status, // 'Active' | 'Inactive' | 'On Visit'
+      phone,
+      email,
+      password,
+      experienceYears,
+      degreeCertificate,
+      university
+    } = req.body;
+
+    const updatedData: any = { ...existingDoctor };
+
+    if (name) updatedData.name = name.trim();
+    if (designation) updatedData.designation = designation.trim();
+    if (hospitalDuty) updatedData.hospitalDuty = hospitalDuty.trim();
+    if (mandal) updatedData.mandal = mandal.trim();
+    if (status && ['Active', 'Inactive', 'On Visit'].includes(status)) {
+      updatedData.status = status;
+      updatedData.activeStatus = status !== 'Inactive';
+    }
+    if (phone) updatedData.phone = String(phone).trim();
+    if (email) updatedData.email = String(email).trim().toLowerCase();
+    if (experienceYears !== undefined) updatedData.experienceYears = Number(experienceYears) || 0;
+    if (degreeCertificate) updatedData.degreeCertificate = degreeCertificate.trim();
+    if (university) updatedData.university = university.trim();
+
+    // If new password provided, hash and update user record as well
+    if (password && String(password).trim().length > 0) {
+      const plainPassword = String(password).trim();
+      const passwordHash = await bcrypt.hash(plainPassword, 10);
+      updatedData.password = plainPassword;
+      updatedData.passwordHash = passwordHash;
+
+      await store.saveUser({
+        email: updatedData.email,
+        phone: updatedData.phone,
+        role: 'doctor',
+        uidn: updatedData.uidn,
+        passwordHash,
+        activeStatus: updatedData.activeStatus
+      });
+    } else {
+      // Sync user model active status and contacts
+      await store.saveUser({
+        email: updatedData.email,
+        phone: updatedData.phone,
+        role: 'doctor',
+        uidn: updatedData.uidn,
+        activeStatus: updatedData.activeStatus
+      });
+    }
+
+    const savedDoctor = await store.saveDoctor(updatedData);
+
+    await store.logAction({
+      actorId: 'ADMIN_SUPERUSER',
+      role: 'admin',
+      action: 'DOCTOR_UPDATED',
+      targetUidn: savedDoctor.uidn,
+      details: {
+        uidn: savedDoctor.uidn,
+        name: savedDoctor.name,
+        status: savedDoctor.status,
+        mandal: savedDoctor.mandal,
+        hospitalDuty: savedDoctor.hospitalDuty
+      }
+    });
+
+    res.status(200).json({
+      success: true,
+      message: `Doctor ${savedDoctor.name} updated successfully.`,
+      doctor: savedDoctor
+    });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+
