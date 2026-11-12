@@ -116,6 +116,10 @@ io.on('connection', (socket) => {
     socket.to(roomId).emit('receive-message', message);
   });
 
+  socket.on('video-frame', ({ roomId, frame, senderRole }) => {
+    socket.to(roomId).emit('video-frame', { frame, senderRole });
+  });
+
   socket.on('disconnecting', () => {
     for (const room of socket.rooms) {
       if (room !== socket.id) {
