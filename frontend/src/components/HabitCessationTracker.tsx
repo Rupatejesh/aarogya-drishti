@@ -10,7 +10,6 @@ import {
   TrendingUp,
   Heart
 } from 'lucide-react';
-import confetti from 'canvas-confetti';
 import { Language, translations } from '../i18n/translations.ts';
 
 interface HabitCessationTrackerProps {
@@ -67,12 +66,6 @@ export const HabitCessationTracker: React.FC<HabitCessationTrackerProps> = ({
   const handleIncrementStreak = () => {
     const nextDays = streakDays + 1;
     setStreakDays(nextDays);
-    confetti({
-      particleCount: 60,
-      spread: 70,
-      origin: { y: 0.6 },
-      colors: ['#2563EB', '#10B981', '#FACC15']
-    });
   };
 
   return (

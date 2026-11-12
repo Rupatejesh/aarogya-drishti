@@ -43,7 +43,6 @@ import {
   LogOut,
   LogIn
 } from 'lucide-react';
-import confetti from 'canvas-confetti';
 import api from './services/api.ts';
 import { Language, translations } from './i18n/translations.ts';
 import { applyDOMTranslation, translateText } from './i18n/translator.ts';
@@ -162,12 +161,6 @@ export default function App() {
       }
 
       setRole('patient');
-      confetti({
-        particleCount: 50,
-        spread: 60,
-        origin: { y: 0.7 },
-        colors: ['#2563EB', '#1D4ED8', '#10B981']
-      });
     } catch (err: any) {
       alert(`Patient login notice: ${err.message}`);
     }
@@ -175,12 +168,6 @@ export default function App() {
 
   const handleScreeningCompleted = (screening: any) => {
     setActiveScreening(screening);
-    confetti({
-      particleCount: 60,
-      spread: 70,
-      origin: { y: 0.6 },
-      colors: ['#10B981', '#2563EB', '#FACC15']
-    });
   };
 
   const handleLaunchTelemedicine = (targetPatient?: any, targetDoctor?: any) => {
@@ -228,11 +215,6 @@ export default function App() {
   const handleAppointmentBooked = (appt: any) => {
     setActiveAppointment(appt);
     setPatientAppointments((prev) => [appt, ...prev]);
-    confetti({
-      particleCount: 40,
-      spread: 60,
-      colors: ['#10B981', '#2563EB']
-    });
   };
 
   const handleLogout = () => {
@@ -785,11 +767,23 @@ export default function App() {
                             }`}
                           >
                             <div className="space-y-1.5">
-                              <div className="flex items-center space-x-2">
+                              <div className="flex flex-wrap items-center gap-2">
                                 <span className="font-mono text-[10px] font-bold px-2 py-0.5 rounded bg-white border border-slate-200 text-slate-800 shadow-sm">
                                   {a.appointmentId}
                                 </span>
                                 <span className="font-bold text-xs text-slate-900">{a.apptType}</span>
+                                <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full border ${
+                                  a.consultationMode === 'OFFLINE'
+                                    ? 'bg-amber-50 text-amber-900 border-amber-300'
+                                    : 'bg-blue-50 text-blue-900 border-blue-300'
+                                }`}>
+                                  {a.consultationMode === 'OFFLINE' ? '🏥 Offline In-Person Visit' : '📹 Online Video Call'}
+                                </span>
+                                {a.diseaseDiagnosed && (
+                                  <span className="text-[10px] font-semibold bg-slate-100 text-slate-700 px-2 py-0.5 rounded">
+                                    Condition: {a.diseaseDiagnosed}
+                                  </span>
+                                )}
                               </div>
 
                               <div className="text-xs text-slate-700 flex flex-wrap gap-x-3 gap-y-1">
@@ -800,7 +794,7 @@ export default function App() {
                               <div className="text-xs text-slate-600 flex flex-wrap gap-x-3 gap-y-1">
                                 <span>👨‍⚕️ Specialist: <strong>{docDisplayName}</strong></span>
                                 <span>🏥 Facility: <strong>{a.hospitalName}</strong></span>
-                                <span>📍 Mandal: <strong>{a.mandal || 'G. Madugula'}</strong></span>
+                                <span>📍 Mandal: <strong>{a.mandal || 'Paderu'}</strong></span>
                               </div>
 
                               <div className="text-[11px] text-slate-500 italic pt-0.5">
@@ -821,7 +815,7 @@ export default function App() {
                                 {a.status}
                               </span>
 
-                              {a.status === 'APPROVED' && (
+                              {a.status === 'APPROVED' && a.consultationMode !== 'OFFLINE' && (
                                 <button
                                   onClick={() => {
                                     const docObj = {
@@ -837,6 +831,12 @@ export default function App() {
                                   <Video className="w-3 h-3" />
                                   <span>Join Video Call</span>
                                 </button>
+                              )}
+
+                              {a.status === 'APPROVED' && a.consultationMode === 'OFFLINE' && (
+                                <div className="mt-1 px-2.5 py-1 bg-amber-100 text-amber-900 rounded-lg text-[11px] font-bold border border-amber-300 text-center">
+                                  <span>Report to OPD at {a.hospitalName}</span>
+                                </div>
                               )}
                             </div>
                           </div>
@@ -966,11 +966,6 @@ export default function App() {
           setPatient(newPatient);
           setRole('patient');
           setIsPatientAuthModalOpen(false);
-          confetti({
-            particleCount: 50,
-            spread: 60,
-            origin: { y: 0.6 }
-          });
         }}
       />
 
@@ -983,11 +978,6 @@ export default function App() {
           setActiveDoctor(doc);
           setRole('doctor');
           setIsDoctorAuthModalOpen(false);
-          confetti({
-            particleCount: 50,
-            spread: 60,
-            origin: { y: 0.6 }
-          });
         }}
       />
 
@@ -1000,11 +990,6 @@ export default function App() {
           setActiveAdmin(adm);
           setRole('admin');
           setIsAdminAuthModalOpen(false);
-          confetti({
-            particleCount: 50,
-            spread: 60,
-            origin: { y: 0.6 }
-          });
         }}
       />
 
@@ -1014,6 +999,7 @@ export default function App() {
         onClose={() => setIsAppointmentModalOpen(false)}
         patient={patient}
         lang={lang}
+        latestScreening={activeScreening}
         onAppointmentBooked={handleAppointmentBooked}
       />
 

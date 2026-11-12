@@ -64,9 +64,12 @@ export const requestAppointment = async (req: Request, res: Response): Promise<v
     const {
       patientUidn,
       doctorUidn,
+      doctorName,
       mandal,
       hospitalName,
       apptType = 'General Oral Consultation',
+      consultationMode = 'ONLINE',
+      diseaseDiagnosed,
       appointmentDate,
       timeSlot = '10:00 AM - 10:30 AM',
       doctorRemarks
@@ -87,10 +90,13 @@ export const requestAppointment = async (req: Request, res: Response): Promise<v
     const newAppointment = {
       appointmentId,
       patientUidn,
-      doctorUidn: doctorUidn || 'DOC-ASR-2026-001',
+      doctorUidn: doctorUidn || 'DOC-SWAPNA',
+      doctorName: doctorName || 'Medical Officer',
       mandal,
       hospitalName,
       apptType,
+      consultationMode: (consultationMode === 'OFFLINE' ? 'OFFLINE' : 'ONLINE') as 'ONLINE' | 'OFFLINE',
+      diseaseDiagnosed: diseaseDiagnosed || 'Suspected Oral Mucosal Lesion',
       appointmentDate: apptDate,
       dayOfWeek,
       timeSlot,

@@ -4,7 +4,7 @@ import { Language } from './translations.ts';
 export const dictionary: Record<string, { te: string; hi: string }> = {
   // Brand & Subtitles
   'AAROGYA DRISHTI': { te: 'ఆరోగ్య దృష్టి', hi: 'आरोग्य दृष्टि' },
-  'AAROHAN 2026': { te: 'ఆరోహణ 2026', hi: 'आरोहण 2026' },
+  'AAROHAN 2026': { te: 'ఆరోహణ 2026', hi: 'आरोహण 2026' },
   'ITDA PADERU | ALLURI SITHARAMA RAJU DISTRICT': { te: 'ఐటీడీఏ పాడేరు | అల్లూరి సీతారామరాజు జిల్లా', hi: 'आईटीडीए पाडेरू | अल्लूरी सीताराम राजू जिला' },
   'ITDA Paderu • Oral Cancer Detection & Care System': { te: 'ఐటీడీఏ పాడేరు • నోటి క్యాన్సర్ నిర్ధారణ & సంరక్షణ వ్యవస్థ', hi: 'आईटीडीए पाडेरू • मुख कैंसर जांच एवं देखभाल प्रणाली' },
   'Tribal Citizen Patient Care & Health Portal': { te: 'గిరిజన పౌరుల ఆరోగ్య సంరక్షణ పోర్టల్', hi: 'जनजातीय नागरिक स्वास्थ्य देखभाल पोर्टल' },
@@ -33,6 +33,8 @@ export const dictionary: Record<string, { te: string; hi: string }> = {
   'Admin Portal Sign-In': { te: 'అడ్మిన్ లాగిన్', hi: 'व्यवस्थापक पोर्टल लॉगिन' },
   'Sign In': { te: 'లాగిన్ అవ్వండి', hi: 'लॉगिन करें' },
   'Register Patient': { te: 'రోగిని నమోదు చేయండి', hi: 'मरीज को पंजीकृत करें' },
+  'Register as New Patient': { te: 'కొత్త రోగిగా నమోదు చేసుకోండి', hi: 'नए मरीज के रूप में पंजीकरण करें' },
+  'Authorized Portal Sign-In': { te: 'అధీకృత పోర్టల్ లాగిన్', hi: 'अधिकृत पोर्टल लॉगिन' },
   'Registering...': { te: 'నమోదు అవుతోంది...', hi: 'पंजीकरण हो रहा है...' },
   'Authenticating...': { te: 'ధృవీకరిస్తోంది...', hi: 'प्रमाणीकरण जारी है...' },
   'Enter Doctor Workspace': { te: 'డాక్టర్ వర్క్‌స్పేస్‌లోకి ప్రవేశించండి', hi: 'डॉक्टर कार्यक्षेत्र में प्रवेश करें' },
@@ -45,21 +47,31 @@ export const dictionary: Record<string, { te: string; hi: string }> = {
 
   // Registration & Form fields
   'Full Name': { te: 'పూర్తి పేరు', hi: 'पूरा नाम' },
+  'Full Name (Tribal Citizen) *': { te: 'పూర్తి పేరు (గిరిజన పౌరుడు) *', hi: 'पूरा नाम (जनजातीय नागरिक) *' },
   'Patient Full Name': { te: 'రోగి పూర్తి పేరు', hi: 'मरीज का पूरा नाम' },
   'Date of Birth': { te: 'పుట్టిన తేదీ', hi: 'जन्म तिथि' },
+  'Date of Birth *': { te: 'పుట్టిన తేదీ *', hi: 'जन्म तिथि *' },
   'Age (Auto-calculated)': { te: 'వయస్సు (ఆటోమేటిక్)', hi: 'आयु (स्वचालित)' },
+  'Calculated Age': { te: 'లెక్కించబడిన వయస్సు', hi: 'गणना की गई आयु' },
   'Age': { te: 'వయస్సు', hi: 'आयु' },
   'Years': { te: 'సంవత్సరాలు', hi: 'वर्ष' },
   'Gender': { te: 'లింగం', hi: 'लिंग' },
   'Male': { te: 'పురుషుడు', hi: 'पुरुष' },
   'Female': { te: 'స్త్రీ', hi: 'महिला' },
   'Other': { te: 'ఇతర', hi: 'अन्य' },
-  'Blood Group': { te: 'రక్త గ్రూపు', hi: 'रक्त समूह' },
+  'Blood Group': { te: 'రక్త గ్రూపు', hi: 'రక్త సమూహ' },
   'Phone Number': { te: 'ఫోన్ నంబర్', hi: 'फ़ोन नंबर' },
+  'Mobile Phone *': { te: 'మొబైల్ ఫోన్ *', hi: 'मोबाइल फ़ोन *' },
+  '10-Digit Mobile Number': { te: '10 అంకెల మొబైల్ సంఖ్య', hi: '10 अंकों का मोबाइल नंबर' },
   'Aadhaar Number (12 Digits)': { te: 'ఆధార్ సంఖ్య (12 అంకెలు)', hi: 'आधार संख्या (12 अंक)' },
+  'Aadhaar Number': { te: 'ఆధార్ సంఖ్య', hi: 'आधार संख्या' },
+  '12-Digit Aadhaar or Patient UIDN': { te: '12 అంకెల ఆధార్ లేదా రోగి యూఐడీఎన్', hi: '12 अंकों का आधार या मरीज यूआईडीएन' },
   'Mandal': { te: 'మండలం', hi: 'मंडल' },
   'Village': { te: 'గ్రామం', hi: 'गांव' },
+  'Village Name': { te: 'గ్రామం పేరు', hi: 'गांव का नाम' },
   'Habitation': { te: 'నివాస ప్రాంతం', hi: 'बस्ती / निवास' },
+  'Habitation / Gudem': { te: 'నివాసం / గూడెం', hi: 'बस्ती / निवास' },
+  'ITDA Paderu Agency Mandal *': { te: 'ఐటీడీఏ పాడేరు ఏజెన్సీ మండలం *', hi: 'आईटीडीए पाडेरू एजेंसी मंडल *' },
   'Doctor User-ID or Official Email': { te: 'డాక్టర్ యూజర్ ఐడి లేదా అధికారిక ఈమెయిల్', hi: 'डॉक्टर यूजर आईडी या आधिकारिक ईमेल' },
   'Account Password': { te: 'ఖాతా పాస్‌వర్డ్', hi: 'खाता पासवर्ड' },
   'Enter Doctor ID or Email': { te: 'డాక్టర్ ఐడి లేదా ఈమెయిల్ నమోదు చేయండి', hi: 'डॉक्टर आईडी या ईमेल दर्ज करें' },
@@ -68,6 +80,11 @@ export const dictionary: Record<string, { te: string; hi: string }> = {
   'Enter 12-Digit Aadhaar': { te: '12 అంకెల ఆధార్ సంఖ్య నమోదు చేయండి', hi: '12 अंकों का आधार दर्ज करें' },
   '12-Digit Aadhaar': { te: '12-అంకెల ఆధార్', hi: '12-अंकीय आधार' },
   'Phone OTP': { te: 'ఫోన్ ఓటీపీ', hi: 'फ़ोन ओटीपी' },
+  'Send OTP': { te: 'ఓటీపీ పంపండి', hi: 'ओटीपी भेजें' },
+  'Enter 6-Digit OTP': { te: '6 అంకెల ఓటీపీ నమోదు చేయండి', hi: '6 अंकों का ओटीपी दर्ज करें' },
+  'Verify OTP & Login': { te: 'ఓటీపీ ధృవీకరించి లాగిన్ అవ్వండి', hi: 'ओटीपी सत्यापित कर लॉगिन करें' },
+  'Login with Aadhaar / UIDN': { te: 'ఆధార్ / యూఐడీఎన్ తో లాగిన్ అవ్వండి', hi: 'आधार / यूआईडीएन से लॉगिन करें' },
+  'Register Citizen & Generate UIDN': { te: 'పౌరుడిని నమోదు చేసి యూఐడీఎన్ పొందండి', hi: 'नागरिक पंजीकृत करें और यूआईडीएन प्राप्त करें' },
 
   // Patient Dashboard Actions
   'Core Health Actions': { te: 'ప్రధాన ఆరోగ్య చర్యలు', hi: 'मुख्य स्वास्थ्य सेवाएं' },
@@ -76,29 +93,45 @@ export const dictionary: Record<string, { te: string; hi: string }> = {
   '3. Golden Health Card': { te: '3. గోల్డెన్ హెల్త్ కార్డ్', hi: '3. गोल्डन हेल्थ कार्ड' },
   '4. Habit Cessation Tracker': { te: '4. పొగాకు మాన్పు ట్రాకర్', hi: '4. आदत मुक्ति ट्रैकर' },
   'Book Appointment': { te: 'అపాయింట్‌మెంట్ బుక్ చేయండి', hi: 'अपॉइंटमेंट बुक करें' },
+  'BOOK DOCTOR APPOINTMENT': { te: 'వైద్యుని అపాయింట్‌మెంట్ బుక్ చేయండి', hi: 'डॉक्टर अपॉइंटमेंट बुक करें' },
   'Request Tele-Consultation Appointment': { te: 'వీడియో సంప్రదింపుల అపాయింట్‌మెంట్ కోరండి', hi: 'वीडियो परामर्श अपॉइंटमेंट का अनुरोध करें' },
   'Join Video Call': { te: 'వీడియో కాల్‌లో చేరండి', hi: 'वीडियो कॉल से जुड़ें' },
   'Booked Doctor': { te: 'కేటాయించిన వైద్యుడు', hi: 'नियुक्त डॉक्टर' },
-  'No doctor appointment booked yet. Please book an appointment first.': {
-    te: 'ఇంకా వైద్యుని అపాయింట్‌మెంట్ బుక్ చేయలేదు. దయచేసి ముందుగా అపాయింట్‌మెంట్ బుక్ చేసుకోండి.',
-    hi: 'अभी तक कोई डॉक्टर अपॉइंटमेंट बुक नहीं हुआ है। कृपया पहले अपॉइंटमेंट बुक करें।'
-  },
   'Your Booked Appointments': { te: 'మీరు బుక్ చేసిన అపాయింట్‌మెంట్‌లు', hi: 'आपके बुक किए गए अपॉइंटमेंट्स' },
-  'No appointments scheduled yet. Click below to book a consultation with our specialist doctors.': {
-    te: 'ఇంకా ఎలాంటి అపాయింట్‌మెంట్‌లు లేవు. నిపుణులైన వైద్యులతో సంప్రదింపుల కోసం క్రింద క్లిక్ చేయండి.',
-    hi: 'अभी कोई अपॉइंटमेंट नहीं है। विशेषज्ञ डॉक्टरों से परामर्श के लिए नीचे क्लिक करें।'
-  },
   'Book Specialist Appointment': { te: 'స్పెషలిస్ట్ అపాయింట్‌మెంట్ బుక్ చేయండి', hi: 'विशेषज्ञ अपॉइंटमेंट बुक करें' },
   'My Prescriptions & Biopsy Orders': { te: 'నా ప్రిస్క్రిప్షన్‌లు & బయాప్సీ రికార్డులు', hi: 'मेरे पर्चे एवं बायोप्सी आदेश' },
-  'No prescriptions issued yet. Consult a doctor via Telemedicine to receive clinical guidance.': {
-    te: 'ఇంకా ఎలాంటి ప్రిస్క్రిప్షన్‌లు జారీ చేయలేదు. సలహా కోసం టెలిమెడిసిన్ ద్వారా వైద్యుడిని సంప్రదించండి.',
-    hi: 'अभी तक कोई पर्चा जारी नहीं किया गया है। मार्गदर्शन के लिए डॉक्टर से टेलीमेडिसिन परामर्श लें।'
-  },
+
+  // Appointment Modal
+  'Select Consultation Mode (Online or Offline)': { te: 'సంప్రదింపుల విధానం ఎంచుకోండి (ఆన్‌లైన్ లేదా ఆఫ్‌లైన్)', hi: 'परामर्श माध्यम चुनें (ऑनलाइन या ऑफ़लाइन)' },
+  'Online Tele-Consultation': { te: 'ఆన్‌లైన్ టెలి-సంప్రదింపులు', hi: 'ऑनलाइन टेली-परामर्श' },
+  'Live WebRTC Video Call with Specialist': { te: 'నిపుణులతో లైవ్ వీడియో కాల్', hi: 'विशेषज्ञ के साथ लाइव वीडियो कॉल' },
+  'Offline In-Person Visit': { te: 'ఆఫ్‌లైన్ ప్రత్యక్ష పరీక్ష', hi: 'ऑफ़लाइन प्रत्यक्ष जांच' },
+  'Physical OPD Visit at PHC / CHC Clinic': { te: 'ఆసుపత్రి / పీహెచ్‌సీ వద్ద ప్రత్యక్ష పరీక్ష', hi: 'अस्पताल में प्रत्यक्ष ओपीडी जांच' },
+  'Appointment Category': { te: 'అపాయింట్‌మెంట్ వర్గం', hi: 'अपॉइंटमेंट श्रेणी' },
+  'General Oral Consultation': { te: 'సాధారణ నోటి పరీక్ష', hi: 'सामान्य मुख जांच' },
+  'Clinical Examination & Medical Rx': { te: 'వైద్య పరీక్ష & మందుల సూచన', hi: 'नैदानिक परीक्षण एवं दवाइयां' },
+  'Biopsy Procedure': { te: 'బయాప్సీ ప్రక్రియ', hi: 'बायोप्सी प्रक्रिया' },
+  'Biopsy Procedure Appointment': { te: 'బయాప్సీ ప్రక్రియ అపాయింట్‌మెంట్', hi: 'बायोप्सी प्रक्रिया अपॉइंटमेंट' },
+  'Diagnostic 4mm Punch Biopsy': { te: 'డయాగ్నస్టిక్ 4మిమీ పంచ్ బయాప్సీ', hi: '4 मिमी पंच बायोप्सी जांच' },
+  'Attending Specialist Doctor *': { te: 'హాజరయ్యే స్పెషలిస్ట్ డాక్టర్ *', hi: 'उपस्थित विशेषज्ञ डॉक्टर *' },
+  'Health Facility': { te: 'ఆరోగ్య కేంద్రం / ఆసుపత్రి', hi: 'स्वास्थ्य केंद्र / अस्पताल' },
+  'Appointment Date': { te: 'అపాయింట్‌మెంట్ తేదీ', hi: 'अपॉइंटमेंट तिथि' },
+  'Time Slot': { te: 'సమయం స్లాట్', hi: 'समय स्लॉट' },
+  'Patient Symptoms & Consultation Purpose': { te: 'రోగి లక్షణాలు & సంప్రదింపుల కారణం', hi: 'मरीज के लक्षण और परामर्श उद्देश्य' },
+  'Confirm Online Video Appointment': { te: 'ఆన్‌లైన్ వీడియో అపాయింట్‌మెంట్ నిర్ధారించండి', hi: 'ऑनलाइन वीडियो अपॉइंटमेंट पुष्टि करें' },
+  'Confirm Offline In-Person Appointment': { te: 'ఆఫ్‌లైన్ ప్రత్యక్ష అపాయింట్‌మెంట్ నిర్ధారించండి', hi: 'ऑफ़लाइन प्रत्यक्ष अपॉइंटमेंट पुष्टि करें' },
+  'AI Oral Screening Finding:': { te: 'ఏఐ నోటి స్క్రీనింగ్ ఫలితం:', hi: 'एआई मुख जांच परिणाम:' },
+  '📹 Online Video Call': { te: '📹 ఆన్‌లైన్ వీడియో కాల్', hi: '📹 ऑनलाइन वीडियो कॉल' },
+  '🏥 Offline In-Person Visit': { te: '🏥 ఆఫ్‌లైన్ ప్రత్యక్ష పరీక్ష', hi: '🏥 ऑफ़लाइन प्रत्यक्ष जांच' },
+  'Report to OPD at': { te: 'ఓపీడీ వద్ద రిపోర్ట్ చేయండి:', hi: 'ओपीडी में उपस्थित हों:' },
 
   // Status badges
   'Approved': { te: 'ఆమోదించబడింది', hi: 'स्वीकृत' },
+  'APPROVED': { te: 'ఆమోదించబడింది', hi: 'स्वीकृत' },
   'Pending': { te: 'వేచి ఉంది', hi: 'लंबित' },
+  'PENDING': { te: 'వేచి ఉంది', hi: 'लंबित' },
   'Rejected': { te: 'తిరస్కరించబడింది', hi: 'अस्वीकृत' },
+  'REJECTED': { te: 'తిరస్కరించబడింది', hi: 'अस्वीकृत' },
   'Completed': { te: 'పూర్తయింది', hi: 'पूर्ण' },
   'Active': { te: 'చురుకుగా ఉంది', hi: 'सक्रिय' },
 
@@ -106,17 +139,29 @@ export const dictionary: Record<string, { te: string; hi: string }> = {
   'Target Oral Cavity Region': { te: 'నోటి భాగం ఎంచుకోండి', hi: 'मुख गुहा का क्षेत्र चुनें' },
   'Habit Exposure Assessment': { te: 'పొగాకు / వ్యసనాల వివరాలు', hi: 'तंबाकू/व्यसन विवरण' },
   'Reverse Smoking (Adda Poga)': { te: 'అడ్డాపొగ (రివర్స్ స్మోకింగ్)', hi: 'रिवर्स स्मोकिंग (अड्डा पोगा)' },
+  'Reverse Smoking (Chutta)': { te: 'అడ్డాపొగ (చుట్ట)', hi: 'रिवर्स स्मोकिंग (छुट्टा)' },
+  'Chewing Tobacco': { te: 'నమిలే పొగాకు', hi: 'तंबाकू चबाना' },
   'Raw/Cured Tobacco Chewing': { te: 'నమిలే పొగాకు / ఖైనీ', hi: 'तंबाकू / खैनी चबाना' },
   'Packaged Gutkha / Areca Nut': { te: 'గుట్కా / పోకచెక్క', hi: 'गुटखा / सुपारी' },
+  'Gutkha / Pan Masala': { te: 'గుట్కా / పాన్ మసాలా', hi: 'गुटखा / पान मसाला' },
+  'Areca Nut': { te: 'పోకచెక్క', hi: 'सुपारी' },
   'Duration of Habit (Years)': { te: 'అలవాటు ఉన్న కాలం (సంవత్సరాలు)', hi: 'आदत की अवधि (वर्ष)' },
-  'Analyze Scan with Multimodal Gemini AI': { te: 'జెమినీ ఏఐ తో విశ్లేషించండి', hi: 'जेमिनी एआई से विश्लेषण करें' },
-  'Evaluating with Gemini Onco-Model...': { te: 'ఏఐ పరిశీలిస్తోంది...', hi: 'एआई विश्लेषण जारी है...' },
+  'Analyze Scan with Multimodal AI': { te: 'మల్టీమోడల్ ఏఐ తో విశ్లేషించండి', hi: 'मल्टीमॉडल एआई से जांच करें' },
+  'Analyzing with Gemini Onco-Model...': { te: 'ఏఐ పరిశీలిస్తోంది...', hi: 'एआई जांच जारी है...' },
+  'Evaluating with AI Onco-Model...': { te: 'ఏఐ నమూనా పరిశీలిస్తోంది...', hi: 'एआई विश्लेषण जारी है...' },
   'Turn Camera Off': { te: 'కెమెరా ఆఫ్ చేయండి', hi: 'कैमरा बंद करें' },
   'Turn Camera On': { te: 'కెమెరా ఆన్ చేయండి', hi: 'कैमरा चालू करें' },
   'Mute Mic': { te: 'మైక్ మ్యూట్', hi: 'माइक म्यूट करें' },
   'Unmute Mic': { te: 'మైక్ ఆన్', hi: 'माइक चालू करें' },
   'End Consultation': { te: 'కాల్ ముగించు', hi: 'परामर्श समाप्त करें' },
   'WebRTC Telemedicine Consultation': { te: 'వెబ్‌ఆర్‌టిసి టెలిమెడిసిన్ సంప్రదింపులు', hi: 'वेबआरटीसी टेलीमेडिसिन परामर्श' },
+  'Capture Snapshot': { te: 'ఫోటో తీయండి', hi: 'फोटो लें' },
+  'Flip Camera': { te: 'కెమెరా మార్చండి', hi: 'कैमरा फ्लिप करें' },
+  'Upload Photo': { te: 'ఫోటో అప్‌లోడ్', hi: 'फोटो अपलोड' },
+  'Camera': { te: 'కెమెరా', hi: 'कैमरा' },
+  'Samples': { te: 'నమూనాలు', hi: 'नमूने' },
+  'Clear All': { te: 'అన్నీ తొలగించండి', hi: 'सब हटाएं' },
+  'Close Camera': { te: 'కెమెరా మూసివేయండి', hi: 'कैमरा बंद करें' },
 
   // Doctor Portal
   'Doctor Consultation Workspace': { te: 'వైద్యాధికారి వర్క్‌స్పేస్', hi: 'चिकित्सा अधिकारी कार्यक्षेत्र' },
@@ -147,20 +192,22 @@ export function translateText(text: string, lang: Language): string {
 
 // Global WeakMap to keep original English content of DOM text nodes
 const textNodeOriginals = new WeakMap<Node, string>();
+const elementPlaceholderOriginals = new WeakMap<Element, string>();
+const elementTitleOriginals = new WeakMap<Element, string>();
 
 // Sorted dictionary keys by length descending to match full phrases before individual words
 const sortedKeys = Object.keys(dictionary).sort((a, b) => b.length - a.length);
 
 /**
- * Traverses DOM nodes and dynamically translates visible text.
+ * Traverses DOM nodes and dynamically translates visible text, placeholders, and titles.
  * Runs instantly in < 5ms without altering React state or DOM tree structure.
  */
 export function applyDOMTranslation(root: HTMLElement, lang: Language) {
   if (!root) return;
 
+  // 1. Text Nodes Translation
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
     acceptNode: (node) => {
-      // Ignore script, style, code, pre tags
       const parent = node.parentElement;
       if (!parent) return NodeFilter.FILTER_REJECT;
       const tag = parent.tagName.toLowerCase();
@@ -218,5 +265,43 @@ export function applyDOMTranslation(root: HTMLElement, lang: Language) {
   for (const { node, newText } of nodesToUpdate) {
     node.nodeValue = newText;
   }
-}
 
+  // 2. Input/Textarea Placeholders Translation
+  const inputs = root.querySelectorAll('input[placeholder], textarea[placeholder]');
+  inputs.forEach((el) => {
+    const inputEl = el as HTMLInputElement | HTMLTextAreaElement;
+    let original = elementPlaceholderOriginals.get(inputEl);
+    if (!original) {
+      original = inputEl.placeholder;
+      elementPlaceholderOriginals.set(inputEl, original);
+    }
+
+    if (lang === 'en') {
+      inputEl.placeholder = original;
+    } else {
+      const trimmed = original.trim();
+      if (dictionary[trimmed] && dictionary[trimmed][lang]) {
+        inputEl.placeholder = dictionary[trimmed][lang];
+      }
+    }
+  });
+
+  // 3. Titles / Tooltips Translation
+  const titled = root.querySelectorAll('[title]');
+  titled.forEach((el) => {
+    let original = elementTitleOriginals.get(el);
+    if (!original) {
+      original = el.getAttribute('title') || '';
+      elementTitleOriginals.set(el, original);
+    }
+
+    if (lang === 'en') {
+      el.setAttribute('title', original);
+    } else {
+      const trimmed = original.trim();
+      if (dictionary[trimmed] && dictionary[trimmed][lang]) {
+        el.setAttribute('title', dictionary[trimmed][lang]);
+      }
+    }
+  });
+}

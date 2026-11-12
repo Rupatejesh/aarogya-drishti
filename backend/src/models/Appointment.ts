@@ -3,14 +3,18 @@ import { ASR_MANDALS, ASRMandal } from './Patient.js';
 
 export type AppointmentType = 'General Oral Consultation' | 'Biopsy Procedure Appointment';
 export type AppointmentStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
+export type ConsultationMode = 'ONLINE' | 'OFFLINE';
 
 export interface IAppointment extends Document {
   appointmentId: string;
   patientUidn: string;
   doctorUidn?: string;
+  doctorName?: string;
   mandal: ASRMandal;
   hospitalName: string;
   apptType: AppointmentType;
+  consultationMode: ConsultationMode;
+  diseaseDiagnosed?: string;
   appointmentDate: Date;
   dayOfWeek: string;
   timeSlot: string;
@@ -40,6 +44,10 @@ const AppointmentSchema = new Schema<IAppointment>(
       trim: true,
       index: true
     },
+    doctorName: {
+      type: String,
+      trim: true
+    },
     mandal: {
       type: String,
       enum: ASR_MANDALS,
@@ -55,6 +63,15 @@ const AppointmentSchema = new Schema<IAppointment>(
       type: String,
       enum: ['General Oral Consultation', 'Biopsy Procedure Appointment'],
       required: true
+    },
+    consultationMode: {
+      type: String,
+      enum: ['ONLINE', 'OFFLINE'],
+      default: 'ONLINE'
+    },
+    diseaseDiagnosed: {
+      type: String,
+      trim: true
     },
     appointmentDate: {
       type: Date,

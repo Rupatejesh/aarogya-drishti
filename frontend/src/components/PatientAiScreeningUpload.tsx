@@ -71,21 +71,17 @@ export const PatientAiScreeningUpload: React.FC<PatientAiScreeningUploadProps> =
   const [analysisResult, setAnalysisResult] = useState<any>(null);
   const [cloudinaryInfo, setCloudinaryInfo] = useState<any>(null);
 
-  // Risk profile (pre-filled with K. Somanna's compulsory case data)
+  // Risk profile (clean default: unselected so user chooses their real habits)
   const [habits, setHabits] = useState({
-    tobacco: true,
+    tobacco: false,
     gutkha: false,
-    reverseSmoking: true,
-    areca: true,
-    years: 18,
-    frequency: '6-8 times daily'
+    reverseSmoking: false,
+    areca: false,
+    years: 0,
+    frequency: 'None'
   });
 
-  const [symptoms, setSymptoms] = useState<string[]>([
-    'Persistent white cheek patch (>3 weeks)',
-    'Mild burning sensation with spicy food',
-    'Rough indurated mucosal texture'
-  ]);
+  const [symptoms, setSymptoms] = useState<string[]>([]);
 
   // Clean up camera stream when unmounting or switching tabs
   useEffect(() => {
@@ -835,13 +831,6 @@ export const PatientAiScreeningUpload: React.FC<PatientAiScreeningUploadProps> =
                   className="text-[10px] text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-100 px-2 py-0.5 rounded border border-slate-200 font-semibold transition-all"
                 >
                   Clear All
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setHabits({ tobacco: true, gutkha: false, reverseSmoking: true, areca: true, years: 18, frequency: '6-8 times daily' })}
-                  className="text-[10px] text-red-700 font-bold bg-red-50 hover:bg-red-100 px-2 py-0.5 rounded border border-red-200 transition-all"
-                >
-                  K. Somanna (18y)
                 </button>
               </div>
             </div>
