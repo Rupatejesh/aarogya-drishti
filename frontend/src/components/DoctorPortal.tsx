@@ -35,19 +35,26 @@ export const DoctorPortal: React.FC<DoctorPortalProps> = ({
 }) => {
   const t = translations[lang];
 
+  const getInitialDoctor = () => {
+    if (initialDoctor) return initialDoctor;
+    try {
+      const stored = localStorage.getItem('aarogya_doctor');
+      if (stored) return JSON.parse(stored);
+    } catch (e) {}
+    return {
+      uidn: 'DOC-ANIL',
+      name: 'Dr. Anil Kumar, MBBS, MS',
+      designation: 'Oral Onco-Surgeon & Specialist Tele-Consultant',
+      hospitalDuty: 'Area Hospital Chintapalli / GGH Paderu Tele-Lab Hub',
+      abdmCode: 'ABDM-DOC-AP-9901',
+      email: 'dr.anil@aarogyadrishti.org'
+    };
+  };
+
   // Auth States
   const [isAuthenticated, setIsAuthenticated] = useState(true);
-  const [activeDoctor, setActiveDoctor] = useState<any>(
-    initialDoctor || {
-      uidn: 'DOC-SWAPNA',
-      name: 'Dr. Swapna Devi, MDS',
-      designation: 'Chief Onco-Pathologist & Lead Tele-Consultant',
-      hospitalDuty: 'PHC G. Madugula / GGH Paderu Tele-Lab Hub',
-      abdmCode: 'ABDM-DOC-AP-7821',
-      email: 'dr.swapna@aarogyadrishti.org'
-    }
-  );
-  const [doctorIdInput, setDoctorIdInput] = useState(initialDoctor?.uidn || '');
+  const [activeDoctor, setActiveDoctor] = useState<any>(getInitialDoctor());
+  const [doctorIdInput, setDoctorIdInput] = useState(initialDoctor?.uidn || 'DOC-ANIL');
   const [doctorPassword, setDoctorPassword] = useState('Aarogya@2026');
 
   useEffect(() => {
@@ -106,12 +113,24 @@ export const DoctorPortal: React.FC<DoctorPortalProps> = ({
       }
 
       // 2. Strict Role Boundary: Patients Under Care MUST ONLY be patients with appointments for THIS doctor
-      const myPatientUidns = new Set(myAppts.map((a: any) => a.patientUidn));
       const patientsRes = await api.getQuickLoginRoster();
-      if (patientsRes.roster) {
-        const assignedPatients = patientsRes.roster.filter((p: any) => myPatientUidns.has(p.uidn));
-        setPatientsUnderCare(assignedPatients);
-      }
+      const rosterList = patientsRes.roster || [];
+      const assignedPatients = myAppts.map((a: any) => {
+        const found = rosterList.find((p: any) => p.uidn === a.patientUidn);
+        if (found) return found;
+        return {
+          uidn: a.patientUidn,
+          name: a.patientName || `Patient ${a.patientUidn}`,
+          age: a.patientAge || 22,
+          mandal: a.mandal || 'Chintapalli',
+          village: a.village || a.hospitalName || 'Agency Unit',
+          condition: a.diseaseDiagnosed || a.apptType || 'Oral Lesion Tele-Consultation'
+        };
+      });
+      // Deduplicate by UIDN
+      const uniquePatients = Array.from(new Map(assignedPatients.map((p: any) => [p.uidn, p])).values());
+      setPatientsUnderCare(uniquePatients);
+      const myPatientUidns = new Set(uniquePatients.map((p: any) => p.uidn));
 
       // 3. Strict Vault Boundary: Only prescriptions issued by or assigned to THIS doctor
       const rxRes = await api.getAllPrescriptions(docCode);
@@ -327,21 +346,43 @@ export const DoctorPortal: React.FC<DoctorPortalProps> = ({
 
                 {/* Action Buttons for Doctor */}
                 <div className="flex items-center space-x-2">
-                  <button
-                    onClick={() => handleUpdateStatus(appt.appointmentId, 'APPROVED')}
-                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 shadow-sm"
-                  >
-                    <CheckCircle className="w-3.5 h-3.5" />
-                    <span>Approve Slot</span>
-                  </button>
+                  {appt.status === 'APPROVED' && appt.consultationMode !== 'OFFLINE' && (
+                    <button
+                      onClick={() => {
+                        const pat = patientsUnderCare.find((p) => p.uidn === appt.patientUidn) || {
+                          uidn: appt.patientUidn,
+                          name: appt.patientName || appt.patientUidn,
+                          mandal: appt.mandal || 'Chintapalli',
+                          village: appt.hospitalName || 'Agency Unit'
+                        };
+                        onLaunchTelemedicine(pat, activeDoctor);
+                      }}
+                      className="px-3.5 py-2 bg-royal-700 hover:bg-royal-800 text-white rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 shadow-sm active:scale-95 cursor-pointer"
+                    >
+                      <Video className="w-3.5 h-3.5" />
+                      <span>Launch Video Call</span>
+                    </button>
+                  )}
 
-                  <button
-                    onClick={() => handleUpdateStatus(appt.appointmentId, 'REJECTED')}
-                    className="px-3.5 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold transition-all flex items-center space-x-1 shadow-sm"
-                  >
-                    <XCircle className="w-3.5 h-3.5" />
-                    <span>Reject</span>
-                  </button>
+                  {appt.status !== 'APPROVED' && (
+                    <button
+                      onClick={() => handleUpdateStatus(appt.appointmentId, 'APPROVED')}
+                      className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 shadow-sm cursor-pointer"
+                    >
+                      <CheckCircle className="w-3.5 h-3.5" />
+                      <span>Approve Slot</span>
+                    </button>
+                  )}
+
+                  {appt.status !== 'REJECTED' && (
+                    <button
+                      onClick={() => handleUpdateStatus(appt.appointmentId, 'REJECTED')}
+                      className="px-3.5 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold transition-all flex items-center space-x-1 shadow-sm cursor-pointer"
+                    >
+                      <XCircle className="w-3.5 h-3.5" />
+                      <span>Reject</span>
+                    </button>
+                  )}
                 </div>
               </div>
             ))}

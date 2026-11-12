@@ -142,6 +142,16 @@ export default function App() {
       if (savedPatientToken) {
         // Patient session can be restored if valid
       }
+
+      // Restore doctor session if present
+      const savedDoc = localStorage.getItem('aarogya_doctor');
+      if (savedDoc) {
+        try {
+          const parsedDoc = JSON.parse(savedDoc);
+          setActiveDoctor(parsedDoc);
+          setSelectedDoctorForCall(parsedDoc);
+        } catch (e) {}
+      }
     } catch (err) {
       console.warn('Initial data synchronization notice:', err);
     }
@@ -181,26 +191,32 @@ export default function App() {
         patientAppointments[0];
 
       if (bookedAppt) {
-        const docCode = bookedAppt.doctorUidn || bookedAppt.doctorId || 'DOC-SWAPNA';
+        const docCode = bookedAppt.doctorUidn || bookedAppt.doctorId || 'DOC-ANIL';
         const docName =
           bookedAppt.doctorName ||
           (docCode === 'DOC-SWAPNA'
             ? 'Dr. Swapna Devi, MDS'
             : docCode === 'DOC-RAJESH'
             ? 'Dr. K. Rajesh, MS ENT'
-            : 'Dr. Anand Kumar, MDS');
+            : docCode === 'DOC-ANIL'
+            ? 'Dr. Anil Kumar, MBBS, MS'
+            : docCode);
 
         setSelectedDoctorForCall({
           uidn: docCode,
           name: docName,
           designation: 'Assigned Tele-Consultant Specialist',
-          hospitalDuty: bookedAppt.hospitalName || 'PHC G. Madugula'
+          hospitalDuty: bookedAppt.hospitalName || 'Area Hospital Chintapalli'
         });
+      } else if (activeDoctor) {
+        setSelectedDoctorForCall(activeDoctor);
       } else {
-        alert('Notice: Please book a tele-consultation appointment slot first. Once booked with your assigned specialist doctor, you can connect live with them here.');
-        const el = document.getElementById('patient-booking-card-section') || document.getElementById('patient-appointments-list-section');
-        if (el) el.scrollIntoView({ behavior: 'smooth' });
-        return;
+        setSelectedDoctorForCall({
+          uidn: 'DOC-ANIL',
+          name: 'Dr. Anil Kumar, MBBS, MS',
+          designation: 'Oral Onco-Surgeon & Specialist Tele-Consultant',
+          hospitalDuty: 'Area Hospital Chintapalli / GGH Paderu Tele-Lab Hub'
+        });
       }
     }
     setIsTelemedicineOpen(true);
@@ -221,10 +237,12 @@ export default function App() {
     localStorage.removeItem('aarogya_patient_token');
     localStorage.removeItem('aarogya_doctor_token');
     localStorage.removeItem('aarogya_admin_token');
+    localStorage.removeItem('aarogya_doctor');
+    localStorage.removeItem('aarogya_patient');
     setPatient(null);
     setActiveDoctor(null);
-    setActiveAdmin(null);
     setSelectedDoctorForCall(null);
+    setActiveAdmin(null);
     setRole('landing');
   };
 
@@ -976,6 +994,8 @@ export default function App() {
         lang={lang}
         onAuthenticated={(doc) => {
           setActiveDoctor(doc);
+          setSelectedDoctorForCall(doc);
+          localStorage.setItem('aarogya_doctor', JSON.stringify(doc));
           setRole('doctor');
           setIsDoctorAuthModalOpen(false);
         }}
@@ -1043,7 +1063,17 @@ export default function App() {
       {/* 8. WEBRTC TELEMEDICINE ROOM MODAL */}
       {isTelemedicineOpen && (
         <WebRTCTelemedicineRoom
-          patient={patient || { name: 'K. Somanna', uidn: 'UIDN-ASR-2026-GM046', mandal: 'G. Madugula', age: 46 }}
+          patient={patient || { name: 'Afridh Khan', uidn: 'UIDN-ASR-2026-0034', mandal: 'Chintapalli', village: 'chintapalli', age: 22 }}
+          doctor={
+            selectedDoctorForCall ||
+            activeDoctor || {
+              name: 'Dr. Anil Kumar, MBBS, MS',
+              uidn: 'DOC-ANIL',
+              designation: 'Oral Onco-Surgeon & Specialist Tele-Consultant',
+              hospitalDuty: 'Area Hospital Chintapalli / GGH Paderu Tele-Lab Hub'
+            }
+          }
+          currentUserRole={role === 'doctor' ? 'doctor' : role === 'admin' ? 'admin' : 'patient'}
           lang={lang}
           onClose={() => setIsTelemedicineOpen(false)}
           onPrescriptionCreated={(rx) => setActivePrescription(rx)}

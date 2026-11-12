@@ -112,6 +112,10 @@ io.on('connection', (socket) => {
     }
   });
 
+  socket.on('send-message', ({ roomId, message }) => {
+    socket.to(roomId).emit('receive-message', message);
+  });
+
   socket.on('disconnecting', () => {
     for (const room of socket.rooms) {
       if (room !== socket.id) {
