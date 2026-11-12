@@ -1,18 +1,21 @@
+import dotenv from 'dotenv';
+import path from 'path';
+
+// Load environment variables immediately before any other module imports
+dotenv.config();
+dotenv.config({ path: path.resolve(process.cwd(), '.env') });
+dotenv.config({ path: path.resolve(process.cwd(), '../.env') });
+dotenv.config({ path: path.resolve(process.cwd(), 'backend', '.env') });
+
 import express from 'express';
 import http from 'http';
-import path from 'path';
 import cors from 'cors';
 import morgan from 'morgan';
-import dotenv from 'dotenv';
 import { Server as SocketIOServer } from 'socket.io';
 import connectDatabase from './config/database.js';
 import apiV1Router from './routes/index.js';
 import errorHandler from './middleware/error.middleware.js';
 import { seedDatabase } from './services/seed.service.js';
-
-dotenv.config();
-dotenv.config({ path: path.resolve(process.cwd(), '.env') });
-dotenv.config({ path: path.resolve(process.cwd(), '../.env') });
 
 const app = express();
 const server = http.createServer(app);

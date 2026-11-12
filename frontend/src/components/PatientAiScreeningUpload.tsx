@@ -329,17 +329,43 @@ export const PatientAiScreeningUpload: React.FC<PatientAiScreeningUploadProps> =
   const isNoDisease =
     analysisResult &&
     (analysisResult.hasLesion === false ||
+      analysisResult.isOralCavity === false ||
       analysisResult.aiCondition === 'Low' ||
       analysisResult.aiLesionType?.toLowerCase().includes('no disease') ||
       analysisResult.aiLesionType?.toLowerCase().includes('no oral') ||
       analysisResult.aiLesionType?.toLowerCase().includes('healthy') ||
-      analysisResult.aiLesionType?.toLowerCase().includes('face'));
+      analysisResult.aiLesionType?.toLowerCase().includes('face') ||
+      analysisResult.aiLesionType?.toLowerCase().includes('external') ||
+      analysisResult.aiLesionType?.toLowerCase().includes('portrait'));
 
   const isFacePhoto =
     analysisResult &&
     (analysisResult.isOralCavity === false ||
       analysisResult.aiLesionType?.toLowerCase().includes('face') ||
+      analysisResult.aiLesionType?.toLowerCase().includes('portrait') ||
+      analysisResult.aiLesionType?.toLowerCase().includes('external') ||
       analysisResult.aiLesionType?.toLowerCase().includes('non-oral'));
+
+  const getBoxStyle = () => {
+    const b = analysisResult?.boundingBoxCoordinates;
+    if (!b || (b.xmin === 0 && b.xmax === 0)) {
+      return { left: '22%', top: '18%', width: '56%', height: '58%' };
+    }
+    // If coordinates are in 0-1000 range
+    if (b.xmax > 10) {
+      const left = Math.max(5, Math.min(85, b.xmin / 10));
+      const top = Math.max(5, Math.min(85, b.ymin / 10));
+      const width = Math.max(12, Math.min(85, (b.xmax - b.xmin) / 10));
+      const height = Math.max(12, Math.min(85, (b.ymax - b.ymin) / 10));
+      return { left: `${left}%`, top: `${top}%`, width: `${width}%`, height: `${height}%` };
+    }
+    // If coordinates are in 0-1 range
+    const left = Math.max(5, Math.min(85, b.xmin * 100));
+    const top = Math.max(5, Math.min(85, b.ymin * 100));
+    const width = Math.max(12, Math.min(85, (b.xmax - b.xmin) * 100));
+    const height = Math.max(12, Math.min(85, (b.ymax - b.ymin) * 100));
+    return { left: `${left}%`, top: `${top}%`, width: `${width}%`, height: `${height}%` };
+  };
 
   return (
     <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm space-y-6">
@@ -687,16 +713,11 @@ export const PatientAiScreeningUpload: React.FC<PatientAiScreeningUploadProps> =
                   className="w-full h-full object-contain"
                 />
 
-                {/* AI Disease Lesion Bounding Box Overlay */}
-                {analysisResult && !isNoDisease && (
+                {/* AI Disease Lesion Bounding Box Overlay (ONLY shown when lesion actually exists!) */}
+                {analysisResult && !isNoDisease && analysisResult.hasLesion !== false && (
                   <div
                     className="absolute border-2 border-red-500 rounded-xl bg-red-500/15 pointer-events-none shadow-[0_0_20px_rgba(239,68,68,0.6)] animate-pulse"
-                    style={{
-                      left: '22%',
-                      top: '18%',
-                      width: '56%',
-                      height: '58%'
-                    }}
+                    style={getBoxStyle()}
                   >
                     <div className="absolute -top-8 left-0 bg-red-600 text-white text-[11px] font-black px-2.5 py-0.5 rounded-lg shadow-md flex items-center space-x-1.5 whitespace-nowrap">
                       <AlertTriangle className="w-3.5 h-3.5 text-amber-200" />
@@ -785,26 +806,58 @@ export const PatientAiScreeningUpload: React.FC<PatientAiScreeningUploadProps> =
           </div>
 
           {/* Habit & Symptom Checklist Toggle Pills */}
-          <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-2 text-xs">
+          <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-2.5 text-xs">
             <div className="text-[11px] font-bold text-slate-700 uppercase flex items-center justify-between">
               <span className="flex items-center space-x-1.5">
                 <Flame className="w-3.5 h-3.5 text-amber-600" />
                 <span>Habit Exposure Profile</span>
               </span>
-              <span className="text-[10px] text-red-600 font-bold bg-red-50 px-2 py-0.5 rounded border border-red-200">
-                18 Yrs Tobacco Exposure
-              </span>
+              <div className="flex items-center space-x-1">
+                <button
+                  type="button"
+                  onClick={() => setHabits({ tobacco: false, gutkha: false, reverseSmoking: false, areca: false, years: 0, frequency: 'None' })}
+                  className="text-[10px] text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-100 px-2 py-0.5 rounded border border-slate-200 font-semibold transition-all"
+                >
+                  Clear All
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setHabits({ tobacco: true, gutkha: false, reverseSmoking: true, areca: true, years: 18, frequency: '6-8 times daily' })}
+                  className="text-[10px] text-red-700 font-bold bg-red-50 hover:bg-red-100 px-2 py-0.5 rounded border border-red-200 transition-all"
+                >
+                  K. Somanna (18y)
+                </button>
+              </div>
             </div>
             <div className="flex flex-wrap gap-1.5">
-              <span className={`px-2 py-1 rounded-lg text-[10px] font-bold border ${habits.tobacco ? 'bg-red-50 text-red-800 border-red-200' : 'bg-white text-slate-500'}`}>
-                ✓ Chewing Tobacco
-              </span>
-              <span className={`px-2 py-1 rounded-lg text-[10px] font-bold border ${habits.reverseSmoking ? 'bg-red-50 text-red-800 border-red-200' : 'bg-white text-slate-500'}`}>
-                ✓ Reverse Smoking (Chutta)
-              </span>
-              <span className={`px-2 py-1 rounded-lg text-[10px] font-bold border ${habits.areca ? 'bg-amber-50 text-amber-800 border-amber-200' : 'bg-white text-slate-500'}`}>
-                ✓ Areca Nut
-              </span>
+              <button
+                type="button"
+                onClick={() => setHabits(prev => ({ ...prev, tobacco: !prev.tobacco }))}
+                className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all ${habits.tobacco ? 'bg-red-50 text-red-800 border-red-300 shadow-sm' : 'bg-white text-slate-500 border-slate-200'}`}
+              >
+                {habits.tobacco ? '✓ Chewing Tobacco' : '+ Chewing Tobacco'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setHabits(prev => ({ ...prev, reverseSmoking: !prev.reverseSmoking }))}
+                className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all ${habits.reverseSmoking ? 'bg-red-50 text-red-800 border-red-300 shadow-sm' : 'bg-white text-slate-500 border-slate-200'}`}
+              >
+                {habits.reverseSmoking ? '✓ Reverse Smoking (Chutta)' : '+ Reverse Smoking'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setHabits(prev => ({ ...prev, areca: !prev.areca }))}
+                className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all ${habits.areca ? 'bg-amber-50 text-amber-800 border-amber-300 shadow-sm' : 'bg-white text-slate-500 border-slate-200'}`}
+              >
+                {habits.areca ? '✓ Areca Nut' : '+ Areca Nut'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setHabits(prev => ({ ...prev, gutkha: !prev.gutkha }))}
+                className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all ${habits.gutkha ? 'bg-amber-50 text-amber-800 border-amber-300 shadow-sm' : 'bg-white text-slate-500 border-slate-200'}`}
+              >
+                {habits.gutkha ? '✓ Gutkha / Pan Masala' : '+ Gutkha'}
+              </button>
             </div>
           </div>
 
