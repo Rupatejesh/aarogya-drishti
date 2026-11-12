@@ -25,11 +25,7 @@ const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || 'http://localhost:5173';
 
 // 1. CORS & Core Middlewares
 app.use(
-  cors({
-    origin: '*',
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS']
-  })
+  cors()
 );
 app.use(morgan('dev'));
 app.use(express.json({ limit: '25mb' }));
