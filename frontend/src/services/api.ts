@@ -144,6 +144,33 @@ export const api = {
   },
 
   // Appointments
+  getActiveCall: async (patientUidn: string) => {
+    try {
+      const res = await apiClient.get(`/appointments/active-call/${patientUidn}`);
+      return res.data;
+    } catch {
+      return { activeCall: null };
+    }
+  },
+
+  registerActiveCall: async (payload: { patientUidn: string; doctorUidn: string; doctorName: string; roomId: string }) => {
+    try {
+      const res = await apiClient.post('/appointments/active-call', payload);
+      return res.data;
+    } catch {
+      return { success: false };
+    }
+  },
+
+  endActiveCall: async (patientUidn: string) => {
+    try {
+      const res = await apiClient.delete(`/appointments/active-call/${patientUidn}`);
+      return res.data;
+    } catch {
+      return { success: false };
+    }
+  },
+
   getPatientAppointments: async (uidn: string) => {
     const res = await apiClient.get(`/appointments/patient/${uidn}`);
     return res.data;

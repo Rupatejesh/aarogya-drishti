@@ -40,6 +40,7 @@ interface WebRTCTelemedicineRoomProps {
   screening?: any;
   currentUserRole?: 'doctor' | 'patient' | 'admin';
   lang: Language;
+  roomId?: string;
   onClose: () => void;
   onPrescriptionCreated?: (prescription: any) => void;
 }
@@ -58,6 +59,7 @@ export const WebRTCTelemedicineRoom: React.FC<WebRTCTelemedicineRoomProps> = ({
   screening,
   currentUserRole = 'doctor',
   lang,
+  roomId: initialRoomId,
   onClose,
   onPrescriptionCreated
 }) => {
@@ -122,10 +124,10 @@ export const WebRTCTelemedicineRoom: React.FC<WebRTCTelemedicineRoomProps> = ({
   // Fallback real-time frame relay state (ensures live video even across restrictive firewalls)
   const [remoteFallbackFrame, setRemoteFallbackFrame] = useState<string | null>(null);
 
-  // Room ID strictly scoped to Patient UIDN & Doctor UIDN
+  // Room ID strictly scoped to Patient UIDN & Doctor UIDN, or explicit passed roomId
   const docUid = (activeDoc?.uidn || activeDoc?.doctorId || 'DOC-ANIL').replace(/[^a-zA-Z0-9_-]/g, '_');
   const patUid = (activePat?.uidn || 'UIDN-ASR-2026-0034').replace(/[^a-zA-Z0-9_-]/g, '_');
-  const [roomId, setRoomId] = useState(`telecall-${patUid}-${docUid}`);
+  const [roomId, setRoomId] = useState(initialRoomId || `telecall-${patUid}-${docUid}`);
 
   const [copiedLink, setCopiedLink] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
@@ -258,16 +260,14 @@ export const WebRTCTelemedicineRoom: React.FC<WebRTCTelemedicineRoomProps> = ({
         }
 
         // 2. Connect to Socket.io Signaling Engine
-        const socketUrl =
-          typeof window !== 'undefined' &&
-          (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-            ? 'http://localhost:5000'
-            : 'https://aarogya-drishti-9g70.onrender.com';
+        const socketUrl = 'https://aarogya-drishti-9g70.onrender.com';
 
         console.log(`[WebRTC] Connecting signaling socket to ${socketUrl}...`);
         const socket = io(socketUrl, {
-          transports: ['websocket', 'polling'],
-          reconnectionAttempts: 10
+          transports: ['polling', 'websocket'],
+          reconnectionAttempts: 20,
+          reconnectionDelay: 1000,
+          timeout: 15000
         });
         socketRef.current = socket;
 
@@ -350,6 +350,11 @@ export const WebRTCTelemedicineRoom: React.FC<WebRTCTelemedicineRoomProps> = ({
         };
 
         // 4. Socket Signaling Event Handlers
+        socket.on('connect_error', (err) => {
+          console.warn('[WebRTC Socket] Signaling connect error:', err.message);
+          setConnectionStatus('Connecting to signaling network...');
+        });
+
         socket.on('connect', () => {
           console.log(`[WebRTC Socket] Connected as ${socket.id}, joining room ${roomId}`);
           setConnectionStatus('Signaling Connected • Room Joined');
@@ -367,6 +372,14 @@ export const WebRTCTelemedicineRoom: React.FC<WebRTCTelemedicineRoomProps> = ({
               doctorName: activeDoc.name,
               roomId
             });
+
+            // Register active call in backend memory/DB
+            api.registerActiveCall({
+              patientUidn: activePat.uidn,
+              doctorUidn: activeDoc.uidn,
+              doctorName: activeDoc.name,
+              roomId
+            }).catch(console.warn);
           }
         });
 
@@ -570,9 +583,13 @@ export const WebRTCTelemedicineRoom: React.FC<WebRTCTelemedicineRoomProps> = ({
   };
 
   const handleEndCall = () => {
+    if (activePat?.uidn) {
+      api.endActiveCall(activePat.uidn).catch(console.warn);
+    }
     if (socketRef.current) {
       socketRef.current.emit('end-consultation', {
         roomId,
+        patientUidn: activePat?.uidn,
         endedBy: isDoctorUser ? activeDoc.name : activePat.name
       });
       socketRef.current.disconnect();

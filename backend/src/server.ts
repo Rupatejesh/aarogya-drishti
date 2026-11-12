@@ -16,6 +16,7 @@ import connectDatabase from './config/database.js';
 import apiV1Router from './routes/index.js';
 import errorHandler from './middleware/error.middleware.js';
 import { seedDatabase } from './services/seed.service.js';
+import { activeConsultationCalls } from './controllers/appointment.controller.js';
 
 const app = express();
 const server = http.createServer(app);
@@ -122,12 +123,31 @@ io.on('connection', (socket) => {
 
   socket.on('call-started', ({ patientUidn, doctorUidn, doctorName, roomId }) => {
     console.log(`[WebRTC] Doctor ${doctorName} started call for patient ${patientUidn} in ${roomId}`);
+    if (patientUidn && roomId) {
+      activeConsultationCalls.set(patientUidn, {
+        patientUidn,
+        doctorUidn,
+        doctorName,
+        roomId,
+        startedAt: Date.now()
+      });
+    }
     io.emit('doctor-calling-patient', { patientUidn, doctorUidn, doctorName, roomId });
   });
 
-  socket.on('end-consultation', ({ roomId, endedBy }) => {
+  socket.on('end-consultation', ({ roomId, endedBy, patientUidn }) => {
     console.log(`[WebRTC] Consultation ended in room ${roomId} by ${endedBy || 'peer'}`);
-    socket.to(roomId).emit('consultation-ended', { endedBy });
+    if (patientUidn) {
+      activeConsultationCalls.delete(patientUidn);
+    } else if (roomId) {
+      for (const [pUid, call] of activeConsultationCalls.entries()) {
+        if (call.roomId === roomId) {
+          activeConsultationCalls.delete(pUid);
+        }
+      }
+    }
+    socket.to(roomId).emit('consultation-ended', { endedBy, roomId });
+    io.emit('consultation-ended', { endedBy, roomId });
   });
 
   socket.on('disconnecting', () => {

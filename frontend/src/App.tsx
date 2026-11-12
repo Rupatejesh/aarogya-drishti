@@ -99,34 +99,75 @@ export default function App() {
   const [patientAppointments, setPatientAppointments] = useState<any[]>([]);
   const [selectedDoctorForCall, setSelectedDoctorForCall] = useState<any>(null);
   const [incomingCallNotification, setIncomingCallNotification] = useState<any>(null);
+  const [activeRoomIdForCall, setActiveRoomIdForCall] = useState<string | null>(null);
 
-  // Global Socket Listener for Live Doctor Calling Notification
+  // Global Socket Listener & Registry Poller for Live Doctor Calling Notification
   useEffect(() => {
-    const socketUrl =
-      typeof window !== 'undefined' &&
-      (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-        ? 'http://localhost:5000'
-        : 'https://aarogya-drishti-9g70.onrender.com';
+    if (!patient?.uidn) return;
 
+    // 1. Immediately poll backend active call registry
+    const checkActiveCall = async () => {
+      try {
+        const res = await api.getActiveCall(patient.uidn);
+        if (res && res.success && res.activeCall) {
+          console.log('[ActiveCall] Detected live call waiting:', res.activeCall);
+          setIncomingCallNotification(res.activeCall);
+          setActiveRoomIdForCall(res.activeCall.roomId);
+          setSelectedDoctorForCall({
+            uidn: res.activeCall.doctorUidn,
+            name: res.activeCall.doctorName,
+            designation: 'Specialist Tele-Consultant'
+          });
+        }
+      } catch (err) {
+        console.warn('[ActiveCall] Check warning:', err);
+      }
+    };
+
+    checkActiveCall();
+
+    // 2. Poll every 4s while patient is logged in and not currently inside the call
+    const pollTimer = setInterval(() => {
+      if (!isTelemedicineOpen) {
+        checkActiveCall();
+      }
+    }, 4000);
+
+    // 3. Connect to unified Render signaling server for instant push notification
+    const socketUrl = 'https://aarogya-drishti-9g70.onrender.com';
     const globalSocket = io(socketUrl, {
-      transports: ['websocket', 'polling']
+      transports: ['polling', 'websocket'],
+      reconnectionAttempts: 15,
+      timeout: 10000
     });
 
     globalSocket.on('doctor-calling-patient', (data: any) => {
       console.log('[Global Socket] Doctor started call notification:', data);
       if (patient?.uidn && (data.patientUidn === patient.uidn || data.patientUidn?.includes(patient.uidn))) {
         setIncomingCallNotification(data);
+        if (data.roomId) {
+          setActiveRoomIdForCall(data.roomId);
+        }
+        if (data.doctorUidn || data.doctorName) {
+          setSelectedDoctorForCall({
+            uidn: data.doctorUidn,
+            name: data.doctorName,
+            designation: 'Specialist Tele-Consultant'
+          });
+        }
       }
     });
 
     globalSocket.on('consultation-ended', () => {
       setIncomingCallNotification(null);
+      setActiveRoomIdForCall(null);
     });
 
     return () => {
+      clearInterval(pollTimer);
       globalSocket.disconnect();
     };
-  }, [patient?.uidn]);
+  }, [patient?.uidn, isTelemedicineOpen]);
 
   // Trilingual Live DOM Translation Effect
   useEffect(() => {
@@ -200,6 +241,23 @@ export default function App() {
         setPatientAppointments(apptsRes.appointments);
       }
 
+      // Check if doctor has already started a call for this patient
+      try {
+        const callRes = await api.getActiveCall(uidn);
+        if (callRes && callRes.success && callRes.activeCall) {
+          console.log('[QuickLogin] Found active call waiting:', callRes.activeCall);
+          setIncomingCallNotification(callRes.activeCall);
+          setActiveRoomIdForCall(callRes.activeCall.roomId);
+          setSelectedDoctorForCall({
+            uidn: callRes.activeCall.doctorUidn,
+            name: callRes.activeCall.doctorName,
+            designation: 'Specialist Tele-Consultant'
+          });
+        }
+      } catch (callErr) {
+        console.warn('[QuickLogin] Active call check notice:', callErr);
+      }
+
       setRole('patient');
     } catch (err: any) {
       alert(`Patient login notice: ${err.message}`);
@@ -210,8 +268,11 @@ export default function App() {
     setActiveScreening(screening);
   };
 
-  const handleLaunchTelemedicine = (targetPatient?: any, targetDoctor?: any) => {
+  const handleLaunchTelemedicine = (targetPatient?: any, targetDoctor?: any, targetRoomId?: string) => {
     if (targetPatient) setPatient(targetPatient);
+    if (targetRoomId) {
+      setActiveRoomIdForCall(targetRoomId);
+    }
     if (targetDoctor) {
       setSelectedDoctorForCall(targetDoctor);
     } else {
@@ -556,13 +617,16 @@ export default function App() {
                     <div className="flex items-center space-x-2">
                       <button
                         onClick={() => {
+                          const callRoom = incomingCallNotification.roomId;
+                          if (callRoom) {
+                            setActiveRoomIdForCall(callRoom);
+                          }
                           setSelectedDoctorForCall({
                             uidn: incomingCallNotification.doctorUidn,
                             name: incomingCallNotification.doctorName,
                             designation: 'Specialist Tele-Consultant'
                           });
                           setIsTelemedicineOpen(true);
-                          setIncomingCallNotification(null);
                         }}
                         className="px-5 py-2.5 bg-white text-emerald-900 font-extrabold text-xs rounded-xl shadow-lg hover:bg-emerald-50 active:scale-95 transition-all flex items-center space-x-2 cursor-pointer"
                       >
@@ -917,7 +981,8 @@ export default function App() {
                                       hospitalDuty: a.hospitalName,
                                       designation: 'Approved Tele-Consultant'
                                     };
-                                    handleLaunchTelemedicine(patient, docObj);
+                                    const callRoom = incomingCallNotification?.roomId || undefined;
+                                    handleLaunchTelemedicine(patient, docObj, callRoom);
                                   }}
                                   className={`mt-1 px-3 py-1.5 text-white rounded-lg text-xs font-bold flex items-center space-x-1 shadow-sm transition-all cursor-pointer ${
                                     incomingCallNotification?.doctorUidn === a.doctorUidn || incomingCallNotification?.roomId?.includes(a.doctorUidn)
@@ -1063,10 +1128,24 @@ export default function App() {
         onClose={() => setIsPatientAuthModalOpen(false)}
         lang={lang}
         defaultMode={patientAuthMode}
-        onAuthenticated={(newPatient) => {
+        onAuthenticated={async (newPatient) => {
           setPatient(newPatient);
           setRole('patient');
           setIsPatientAuthModalOpen(false);
+          if (newPatient?.uidn) {
+            try {
+              const callRes = await api.getActiveCall(newPatient.uidn);
+              if (callRes && callRes.success && callRes.activeCall) {
+                setIncomingCallNotification(callRes.activeCall);
+                setActiveRoomIdForCall(callRes.activeCall.roomId);
+                setSelectedDoctorForCall({
+                  uidn: callRes.activeCall.doctorUidn,
+                  name: callRes.activeCall.doctorName,
+                  designation: 'Specialist Tele-Consultant'
+                });
+              }
+            } catch (e) {}
+          }
         }}
       />
 
@@ -1156,10 +1235,15 @@ export default function App() {
               hospitalDuty: 'Area Hospital Chintapalli / GGH Paderu Tele-Lab Hub'
             }
           }
+          roomId={activeRoomIdForCall || incomingCallNotification?.roomId || undefined}
           screening={activeScreening}
           currentUserRole={role === 'doctor' ? 'doctor' : role === 'admin' ? 'admin' : 'patient'}
           lang={lang}
-          onClose={() => setIsTelemedicineOpen(false)}
+          onClose={() => {
+            setIsTelemedicineOpen(false);
+            setActiveRoomIdForCall(null);
+            setIncomingCallNotification(null);
+          }}
           onPrescriptionCreated={(rx) => setActivePrescription(rx)}
         />
       )}

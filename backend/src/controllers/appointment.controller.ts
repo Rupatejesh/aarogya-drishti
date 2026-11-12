@@ -163,3 +163,50 @@ export const updateAppointmentStatus = async (req: Request, res: Response): Prom
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+// Global in-memory Active Consultation Call Registry
+export const activeConsultationCalls = new Map<string, any>();
+
+export const getActiveCallByPatient = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const patientUidn = String(req.params.patientUidn || '');
+    const callData = activeConsultationCalls.get(patientUidn) || null;
+    res.status(200).json({
+      success: true,
+      activeCall: callData
+    });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const registerActiveCall = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { patientUidn, doctorUidn, doctorName, roomId } = req.body;
+    if (!patientUidn || !roomId) {
+      res.status(400).json({ success: false, message: 'patientUidn and roomId required' });
+      return;
+    }
+    const callData = {
+      patientUidn: String(patientUidn),
+      doctorUidn: doctorUidn ? String(doctorUidn) : undefined,
+      doctorName: doctorName ? String(doctorName) : undefined,
+      roomId: String(roomId),
+      startedAt: Date.now()
+    };
+    activeConsultationCalls.set(String(patientUidn), callData);
+    res.status(200).json({ success: true, activeCall: callData });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const endActiveCall = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const patientUidn = String(req.params.patientUidn || '');
+    activeConsultationCalls.delete(patientUidn);
+    res.status(200).json({ success: true, message: 'Active call cleared' });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
