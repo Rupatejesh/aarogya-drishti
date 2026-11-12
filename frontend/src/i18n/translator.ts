@@ -219,3 +219,4 @@ export function applyDOMTranslation(root: HTMLElement, lang: Language) {
     node.nodeValue = newText;
   }
 }
+
