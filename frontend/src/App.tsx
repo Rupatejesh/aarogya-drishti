@@ -1143,7 +1143,6 @@ export default function App() {
         {/* ========================================================================= */}
         {role === 'admin' && (
           <div className="space-y-8">
-            {renderDemoFlowBar()}
             <AdminPortal lang={lang} />
           </div>
         )}

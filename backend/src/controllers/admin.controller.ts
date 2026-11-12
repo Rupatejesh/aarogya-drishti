@@ -61,7 +61,15 @@ export const createDoctor = async (req: Request, res: Response): Promise<void> =
 
     const allDocs = await store.findDoctors();
     const docCount = allDocs.length + 1;
-    const uidn = `DOC-ASR-2026-${String(docCount).padStart(3, '0')}`;
+    // Allow custom Doctor ID provided by Admin or generate one
+    const uidn = (req.body.uidn && String(req.body.uidn).trim())
+      ? String(req.body.uidn).trim().toUpperCase()
+      : `DOC-ASR-2026-${String(docCount).padStart(3, '0')}`;
+
+    const plainPassword = (req.body.password && String(req.body.password).trim())
+      ? String(req.body.password).trim()
+      : 'Doctor@2026';
+    const defaultPasswordHash = await bcrypt.hash(plainPassword, 10);
 
     const newDoctor = {
       uidn,
@@ -75,16 +83,16 @@ export const createDoctor = async (req: Request, res: Response): Promise<void> =
       hospitalDuty,
       activeStatus: true,
       consultationsCount: 0,
-      abdmCode,
+      abdmCode: abdmCode || `ABDM-DOC-AP-${Math.floor(1000 + Math.random() * 9000)}`,
       email: email.toLowerCase().trim(),
       phone: String(phone).trim(),
-      credentials: Array.isArray(credentials) ? credentials : [credentials]
+      credentials: Array.isArray(credentials) ? credentials : [credentials],
+      password: plainPassword,
+      passwordHash: defaultPasswordHash
     };
 
     const saved = await store.saveDoctor(newDoctor);
 
-    const plainPassword = req.body.password || 'Aarogya@2026';
-    const defaultPasswordHash = await bcrypt.hash(plainPassword, 10);
     await store.saveUser({
       email: saved.email,
       phone: saved.phone,
@@ -104,7 +112,7 @@ export const createDoctor = async (req: Request, res: Response): Promise<void> =
 
     res.status(201).json({
       success: true,
-      message: `Doctor ${saved.name} enrolled successfully with UIDN: ${uidn}`,
+      message: `Doctor ${saved.name} enrolled successfully with Login ID: ${uidn} and Password: ${plainPassword}`,
       doctor: saved
     });
   } catch (error: any) {

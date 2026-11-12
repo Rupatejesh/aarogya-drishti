@@ -17,7 +17,10 @@ import {
   Plus,
   Sparkles,
   ToggleLeft,
-  ToggleRight
+  ToggleRight,
+  Copy,
+  Check,
+  Lock
 } from 'lucide-react';
 import api from '../services/api.ts';
 import { Language, translations } from '../i18n/translations.ts';
@@ -58,8 +61,16 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ lang }) => {
   });
   const [addDoctorSuccess, setAddDoctorSuccess] = useState(false);
 
-  // Active admin tab
-  const [adminTab, setAdminTab] = useState<'hospitals' | 'doctors'>('hospitals');
+  // Active admin tab: Default to Doctors Registry & Credential Management
+  const [adminTab, setAdminTab] = useState<'doctors' | 'hospitals'>('doctors');
+  const [copiedUidn, setCopiedUidn] = useState<string | null>(null);
+
+  const handleCopyCredentials = (uidn: string, pass: string) => {
+    const credText = `Doctor Login ID: ${uidn}\nPassword: ${pass}\nPortal: http://localhost:5173`;
+    navigator.clipboard.writeText(credText);
+    setCopiedUidn(uidn);
+    setTimeout(() => setCopiedUidn(null), 2000);
+  };
 
   useEffect(() => {
     fetchAdminData();
@@ -86,17 +97,26 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ lang }) => {
     }
   };
 
+  const [createdDoctorCreds, setCreatedDoctorCreds] = useState<any>(null);
+
   const handleCreateDoctor = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       const res = await api.createDoctor(newDoctor);
       if (res.doctor) {
-        setDoctors((prev) => [res.doctor, ...prev]);
+        const docWithPassword = {
+          ...res.doctor,
+          password: newDoctor.password
+        };
+        setDoctors((prev) => [docWithPassword, ...prev]);
+        setCreatedDoctorCreds({
+          uidn: res.doctor.uidn,
+          password: newDoctor.password,
+          name: res.doctor.name,
+          hospitalDuty: res.doctor.hospitalDuty,
+          email: res.doctor.email
+        });
         setAddDoctorSuccess(true);
-        setTimeout(() => {
-          setIsAddDoctorModalOpen(false);
-          setAddDoctorSuccess(false);
-        }, 1800);
       }
     } catch (err: any) {
       alert(`Failed to add doctor: ${err.message}`);
@@ -212,30 +232,30 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ lang }) => {
         </div>
       </div>
 
-      {/* 3. Navigation Tabs: Hospitals Directory vs. Doctor Registry */}
-      <div className="flex border-b border-slate-200 bg-white rounded-t-2xl p-1 shadow-sm">
+      {/* 3. Navigation Tabs: Doctors Registry vs. Hospitals Directory */}
+      <div className="flex border-b border-slate-200 bg-white rounded-t-3xl p-1.5 shadow-sm gap-2">
+        <button
+          onClick={() => setAdminTab('doctors')}
+          className={`px-5 py-3 text-xs font-bold rounded-2xl flex items-center space-x-2 transition-all ${
+            adminTab === 'doctors'
+              ? 'bg-royal-600 text-white shadow-md'
+              : 'text-slate-600 hover:bg-slate-100'
+          }`}
+        >
+          <Stethoscope className="w-4 h-4" />
+          <span>Doctors Roster & Login Credentials ({doctors.length})</span>
+        </button>
+
         <button
           onClick={() => setAdminTab('hospitals')}
-          className={`px-5 py-3 text-xs font-bold rounded-xl flex items-center space-x-2 transition-all ${
+          className={`px-5 py-3 text-xs font-bold rounded-2xl flex items-center space-x-2 transition-all ${
             adminTab === 'hospitals'
-              ? 'bg-royal-600 text-white shadow-sm'
+              ? 'bg-royal-600 text-white shadow-md'
               : 'text-slate-600 hover:bg-slate-100'
           }`}
         >
           <Hospital className="w-4 h-4" />
           <span>11 Mandals Health Facilities Directory ({hospitals.length})</span>
-        </button>
-
-        <button
-          onClick={() => setAdminTab('doctors')}
-          className={`px-5 py-3 text-xs font-bold rounded-xl flex items-center space-x-2 transition-all ${
-            adminTab === 'doctors'
-              ? 'bg-royal-600 text-white shadow-sm'
-              : 'text-slate-600 hover:bg-slate-100'
-          }`}
-        >
-          <Stethoscope className="w-4 h-4" />
-          <span>Doctors List & Credential Generator ({doctors.length})</span>
         </button>
       </div>
 
@@ -401,48 +421,42 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ lang }) => {
             <table className="w-full text-left text-xs">
               <thead className="bg-slate-100 text-slate-700 font-bold uppercase tracking-wider text-[10px] border-b border-slate-200">
                 <tr>
-                  <th className="py-3.5 px-4">Doctor & UIDN</th>
-                  <th className="py-3.5 px-4">Specialization & Designation</th>
-                  <th className="py-3.5 px-4">Degree & Alma Mater</th>
-                  <th className="py-3.5 px-4">Passing / Relieving</th>
-                  <th className="py-3.5 px-4">Experience</th>
-                  <th className="py-3.5 px-4">Duty Hospital & PHC</th>
+                  <th className="py-3.5 px-4">Doctor & Designation</th>
+                  <th className="py-3.5 px-4">Doctor Login ID</th>
+                  <th className="py-3.5 px-4">Login Password</th>
+                  <th className="py-3.5 px-4">Duty Hospital & Mandal</th>
                   <th className="py-3.5 px-4">Contact (Email & Phone)</th>
-                  <th className="py-3.5 px-4">Consultations</th>
+                  <th className="py-3.5 px-4">Degree & Alma Mater</th>
                   <th className="py-3.5 px-4 text-center">Status</th>
+                  <th className="py-3.5 px-4 text-center">Copy Login</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 font-medium text-slate-800">
                 {doctors.map((d) => (
                   <tr key={d.uidn} className="hover:bg-blue-50/40 transition-colors">
                     <td className="py-3.5 px-4">
-                      <div className="font-bold text-slate-900">{d.name}</div>
-                      <div className="font-mono text-[10px] text-royal-700 font-semibold">{d.uidn}</div>
+                      <div className="font-extrabold text-slate-900">{d.name}</div>
+                      <div className="text-[11px] text-royal-700 font-semibold">{d.designation}</div>
                       <div className="text-[10px] text-slate-400 font-mono">{d.abdmCode}</div>
                     </td>
 
                     <td className="py-3.5 px-4">
-                      <div className="font-bold text-slate-900">{d.designation}</div>
-                      <div className="text-[11px] text-royal-700 font-semibold">{d.specialization || 'Oral Onco-Pathology'}</div>
+                      <div className="inline-flex items-center space-x-1.5 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded-xl">
+                        <KeyRound className="w-3 h-3 text-royal-600" />
+                        <span className="font-mono text-xs font-black text-royal-800">{d.uidn}</span>
+                      </div>
                     </td>
 
                     <td className="py-3.5 px-4">
-                      <div className="font-semibold text-slate-900">{d.degreeCertificate}</div>
-                      <div className="text-[10px] text-slate-500">{d.university}</div>
-                    </td>
-
-                    <td className="py-3.5 px-4 font-mono text-[11px]">
-                      <div>Passing: {d.passingYear || 2018}</div>
-                      <div className="text-slate-500">Relieving: {d.relievingYear || 2021}</div>
-                    </td>
-
-                    <td className="py-3.5 px-4 font-bold text-slate-900">
-                      {d.experienceYears} Years
+                      <div className="inline-flex items-center space-x-1.5 bg-slate-100 border border-slate-300 px-2.5 py-1 rounded-xl">
+                        <Lock className="w-3 h-3 text-slate-600" />
+                        <span className="font-mono text-xs font-bold text-slate-900">{d.password || 'Doctor@2026'}</span>
+                      </div>
                     </td>
 
                     <td className="py-3.5 px-4 text-xs font-medium text-slate-700">
-                      <div>{d.hospitalDuty}</div>
-                      <div className="text-[10px] font-bold text-slate-500">{d.mandal} Mandal</div>
+                      <div className="font-bold text-slate-900">{d.hospitalDuty}</div>
+                      <div className="text-[10px] font-semibold text-royal-700">{d.mandal} Mandal</div>
                     </td>
 
                     <td className="py-3.5 px-4 text-xs">
@@ -450,8 +464,9 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ lang }) => {
                       <div className="text-slate-500 font-mono text-[11px]">{d.phone}</div>
                     </td>
 
-                    <td className="py-3.5 px-4 font-mono font-bold text-royal-800">
-                      {d.consultationsCount || 12}
+                    <td className="py-3.5 px-4">
+                      <div className="font-semibold text-slate-900">{d.degreeCertificate}</div>
+                      <div className="text-[10px] text-slate-500">{d.university}</div>
                     </td>
 
                     <td className="py-3.5 px-4 text-center">
@@ -465,6 +480,31 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ lang }) => {
                       >
                         {d.isActive !== false ? <ToggleRight className="w-4 h-4 text-emerald-600" /> : <ToggleLeft className="w-4 h-4 text-slate-500" />}
                         <span>{d.isActive !== false ? 'ACTIVE' : 'INACTIVE'}</span>
+                      </button>
+                    </td>
+
+                    <td className="py-3.5 px-4 text-center">
+                      <button
+                        type="button"
+                        onClick={() => handleCopyCredentials(d.uidn, d.password || 'Doctor@2026')}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all inline-flex items-center space-x-1 shadow-sm ${
+                          copiedUidn === d.uidn
+                            ? 'bg-emerald-600 text-white border-emerald-700'
+                            : 'bg-white hover:bg-blue-50 text-royal-700 border-royal-200 hover:-translate-y-0.5'
+                        }`}
+                        title="Copy Doctor Login ID & Password"
+                      >
+                        {copiedUidn === d.uidn ? (
+                          <>
+                            <Check className="w-3.5 h-3.5" />
+                            <span>Copied!</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-3.5 h-3.5" />
+                            <span>Copy Login</span>
+                          </>
+                        )}
                       </button>
                     </td>
                   </tr>
@@ -494,19 +534,53 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ lang }) => {
               </button>
             </div>
 
-            {addDoctorSuccess ? (
-              <div className="p-6 bg-emerald-50 rounded-2xl border border-emerald-300 text-center space-y-3">
-                <CheckCircle className="w-10 h-10 text-emerald-600 mx-auto" />
-                <h4 className="font-bold text-base text-emerald-950">Doctor Credentials Provisioned!</h4>
-                <div className="bg-white/90 border border-emerald-200 rounded-xl p-3.5 text-left text-xs space-y-1.5 shadow-sm max-w-sm mx-auto">
-                  <div className="font-bold text-slate-800 border-b border-emerald-100 pb-1">Doctor Login Credentials:</div>
-                  <div className="text-slate-600"><strong>User-ID:</strong> <span className="font-mono text-royal-800 font-bold">{newDoctor.uidn}</span></div>
-                  <div className="text-slate-600"><strong>Email:</strong> <span className="font-mono text-emerald-900 font-bold">{newDoctor.email}</span></div>
-                  <div className="text-slate-600"><strong>Password:</strong> <span className="font-mono text-royal-800 font-bold">{newDoctor.password}</span></div>
-                  <div className="text-slate-600"><strong>Duty Hospital:</strong> {newDoctor.hospitalDuty}</div>
-                  <div className="text-[10px] text-emerald-700 font-semibold pt-1">
-                    ✓ Doctor can immediately sign in via the Doctor Portal!
+            {addDoctorSuccess && createdDoctorCreds ? (
+              <div className="p-6 bg-emerald-50 rounded-3xl border border-emerald-300 text-center space-y-4">
+                <CheckCircle className="w-12 h-12 text-emerald-600 mx-auto" />
+                <h4 className="font-extrabold text-lg text-emerald-950">Doctor Credentials Created Successfully!</h4>
+                <div className="bg-white border-2 border-emerald-300 rounded-2xl p-4 text-left text-xs space-y-2.5 shadow-sm max-w-sm mx-auto">
+                  <div className="font-extrabold text-slate-900 border-b border-emerald-100 pb-1.5 flex items-center justify-between">
+                    <span>Doctor Login Credentials:</span>
+                    <span className="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold">READY TO LOGIN</span>
                   </div>
+                  <div className="flex items-center justify-between py-1 border-b border-slate-100">
+                    <span className="text-slate-600 font-bold">Doctor ID (Username):</span>
+                    <span className="font-mono text-sm font-black text-royal-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">{createdDoctorCreds.uidn}</span>
+                  </div>
+                  <div className="flex items-center justify-between py-1 border-b border-slate-100">
+                    <span className="text-slate-600 font-bold">Login Password:</span>
+                    <span className="font-mono text-sm font-black text-slate-900 bg-slate-100 px-2 py-0.5 rounded border border-slate-300">{createdDoctorCreds.password}</span>
+                  </div>
+                  <div className="flex items-center justify-between py-1 border-b border-slate-100">
+                    <span className="text-slate-500">Doctor Name:</span>
+                    <strong className="text-slate-900">{createdDoctorCreds.name}</strong>
+                  </div>
+                  <div className="flex items-center justify-between py-1">
+                    <span className="text-slate-500">Duty Hospital:</span>
+                    <strong className="text-slate-900">{createdDoctorCreds.hospitalDuty}</strong>
+                  </div>
+                </div>
+
+                <div className="flex justify-center gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => handleCopyCredentials(createdDoctorCreds.uidn, createdDoctorCreds.password)}
+                    className="px-5 py-2.5 bg-royal-600 hover:bg-royal-700 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center space-x-1.5"
+                  >
+                    <Copy className="w-3.5 h-3.5" />
+                    <span>{copiedUidn === createdDoctorCreds.uidn ? 'Credentials Copied!' : 'Copy Login Credentials'}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsAddDoctorModalOpen(false);
+                      setAddDoctorSuccess(false);
+                      setCreatedDoctorCreds(null);
+                    }}
+                    className="px-5 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold text-xs rounded-xl transition-all"
+                  >
+                    Done
+                  </button>
                 </div>
               </div>
             ) : (
@@ -524,12 +598,16 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ lang }) => {
                   </div>
 
                   <div>
-                    <label className="text-xs font-bold text-slate-700 block mb-1">User-ID / UIDN</label>
+                    <label className="text-xs font-bold text-slate-700 block mb-1 flex items-center space-x-1">
+                      <KeyRound className="w-3.5 h-3.5 text-royal-600" />
+                      <span>Doctor Login ID (Username)</span>
+                    </label>
                     <input
                       type="text"
                       value={newDoctor.uidn}
                       onChange={(e) => setNewDoctor({ ...newDoctor, uidn: e.target.value })}
-                      className="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-mono font-bold text-slate-900"
+                      placeholder="e.g. DOC-RAMESH"
+                      className="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-mono font-bold text-slate-900 focus:ring-2 focus:ring-royal-500 focus:outline-none"
                       required
                     />
                   </div>
@@ -548,13 +626,17 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ lang }) => {
                   </div>
 
                   <div>
-                    <label className="text-xs font-bold text-slate-700 block mb-1">Login Password</label>
+                    <label className="text-xs font-bold text-slate-700 block mb-1 flex items-center space-x-1">
+                      <Lock className="w-3.5 h-3.5 text-slate-600" />
+                      <span>Doctor Login Password</span>
+                    </label>
                     <input
                       type="text"
                       value={newDoctor.password}
                       autoComplete="new-password"
+                      placeholder="e.g. Doctor@2026"
                       onChange={(e) => setNewDoctor({ ...newDoctor, password: e.target.value })}
-                      className="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-mono font-bold text-slate-900"
+                      className="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-mono font-bold text-slate-900 focus:ring-2 focus:ring-royal-500 focus:outline-none"
                       required
                     />
                   </div>
