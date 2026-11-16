@@ -1,6 +1,13 @@
 import axios from 'axios';
 
-const API_BASE = 'https://aarogya-drishti-9g70.onrender.com/api/v1';
+const getApiBaseUrl = () => {
+  if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+    return 'http://localhost:5000/api/v1';
+  }
+  return import.meta.env.VITE_API_URL || 'https://aarogya-drishti-9g70.onrender.com/api/v1';
+};
+
+const API_BASE = getApiBaseUrl();
 
 export const apiClient = axios.create({
   baseURL: API_BASE,
@@ -236,6 +243,28 @@ export const api = {
     return res.data;
   },
 
+  createHospital: async (hospitalData: any) => {
+    const res = await apiClient.post('/admin/hospitals', hospitalData);
+    return res.data;
+  },
+
+  getPrescriptionsAudit: async (filters?: { mandal?: string; status?: string; search?: string }) => {
+    const params = new URLSearchParams();
+    if (filters?.mandal) params.append('mandal', filters.mandal);
+    if (filters?.status) params.append('status', filters.status);
+    if (filters?.search) params.append('search', filters.search);
+    const queryString = params.toString();
+    const url = `/admin/prescriptions-audit${queryString ? `?${queryString}` : ''}`;
+    const res = await apiClient.get(url);
+    return res.data;
+  },
+
+  // Patient Complete Longitudinal History
+  getPatientHistory: async (patientUidn: string) => {
+    const res = await apiClient.get(`/prescriptions/history/${encodeURIComponent(patientUidn)}`);
+    return res.data;
+  },
+
   createDoctor: async (doctorData: any) => {
     const res = await apiClient.post('/admin/doctors/create', doctorData);
     return res.data;
@@ -250,6 +279,25 @@ export const api = {
   searchOmnibar: async (query: string) => {
     const res = await apiClient.get(`/search/omnibar?q=${encodeURIComponent(query)}`);
     return res.data;
+  },
+
+  // Aarohi AI Real Conversational Chat
+  askAarohiChat: async (data: { message: string; language?: string; history?: any[]; role?: string }) => {
+    try {
+      const res = await apiClient.post('/aarohi/chat', data);
+      return res.data;
+    } catch (err: any) {
+      console.warn('[API] Primary Aarohi chat warning, attempting local fallback:', err?.message || err);
+      try {
+        const altRes = await fetch('http://localhost:5000/api/v1/aarohi/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        if (altRes.ok) return await altRes.json();
+      } catch (e2) {}
+      throw err;
+    }
   },
 
   // Health

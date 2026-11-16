@@ -57,6 +57,14 @@ body {
 }
 
 /* Explicit Safety Fallbacks: Prevent any transparent / white button or text rendering */
+#aarohi-bot-container {
+  position: fixed !important;
+  right: 16px !important;
+  bottom: 16px !important;
+  left: auto !important;
+  top: auto !important;
+  z-index: 9999 !important;
+}
 .bg-royal-600 { background-color: #2563EB !important; color: #FFFFFF !important; }
 .bg-royal-700 { background-color: #1D4ED8 !important; color: #FFFFFF !important; }
 .bg-royal-800 { background-color: #1E40AF !important; color: #FFFFFF !important; }

@@ -46,7 +46,7 @@ export class GeminiOralScreeningService {
   private fallbackModels: string[];
 
   constructor() {
-    this.fallbackModels = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-2.5-pro'];
+    this.fallbackModels = ['gemini-3.8-flash', 'gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-2.5-pro'];
   }
 
   private getApiKey(): string | undefined {
@@ -54,7 +54,7 @@ export class GeminiOralScreeningService {
   }
 
   private getPrimaryModel(): string {
-    return process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+    return process.env.GEMINI_MODEL || 'gemini-3.8-flash';
   }
 
   public async analyzeOralPhoto(input: AnalysisInput): Promise<AnalysisResult> {

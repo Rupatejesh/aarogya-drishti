@@ -46,6 +46,7 @@ import {
 import api from './services/api.ts';
 import { Language, translations } from './i18n/translations.ts';
 import { applyDOMTranslation, translateText } from './i18n/translator.ts';
+import { useLanguage } from './context/LanguageContext.tsx';
 import Header, { ActiveRole } from './components/Header.tsx';
 import OralBiomarkerHelix3D from './components/OralBiomarkerHelix3D.tsx';
 import LiveOralCamera from './components/LiveOralCamera.tsx';
@@ -64,12 +65,14 @@ import DoctorAuthModal from './components/DoctorAuthModal.tsx';
 import AdminAuthModal from './components/AdminAuthModal.tsx';
 import DoctorPortal from './components/DoctorPortal.tsx';
 import AdminPortal from './components/AdminPortal.tsx';
+import { OralCancerAwarenessSection } from './components/OralCancerAwarenessSection.tsx';
+import { PatientPrescriptionHistory } from './components/PatientPrescriptionHistory.tsx';
 import AiArogyaVoiceAssistant from './components/AiArogyaVoiceAssistant.tsx';
 import UniversalOmnibarModal from './components/UniversalOmnibarModal.tsx';
 import { io } from 'socket.io-client';
 
 export default function App() {
-  const [lang, setLang] = useState<Language>('en');
+  const { lang, setLang } = useLanguage();
   const t = translations[lang];
 
   // Active Role State: strictly isolated ('landing' | 'patient' | 'doctor' | 'admin')
@@ -172,6 +175,7 @@ export default function App() {
 
   // Trilingual Live DOM Translation Effect
   useEffect(() => {
+    document.documentElement.lang = lang === 'te' ? 'te-IN' : lang === 'hi' ? 'hi-IN' : 'en';
     applyDOMTranslation(document.body, lang);
 
     const observer = new MutationObserver(() => {
@@ -436,7 +440,7 @@ export default function App() {
                 <span>ITDA PADERU • ALLURI SITHARAMA RAJU DISTRICT</span>
               </div>
 
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-950 tracking-tight">
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-950 tracking-tight notranslate" translate="no">
                 {lang === 'te' ? (
                   <>
                     ఆరోగ్య దృష్టి <span className="royal-gradient-text font-serif italic text-2xl sm:text-3xl lg:text-4xl ml-2">Aarogya Drishti</span>
@@ -1027,6 +1031,17 @@ export default function App() {
               </section>
             )}
 
+            {/* SECTION 1.5: MULTILINGUAL ORAL CANCER & ADDA POGA AWARENESS WITH VOICE TTS */}
+            {patient && (
+              <section className="scroll-mt-24">
+                <OralCancerAwarenessSection
+                  lang={lang}
+                  onOpenScreening={() => setIsCameraModalOpen(true)}
+                  onOpenAppointment={() => setIsAppointmentModalOpen(true)}
+                />
+              </section>
+            )}
+
             {/* SECTION 2: AI ORAL LESION PHOTO SCANNER & UPLOAD CENTER */}
             {patient && (
               <section id="patient-ai-screening-section" className="scroll-mt-24">
@@ -1051,6 +1066,21 @@ export default function App() {
                 <div className="lg:col-span-6 bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
                   <HabitCessationTracker patientUidn={patient.uidn} lang={lang} />
                 </div>
+              </section>
+            )}
+
+            {/* SECTION 1.8: CHRONOLOGICAL PRESCRIPTIONS & MEDICAL SCREENING HISTORY */}
+            {patient && (
+              <section id="patient-prescription-history-section" className="scroll-mt-24">
+                <PatientPrescriptionHistory
+                  patient={patient}
+                  lang={lang}
+                  onViewPrescription={(rx) => {
+                    setActivePrescription(rx);
+                    setIsPrescriptionModalOpen(true);
+                  }}
+                  onOpenScreening={() => setIsCameraModalOpen(true)}
+                />
               </section>
             )}
 

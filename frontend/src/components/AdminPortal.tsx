@@ -25,7 +25,13 @@ import {
   EyeOff,
   Edit3,
   MapPin,
-  Navigation
+  Navigation,
+  X,
+  RefreshCw,
+  QrCode,
+  Pill,
+  ClipboardList,
+  Calendar
 } from 'lucide-react';
 import api from '../services/api.ts';
 import { Language, translations } from '../i18n/translations.ts';
@@ -74,9 +80,105 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ lang }) => {
   const [editSuccessMsg, setEditSuccessMsg] = useState<string | null>(null);
   const [isSavingEdit, setIsSavingEdit] = useState(false);
 
-  // Active admin tab: Default to Doctors Registry & Credential Management
-  const [adminTab, setAdminTab] = useState<'doctors' | 'hospitals'>('doctors');
+  // Active admin tab: Doctors, Hospitals, or Prescriptions Audit
+  const [adminTab, setAdminTab] = useState<'doctors' | 'hospitals' | 'audit'>('doctors');
   const [copiedUidn, setCopiedUidn] = useState<string | null>(null);
+
+  // Add Hospital Modal State
+  const [isAddHospitalModalOpen, setIsAddHospitalModalOpen] = useState(false);
+  const [addHospitalSubmitting, setAddHospitalSubmitting] = useState(false);
+  const [addHospitalSuccessMsg, setAddHospitalSuccessMsg] = useState<string | null>(null);
+  const [newHospital, setNewHospital] = useState({
+    name: '',
+    mandal: 'Paderu HQ',
+    facilityType: 'Primary Health Centre (PHC)',
+    address: '',
+    phone: '',
+    availableSpecialists: 'Medical Officer & Oral Health Screener',
+    telemedicineReady: true,
+    biopsyEquipStatus: 'AVAILABLE' as 'AVAILABLE' | 'REFERRAL_REQUIRED',
+    bloodBankAvailable: false,
+    ambulance108_104_Unit: true,
+    moInCharge: ''
+  });
+
+  // Prescriptions & Patient History Audit State
+  const [auditRecords, setAuditRecords] = useState<any[]>([]);
+  const [auditLoading, setAuditLoading] = useState(false);
+  const [auditMandalFilter, setAuditMandalFilter] = useState('ALL');
+  const [auditStatusFilter, setAuditStatusFilter] = useState('ALL');
+  const [auditSearchQuery, setAuditSearchQuery] = useState('');
+  const [selectedAuditRecord, setSelectedAuditRecord] = useState<any | null>(null);
+
+  const fetchAuditRecords = async () => {
+    setAuditLoading(true);
+    try {
+      const res = await api.getPrescriptionsAudit({
+        mandal: auditMandalFilter !== 'ALL' ? auditMandalFilter : undefined,
+        status: auditStatusFilter !== 'ALL' ? auditStatusFilter : undefined,
+        search: auditSearchQuery.trim() || undefined
+      });
+      if (res && res.records) {
+        setAuditRecords(res.records);
+      }
+    } catch (err) {
+      console.warn('[Admin Audit] Error fetching audit records:', err);
+    } finally {
+      setAuditLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (adminTab === 'audit') {
+      fetchAuditRecords();
+    }
+  }, [adminTab, auditMandalFilter, auditStatusFilter]);
+
+  const handleCreateHospital = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newHospital.name.trim() || !newHospital.mandal) {
+      alert('Please provide Hospital Name and Mandal');
+      return;
+    }
+    setAddHospitalSubmitting(true);
+    setAddHospitalSuccessMsg(null);
+    try {
+      const res = await api.createHospital(newHospital);
+      if (res && res.success && res.hospital) {
+        setHospitals((prev) => [res.hospital, ...prev]);
+        setAddHospitalSuccessMsg(
+          lang === 'te'
+            ? 'కొత్త ఆసుపత్రి 11 మండలాల రిజిస్ట్రీకి విజయవంతంగా జోడించబడింది!'
+            : lang === 'hi'
+            ? 'नया अस्पताल सफलतापूर्वक 11 मंडल रजिस्ट्री में जोड़ा गया!'
+            : 'New Hospital facility added to 11 Mandals Registry successfully!'
+        );
+        setTimeout(() => {
+          setIsAddHospitalModalOpen(false);
+          setAddHospitalSuccessMsg(null);
+          setNewHospital({
+            name: '',
+            mandal: 'Paderu HQ',
+            facilityType: 'Primary Health Centre (PHC)',
+            address: '',
+            phone: '',
+            availableSpecialists: 'Medical Officer & Oral Health Screener',
+            telemedicineReady: true,
+            biopsyEquipStatus: 'AVAILABLE',
+            bloodBankAvailable: false,
+            ambulance108_104_Unit: true,
+            moInCharge: ''
+          });
+        }, 1200);
+      } else {
+        alert(res?.message || 'Failed to add hospital facility');
+      }
+    } catch (err: any) {
+      alert(`Error creating hospital: ${err?.message || err}`);
+    } finally {
+      setAddHospitalSubmitting(false);
+    }
+  };
 
   const handleCopyCredentials = (uidn: string, pass: string) => {
     const credText = `Doctor Login ID: ${uidn}\nPassword: ${pass}\nPortal: http://localhost:5173`;
@@ -344,11 +446,11 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ lang }) => {
         </div>
       </div>
 
-      {/* 3. Navigation Tabs: Doctors Registry vs. Hospitals Directory */}
-      <div className="flex border-b border-slate-200 bg-white rounded-t-3xl p-1.5 shadow-sm gap-2">
+      {/* 3. Navigation Tabs: Doctors Registry vs. Hospitals Directory vs. Prescriptions Audit */}
+      <div className="flex flex-wrap border-b border-slate-200 bg-white rounded-t-3xl p-1.5 shadow-sm gap-2">
         <button
           onClick={() => setAdminTab('doctors')}
-          className={`px-5 py-3 text-xs font-bold rounded-2xl flex items-center space-x-2 transition-all ${
+          className={`px-5 py-3 text-xs font-bold rounded-2xl flex items-center space-x-2 transition-all cursor-pointer ${
             adminTab === 'doctors'
               ? 'bg-blue-700 text-white font-semibold shadow-md'
               : 'text-slate-600 hover:bg-slate-100'
@@ -360,7 +462,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ lang }) => {
 
         <button
           onClick={() => setAdminTab('hospitals')}
-          className={`px-5 py-3 text-xs font-bold rounded-2xl flex items-center space-x-2 transition-all ${
+          className={`px-5 py-3 text-xs font-bold rounded-2xl flex items-center space-x-2 transition-all cursor-pointer ${
             adminTab === 'hospitals'
               ? 'bg-blue-700 text-white font-semibold shadow-md'
               : 'text-slate-600 hover:bg-slate-100'
@@ -369,12 +471,24 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ lang }) => {
           <Hospital className="w-4 h-4" />
           <span>11 Mandals Health Facilities Directory ({hospitals.length})</span>
         </button>
+
+        <button
+          onClick={() => setAdminTab('audit')}
+          className={`px-5 py-3 text-xs font-bold rounded-2xl flex items-center space-x-2 transition-all cursor-pointer ${
+            adminTab === 'audit'
+              ? 'bg-blue-700 text-white font-semibold shadow-md'
+              : 'text-slate-600 hover:bg-slate-100'
+          }`}
+        >
+          <ClipboardList className="w-4 h-4" />
+          <span>Prescriptions & Patient History Audit</span>
+        </button>
       </div>
 
       {/* 4. TAB 1: 11 MANDALS HOSPITALS DIRECTORY TABLE */}
       {adminTab === 'hospitals' && (
         <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-luxury space-y-6">
-          {/* Controls: Search and Mandal Filter */}
+          {/* Controls: Search, Mandal Filter, and Add New Hospital Button */}
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex flex-wrap items-center gap-3">
               <div className="flex items-center space-x-2 bg-blue-700 text-white font-semibold rounded-xl px-3 py-2 text-xs shadow-sm">
@@ -405,9 +519,19 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ lang }) => {
               </div>
             </div>
 
-            <span className="text-xs font-bold text-slate-500">
-              Showing <strong>{filteredHospitals.length}</strong> of <strong>{hospitals.length}</strong> facilities
-            </span>
+            <div className="flex items-center space-x-3">
+              <button
+                onClick={() => setIsAddHospitalModalOpen(true)}
+                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl shadow-md transition-all flex items-center space-x-1.5 active:scale-95 cursor-pointer"
+              >
+                <Plus className="w-4 h-4 text-white" />
+                <span>+ Add New Hospital</span>
+              </button>
+
+              <span className="text-xs font-bold text-slate-500">
+                Showing <strong>{filteredHospitals.length}</strong> of <strong>{hospitals.length}</strong> facilities
+              </span>
+            </div>
           </div>
 
           {/* Detailed Data Table */}
@@ -674,6 +798,236 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ lang }) => {
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {/* 5.5 TAB 3: PRESCRIPTIONS & PATIENT HISTORY AUDIT SECTION */}
+      {adminTab === 'audit' && (
+        <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-luxury space-y-6">
+          <div className="flex flex-wrap justify-between items-center gap-4">
+            <div>
+              <h3 className="text-lg font-extrabold text-slate-950 flex items-center space-x-2">
+                <ClipboardList className="w-5 h-5 text-royal-600" />
+                <span>Prescriptions & Patient Screening History Audit</span>
+              </h3>
+              <p className="text-xs text-slate-500">
+                District-wide clinical surveillance tracking e-prescriptions, oral lesion triage scores, biopsy referrals, and doctor notes across 11 Mandals
+              </p>
+            </div>
+
+            <button
+              onClick={fetchAuditRecords}
+              className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 cursor-pointer shadow-2xs"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${auditLoading ? 'animate-spin text-royal-600' : ''}`} />
+              <span>Refresh Records</span>
+            </button>
+          </div>
+
+          {/* Audit Metrics Banner */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="bg-blue-50/60 border border-blue-200 rounded-2xl p-4">
+              <span className="text-[10px] font-bold text-royal-900 uppercase">Total e-Prescriptions</span>
+              <div className="text-2xl font-black text-royal-700 mt-1">{auditRecords.length}</div>
+              <span className="text-[11px] text-slate-500">Digital records stored</span>
+            </div>
+            <div className="bg-amber-50/60 border border-amber-200 rounded-2xl p-4">
+              <span className="text-[10px] font-bold text-amber-900 uppercase">Biopsies Recommended</span>
+              <div className="text-2xl font-black text-amber-700 mt-1">
+                {auditRecords.filter((r) => r.biopsyRecommended || r.trackingStatus === 'Biopsy Scheduled').length}
+              </div>
+              <span className="text-[11px] text-slate-500">4mm punch protocols</span>
+            </div>
+            <div className="bg-emerald-50/60 border border-emerald-200 rounded-2xl p-4">
+              <span className="text-[10px] font-bold text-emerald-900 uppercase">Prescriptions Dispensed</span>
+              <div className="text-2xl font-black text-emerald-700 mt-1">
+                {auditRecords.filter((r) => r.trackingStatus === 'Prescription Dispensed').length}
+              </div>
+              <span className="text-[11px] text-slate-500">Pharmacy active</span>
+            </div>
+            <div className="bg-purple-50/60 border border-purple-200 rounded-2xl p-4">
+              <span className="text-[10px] font-bold text-purple-900 uppercase">Mandals Represented</span>
+              <div className="text-2xl font-black text-purple-700 mt-1">
+                {new Set(auditRecords.map((r) => r.mandal).filter(Boolean)).size || 11} / 11
+              </div>
+              <span className="text-[11px] text-slate-500">Agency coverage</span>
+            </div>
+          </div>
+
+          {/* Search & Filter Toolbar */}
+          <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center space-x-2 bg-blue-700 text-white font-semibold rounded-xl px-3 py-2 text-xs shadow-sm">
+                <Filter className="w-3.5 h-3.5 text-white" />
+                <span className="font-bold text-white">Mandal:</span>
+                <select
+                  value={auditMandalFilter}
+                  onChange={(e) => setAuditMandalFilter(e.target.value)}
+                  className="bg-blue-800 text-white font-bold rounded px-1.5 py-0.5 focus:outline-none cursor-pointer"
+                >
+                  {mandalList.map((m) => (
+                    <option key={m} value={m}>
+                      {m}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex items-center space-x-2 bg-slate-100 text-slate-700 font-semibold rounded-xl px-3 py-2 text-xs border border-slate-200">
+                <span className="font-bold">Status:</span>
+                <select
+                  value={auditStatusFilter}
+                  onChange={(e) => setAuditStatusFilter(e.target.value)}
+                  className="bg-white text-slate-800 font-bold rounded px-1.5 py-0.5 border border-slate-300 focus:outline-none cursor-pointer"
+                >
+                  <option value="ALL">All Statuses</option>
+                  <option value="Prescription Dispensed">Dispensed</option>
+                  <option value="Biopsy Scheduled">Biopsy Scheduled</option>
+                  <option value="Pending Review">Pending Review</option>
+                </select>
+              </div>
+
+              <div className="relative">
+                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  placeholder="Search UIDN, Patient Name, Barcode, Doctor..."
+                  value={auditSearchQuery}
+                  onChange={(e) => setAuditSearchQuery(e.target.value)}
+                  className="bg-slate-50 border border-slate-300 rounded-xl pl-9 pr-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-royal-500 text-slate-900 w-64"
+                />
+              </div>
+            </div>
+
+            <span className="text-xs font-bold text-slate-500">
+              Showing <strong>{auditRecords.length}</strong> indexed audit cases
+            </span>
+          </div>
+
+          {/* Audit Records Table */}
+          <div className="overflow-x-auto rounded-2xl border border-slate-200">
+            {auditLoading ? (
+              <div className="p-8 text-center text-xs text-slate-500 flex items-center justify-center space-x-2">
+                <RefreshCw className="w-4 h-4 animate-spin text-royal-600" />
+                <span>Loading clinical audit history...</span>
+              </div>
+            ) : auditRecords.length === 0 ? (
+              <div className="p-8 text-center text-xs text-slate-500">
+                No prescription or history records matching the filter criteria.
+              </div>
+            ) : (
+              <table className="w-full text-left text-xs">
+                <thead className="bg-slate-100 text-slate-700 font-bold uppercase tracking-wider text-[10px] border-b border-slate-200">
+                  <tr>
+                    <th className="py-3.5 px-4">Rx ID & Barcode</th>
+                    <th className="py-3.5 px-4">Patient Profile</th>
+                    <th className="py-3.5 px-4">Mandal & Hospital</th>
+                    <th className="py-3.5 px-4">Attending Doctor</th>
+                    <th className="py-3.5 px-4">AI Lesion Triage</th>
+                    <th className="py-3.5 px-4">Medicines / Regimen</th>
+                    <th className="py-3.5 px-4 text-center">Status</th>
+                    <th className="py-3.5 px-4 text-center">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 font-medium text-slate-800">
+                  {auditRecords.map((r, idx) => (
+                    <tr key={r.rxId || idx} className="hover:bg-blue-50/40 transition-colors">
+                      <td className="py-3.5 px-4">
+                        <div className="font-mono font-bold text-slate-900">{r.rxId}</div>
+                        <div className="font-mono text-[10px] text-royal-700 flex items-center space-x-1">
+                          <QrCode className="w-3 h-3 text-royal-600 inline" />
+                          <span>{r.printableBarcodeId || 'BARCODE-PENDING'}</span>
+                        </div>
+                      </td>
+
+                      <td className="py-3.5 px-4">
+                        <div className="font-extrabold text-slate-900">{r.patientName}</div>
+                        <div className="text-[10px] text-slate-500">
+                          <span className="font-mono text-royal-700 font-bold">{r.patientUidn}</span>
+                          {r.patientAge && <span> • {r.patientAge} Yrs ({r.patientGender || 'M'})</span>}
+                        </div>
+                      </td>
+
+                      <td className="py-3.5 px-4">
+                        <span className="font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded border border-slate-200 text-[11px]">
+                          {r.mandal}
+                        </span>
+                        <div className="text-[10px] text-slate-500 mt-0.5">{r.doctorHospital}</div>
+                      </td>
+
+                      <td className="py-3.5 px-4">
+                        <div className="font-semibold text-slate-900">{r.doctorName}</div>
+                        <div className="text-[10px] text-slate-500 font-mono">{r.doctorUidn}</div>
+                      </td>
+
+                      <td className="py-3.5 px-4">
+                        <span
+                          className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full border ${
+                            r.screeningRisk === 'High' || r.screeningRisk === 'Serious'
+                              ? 'bg-red-50 text-red-700 border-red-200'
+                              : r.screeningRisk === 'Medium' || r.screeningRisk === 'Moderate'
+                              ? 'bg-amber-50 text-amber-800 border-amber-200'
+                              : 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                          }`}
+                        >
+                          {r.screeningLesion || 'Indurated Lesion'}
+                        </span>
+                        {r.screeningConfidence && (
+                          <div className="text-[10px] text-slate-500 mt-0.5">{r.screeningConfidence}% AI Confidence</div>
+                        )}
+                      </td>
+
+                      <td className="py-3.5 px-4">
+                        {r.medicines && r.medicines.length > 0 ? (
+                          <div className="space-y-0.5 max-w-xs">
+                            <span className="text-[11px] font-bold text-slate-800">
+                              {r.medicines[0].name}
+                            </span>
+                            {r.medicines.length > 1 && (
+                              <span className="text-[10px] text-royal-600 block">
+                                + {r.medicines.length - 1} more medicine(s)
+                              </span>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-slate-400 italic text-[11px]">Standard protocol</span>
+                        )}
+                        {r.biopsyRecommended && (
+                          <span className="inline-block mt-1 text-[9px] bg-amber-100 text-amber-900 font-bold px-1.5 py-0.2 rounded border border-amber-300">
+                            Biopsy Required
+                          </span>
+                        )}
+                      </td>
+
+                      <td className="py-3.5 px-4 text-center">
+                        <span
+                          className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full border ${
+                            r.trackingStatus === 'Biopsy Scheduled'
+                              ? 'bg-amber-50 text-amber-900 border-amber-300'
+                              : r.trackingStatus === 'Prescription Dispensed'
+                              ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                              : 'bg-blue-50 text-blue-900 border-blue-200'
+                          }`}
+                        >
+                          {r.trackingStatus || 'Active'}
+                        </span>
+                      </td>
+
+                      <td className="py-3.5 px-4 text-center">
+                        <button
+                          onClick={() => setSelectedAuditRecord(r)}
+                          className="px-2.5 py-1 bg-royal-50 hover:bg-royal-100 text-royal-800 font-bold text-[11px] rounded-lg border border-royal-200 transition-all cursor-pointer flex items-center space-x-1 mx-auto"
+                        >
+                          <Eye className="w-3 h-3 text-royal-600" />
+                          <span>View Details</span>
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
         </div>
       )}
@@ -1110,6 +1464,321 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ lang }) => {
                 </div>
               </form>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* 7. ADD NEW HOSPITAL MODAL */}
+      {isAddHospitalModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
+          <div className="bg-white max-w-lg w-full rounded-3xl p-6 sm:p-7 border border-slate-200 shadow-2xl space-y-4">
+            <div className="flex justify-between items-center pb-3 border-b border-slate-200">
+              <div className="flex items-center space-x-2">
+                <Hospital className="w-5 h-5 text-emerald-600" />
+                <h3 className="font-bold text-base text-slate-950">
+                  + Add New Hospital / PHC Facility
+                </h3>
+              </div>
+              <button
+                onClick={() => setIsAddHospitalModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600 font-bold p-1 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {addHospitalSuccessMsg ? (
+              <div className="p-6 bg-emerald-50 rounded-2xl border border-emerald-300 text-center space-y-3">
+                <CheckCircle className="w-10 h-10 text-emerald-600 mx-auto" />
+                <h4 className="font-extrabold text-emerald-950 text-sm">{addHospitalSuccessMsg}</h4>
+              </div>
+            ) : (
+              <form onSubmit={handleCreateHospital} className="space-y-3.5">
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">
+                    Hospital / PHC Facility Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={newHospital.name}
+                    onChange={(e) => setNewHospital({ ...newHospital, name: e.target.value })}
+                    placeholder="e.g. Primary Health Centre Pedabayalu"
+                    className="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs text-slate-900 focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">
+                      Mandal (11 ASR Mandals) *
+                    </label>
+                    <select
+                      value={newHospital.mandal}
+                      onChange={(e) => setNewHospital({ ...newHospital, mandal: e.target.value })}
+                      className="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold text-slate-900 focus:ring-2 focus:ring-emerald-500 cursor-pointer"
+                    >
+                      {mandalList.filter((m) => m !== 'ALL').map((m) => (
+                        <option key={m} value={m}>
+                          {m}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">
+                      Facility Type *
+                    </label>
+                    <select
+                      value={newHospital.facilityType}
+                      onChange={(e) => setNewHospital({ ...newHospital, facilityType: e.target.value })}
+                      className="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold text-slate-900 focus:ring-2 focus:ring-emerald-500 cursor-pointer"
+                    >
+                      <option value="Primary Health Centre (PHC)">Primary Health Centre (PHC)</option>
+                      <option value="Community Health Centre (CHC)">Community Health Centre (CHC)</option>
+                      <option value="Area Hospital (AH)">Area Hospital (AH)</option>
+                      <option value="District Hospital (DH)">District Hospital (DH)</option>
+                      <option value="Health & Wellness Sub-Centre">Health & Wellness Sub-Centre</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">
+                      Contact Phone Number *
+                    </label>
+                    <input
+                      type="text"
+                      value={newHospital.phone}
+                      onChange={(e) => setNewHospital({ ...newHospital, phone: e.target.value })}
+                      placeholder="e.g. 08935-234201"
+                      className="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs text-slate-900 focus:ring-2 focus:ring-emerald-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">
+                      Medical Officer In-Charge
+                    </label>
+                    <input
+                      type="text"
+                      value={newHospital.moInCharge}
+                      onChange={(e) => setNewHospital({ ...newHospital, moInCharge: e.target.value })}
+                      placeholder="e.g. Dr. K. Venkat Rao, MBBS"
+                      className="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs text-slate-900 focus:ring-2 focus:ring-emerald-500"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">
+                    Address / Agency Location
+                  </label>
+                  <input
+                    type="text"
+                    value={newHospital.address}
+                    onChange={(e) => setNewHospital({ ...newHospital, address: e.target.value })}
+                    placeholder="e.g. Main Hospital Road, Pedabayalu Mandal, ASR District"
+                    className="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs text-slate-900 focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">
+                    Available Specialists & Medical Officers
+                  </label>
+                  <input
+                    type="text"
+                    value={newHospital.availableSpecialists}
+                    onChange={(e) => setNewHospital({ ...newHospital, availableSpecialists: e.target.value })}
+                    placeholder="e.g. Medical Officer, Dental Surgeon, Oral Screener"
+                    className="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs text-slate-900 focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+
+                {/* Screening & Telemedicine Readiness Checkboxes */}
+                <div className="pt-2 border-t border-slate-200 space-y-2">
+                  <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wide block">
+                    Clinical & Telemedicine Readiness
+                  </span>
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <label className="flex items-center space-x-2 p-2 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={newHospital.telemedicineReady}
+                        onChange={(e) => setNewHospital({ ...newHospital, telemedicineReady: e.target.checked })}
+                        className="rounded text-emerald-600 focus:ring-emerald-500"
+                      />
+                      <span className="font-semibold text-slate-800">Telemedicine Live Ready</span>
+                    </label>
+
+                    <label className="flex items-center space-x-2 p-2 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={newHospital.biopsyEquipStatus === 'AVAILABLE'}
+                        onChange={(e) =>
+                          setNewHospital({
+                            ...newHospital,
+                            biopsyEquipStatus: e.target.checked ? 'AVAILABLE' : 'REFERRAL_REQUIRED'
+                          })
+                        }
+                        className="rounded text-emerald-600 focus:ring-emerald-500"
+                      />
+                      <span className="font-semibold text-slate-800">Punch Biopsy Kits</span>
+                    </label>
+
+                    <label className="flex items-center space-x-2 p-2 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={newHospital.ambulance108_104_Unit}
+                        onChange={(e) => setNewHospital({ ...newHospital, ambulance108_104_Unit: e.target.checked })}
+                        className="rounded text-emerald-600 focus:ring-emerald-500"
+                      />
+                      <span className="font-semibold text-slate-800">108/104 Ambulance</span>
+                    </label>
+
+                    <label className="flex items-center space-x-2 p-2 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={newHospital.bloodBankAvailable}
+                        onChange={(e) => setNewHospital({ ...newHospital, bloodBankAvailable: e.target.checked })}
+                        className="rounded text-emerald-600 focus:ring-emerald-500"
+                      />
+                      <span className="font-semibold text-slate-800">Blood Bank Unit</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div className="pt-3 flex items-center justify-end space-x-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsAddHospitalModalOpen(false)}
+                    className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold text-xs rounded-xl transition-all cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={addHospitalSubmitting}
+                    className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl shadow-md transition-all flex items-center space-x-1.5 cursor-pointer disabled:opacity-50"
+                  >
+                    <Plus className="w-4 h-4 text-white" />
+                    <span>{addHospitalSubmitting ? 'Registering Facility...' : 'Save & Register Hospital'}</span>
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* 8. AUDIT RECORD DETAILS MODAL */}
+      {selectedAuditRecord && (
+        <div className="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
+          <div className="bg-white max-w-2xl w-full rounded-3xl p-6 sm:p-7 border border-slate-200 shadow-2xl space-y-4">
+            <div className="flex justify-between items-center pb-3 border-b border-slate-200">
+              <div className="flex items-center space-x-2">
+                <FileText className="w-5 h-5 text-royal-600" />
+                <div>
+                  <h3 className="font-bold text-base text-slate-900">
+                    Clinical Audit Record — {selectedAuditRecord.rxId}
+                  </h3>
+                  <span className="font-mono text-[10px] text-royal-700">
+                    ABDM Barcode: {selectedAuditRecord.printableBarcodeId}
+                  </span>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedAuditRecord(null)}
+                className="text-slate-400 hover:text-slate-600 font-bold p-1 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Patient & Doctor Header */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-200 text-xs">
+              <div className="space-y-1">
+                <span className="text-[10px] font-bold text-slate-500 uppercase">Patient Information</span>
+                <div className="font-bold text-slate-900 text-sm">{selectedAuditRecord.patientName}</div>
+                <div className="text-slate-600">UIDN: <strong className="font-mono text-royal-700">{selectedAuditRecord.patientUidn}</strong></div>
+                <div className="text-slate-600">Mandal: <strong>{selectedAuditRecord.mandal}</strong> • Phone: {selectedAuditRecord.patientPhone || 'Registered'}</div>
+              </div>
+
+              <div className="space-y-1">
+                <span className="text-[10px] font-bold text-slate-500 uppercase">Prescribing Specialist</span>
+                <div className="font-bold text-slate-900 text-sm">{selectedAuditRecord.doctorName}</div>
+                <div className="text-slate-600">ID: <strong className="font-mono">{selectedAuditRecord.doctorUidn}</strong></div>
+                <div className="text-slate-600">Facility: <strong>{selectedAuditRecord.doctorHospital}</strong></div>
+              </div>
+            </div>
+
+            {/* AI Screening Insights */}
+            <div className="bg-blue-50/60 p-4 rounded-2xl border border-blue-200 text-xs space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="font-bold text-royal-900 uppercase text-[10px] flex items-center space-x-1">
+                  <Sparkles className="w-3.5 h-3.5 text-royal-600" />
+                  <span>AI Lesion Assessment</span>
+                </span>
+                <span className="text-[10px] font-extrabold bg-blue-100 text-royal-800 px-2 py-0.5 rounded-full border border-blue-200">
+                  {selectedAuditRecord.screeningConfidence || 92}% Confidence Score
+                </span>
+              </div>
+              <div className="text-slate-800">
+                Identified Lesion: <strong className="text-slate-950">{selectedAuditRecord.screeningLesion}</strong> • Triage Risk: <strong className="text-amber-800">{selectedAuditRecord.screeningRisk}</strong>
+              </div>
+              {selectedAuditRecord.clinicalRemarks && (
+                <p className="text-slate-600 italic bg-white p-2.5 rounded-xl border border-blue-100">
+                  "{selectedAuditRecord.clinicalRemarks}"
+                </p>
+              )}
+            </div>
+
+            {/* Prescribed Medicines */}
+            <div className="space-y-2">
+              <span className="text-xs font-bold text-slate-900 uppercase tracking-wide flex items-center space-x-1.5">
+                <Pill className="w-4 h-4 text-emerald-600" />
+                <span>Prescribed Medications ({selectedAuditRecord.medicines?.length || 0})</span>
+              </span>
+              <div className="divide-y divide-slate-100 border border-slate-200 rounded-xl overflow-hidden text-xs">
+                {selectedAuditRecord.medicines?.map((m: any, i: number) => (
+                  <div key={i} className="p-3 bg-white flex justify-between items-center">
+                    <div>
+                      <div className="font-bold text-slate-900">• {m.name}</div>
+                      <div className="text-[11px] text-slate-500">{m.dosage} — {m.frequency || 'Twice Daily'}</div>
+                    </div>
+                    <span className="text-[11px] font-mono font-bold bg-slate-100 px-2 py-0.5 rounded text-slate-700">
+                      {m.duration}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Biopsy Order if applicable */}
+            {selectedAuditRecord.biopsyRecommended && (
+              <div className="p-3 bg-amber-50 rounded-xl border border-amber-300 text-xs space-y-1">
+                <span className="font-bold text-amber-900 flex items-center space-x-1">
+                  <AlertTriangle className="w-3.5 h-3.5 text-amber-700" />
+                  <span>4mm Punch Biopsy Scheduled</span>
+                </span>
+                <p className="text-amber-800 text-[11px]">
+                  Site: {selectedAuditRecord.biopsySite || 'Right Buccal Mucosa'} • Anesthesia: Local 2% Lignocaine • Destination: Area Hospital Paderu Tele-Lab
+                </p>
+              </div>
+            )}
+
+            <div className="pt-2 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setSelectedAuditRecord(null)}
+                className="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl transition-all cursor-pointer"
+              >
+                Close Audit Record
+              </button>
+            </div>
           </div>
         </div>
       )}

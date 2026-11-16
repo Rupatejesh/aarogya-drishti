@@ -228,4 +228,149 @@ export const updateDoctor = async (req: Request, res: Response): Promise<void> =
   }
 };
 
+export const createHospital = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const {
+      name,
+      mandal,
+      facilityType,
+      abdmFacilityCode,
+      address,
+      phone,
+      moInCharge,
+      bloodBankAvailable = false,
+      ambulance108_104_Unit = true,
+      biopsyEquipStatus = 'AVAILABLE',
+      caseSheetsRunning = 0,
+      caseSheetsDischarged = 0,
+      availableSpecialists,
+      telemedicineReady = true
+    } = req.body;
+
+    if (!name || !mandal || !facilityType) {
+      res.status(400).json({
+        success: false,
+        message: 'Compulsory fields missing: name, mandal, facilityType.'
+      });
+      return;
+    }
+
+    const code = abdmFacilityCode && abdmFacilityCode.trim().length > 0
+      ? abdmFacilityCode.trim().toUpperCase()
+      : `ABDM-HOSP-ASR-${Date.now().toString().slice(-4)}`;
+
+    const newHospital = {
+      hospitalId: code,
+      name: name.trim(),
+      mandal: mandal.trim(),
+      facilityType: facilityType.trim(),
+      abdmFacilityCode: code,
+      moInCharge: moInCharge?.trim() || 'Medical Officer In-Charge',
+      bloodBankAvailable: Boolean(bloodBankAvailable),
+      ambulance108_104_Unit: Boolean(ambulance108_104_Unit),
+      biopsyEquipStatus: biopsyEquipStatus || 'AVAILABLE',
+      caseSheetsRunning: Number(caseSheetsRunning) || 0,
+      caseSheetsDischarged: Number(caseSheetsDischarged) || 0,
+      phone: phone?.trim() || '08935-234201',
+      address: address?.trim() || `${mandal} Agency Area, ASR District`,
+      availableSpecialists: availableSpecialists || 'Oral Onco-Specialist & Medical Officer',
+      telemedicineReady: Boolean(telemedicineReady)
+    };
+
+    const saved = await store.saveHospital(newHospital);
+
+    await store.logAction({
+      actorId: 'ITDA_ADMIN',
+      role: 'admin',
+      action: 'HOSPITAL_FACILITY_ADDED',
+      targetUidn: code,
+      details: { name: saved.name, mandal: saved.mandal, facilityType: saved.facilityType }
+    });
+
+    res.status(201).json({
+      success: true,
+      message: 'New hospital facility added to 11 Mandals Registry successfully.',
+      hospital: saved
+    });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const getPrescriptionsAudit = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { mandal, status, search } = req.query;
+
+    const [prescriptions, patients, doctors, screenings] = await Promise.all([
+      store.findPrescriptions(),
+      store.findPatients(),
+      store.findDoctors(),
+      store.findScreenings()
+    ]);
+
+    const patientMap = new Map(patients.map((p: any) => [p.uidn, p]));
+    const doctorMap = new Map(doctors.map((d: any) => [d.uidn, d]));
+    const screeningMap = new Map(screenings.map((s: any) => [s.patientUidn, s]));
+
+    let auditRecords = prescriptions.map((rx: any) => {
+      const patient = patientMap.get(rx.patientUidn) || {};
+      const doctor = doctorMap.get(rx.doctorUidn) || {};
+      const latestScreening = screeningMap.get(rx.patientUidn);
+
+      return {
+        ...rx,
+        patientName: patient.name || rx.patientUidn,
+        patientAge: patient.age,
+        patientGender: patient.gender,
+        patientPhone: patient.phone,
+        mandal: patient.mandal || doctor.hospitalDuty || 'Paderu',
+        village: patient.village || 'Agency Village',
+        doctorName: doctor.name || rx.doctorUidn,
+        doctorHospital: doctor.hospitalDuty || 'Area Hospital Paderu',
+        screeningRisk: latestScreening?.aiCondition || (rx.biopsyRecommended ? 'Serious' : 'Medium'),
+        screeningConfidence: latestScreening?.aiConfidenceScore || 90,
+        screeningLesion: latestScreening?.aiLesionType || 'Indurated Lesion'
+      };
+    });
+
+    if (mandal && String(mandal) !== 'all' && String(mandal) !== 'All 11 Mandals') {
+      auditRecords = auditRecords.filter((r) => r.mandal?.toLowerCase() === String(mandal).toLowerCase());
+    }
+
+    if (status && String(status) !== 'all') {
+      auditRecords = auditRecords.filter((r) => r.trackingStatus?.toLowerCase() === String(status).toLowerCase());
+    }
+
+    if (search && String(search).trim().length > 0) {
+      const term = String(search).toLowerCase().trim();
+      auditRecords = auditRecords.filter(
+        (r) =>
+          r.rxId?.toLowerCase().includes(term) ||
+          r.patientUidn?.toLowerCase().includes(term) ||
+          r.patientName?.toLowerCase().includes(term) ||
+          r.printableBarcodeId?.toLowerCase().includes(term) ||
+          r.doctorName?.toLowerCase().includes(term) ||
+          r.mandal?.toLowerCase().includes(term)
+      );
+    }
+
+    auditRecords.sort((a, b) => new Date(b.date || b.createdAt).getTime() - new Date(a.date || a.createdAt).getTime());
+
+    const totalPrescriptions = auditRecords.length;
+    const biopsyScheduledCount = auditRecords.filter((r) => r.biopsyRecommended || r.trackingStatus === 'Biopsy Scheduled').length;
+    const dispensingCount = auditRecords.filter((r) => r.trackingStatus === 'Prescription Dispensed').length;
+
+    res.status(200).json({
+      success: true,
+      totalPrescriptions,
+      biopsyScheduledCount,
+      dispensingCount,
+      records: auditRecords
+    });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+
 

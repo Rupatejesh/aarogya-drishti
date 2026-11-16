@@ -93,3 +93,88 @@ export const createPrescription = async (req: Request, res: Response): Promise<v
   }
 };
 
+export const getPatientHistory = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { patientId, patientUidn } = req.params;
+    const targetId = patientId || patientUidn;
+
+    if (!targetId) {
+      res.status(400).json({ success: false, message: 'patientId / UIDN parameter is required' });
+      return;
+    }
+
+    const cleanId = String(targetId).trim();
+    let patient = await store.findPatientByUidn(cleanId);
+    if (!patient) {
+      const allPatients = await store.findPatients();
+      patient = allPatients.find(
+        (p: any) =>
+          p.uidn?.toLowerCase() === cleanId.toLowerCase() ||
+          p.phone === cleanId ||
+          p.aadhaar === cleanId
+      );
+    }
+
+    const uidn = patient ? patient.uidn : cleanId;
+
+    const [screenings, prescriptions, appointments] = await Promise.all([
+      store.findScreenings({ patientUidn: uidn }),
+      store.findPrescriptions({ patientUidn: uidn }),
+      store.findAppointments({ patientUidn: uidn })
+    ]);
+
+    const timeline: any[] = [];
+
+    screenings.forEach((s: any) => {
+      timeline.push({
+        id: s.screeningId || `sc-${s._id}`,
+        type: 'screening',
+        date: s.createdAt || s.date || new Date(),
+        title: `AI Screening: ${s.aiCondition || 'Completed'}`,
+        description: `Region: ${s.oralRegion} • Confidence: ${s.aiConfidenceScore || 90}% • Lesion: ${s.aiLesionType || 'Indurated Lesion'}`,
+        badgeColor: s.aiCondition === 'Serious' || s.aiCondition === 'Urgent Clinical Evaluation' ? 'red' : s.aiCondition === 'Medium' ? 'amber' : 'emerald',
+        data: s
+      });
+    });
+
+    prescriptions.forEach((rx: any) => {
+      timeline.push({
+        id: rx.rxId || `rx-${rx._id}`,
+        type: 'prescription',
+        date: rx.date || rx.createdAt || new Date(),
+        title: `e-Prescription: ${rx.rxId}`,
+        description: `${rx.medicines?.length || 0} Medications • Status: ${rx.trackingStatus || 'Prescription Dispensed'}${rx.biopsyRecommended ? ' • Biopsy Recommended' : ''}`,
+        badgeColor: rx.biopsyRecommended ? 'red' : 'blue',
+        data: rx
+      });
+    });
+
+    appointments.forEach((apt: any) => {
+      timeline.push({
+        id: apt.appointmentId || `apt-${apt._id}`,
+        type: 'appointment',
+        date: apt.appointmentDate || apt.createdAt || new Date(),
+        title: `Appointment: ${apt.apptType || 'General Consultation'}`,
+        description: `Facility: ${apt.hospitalName} • Slot: ${apt.timeSlot} • Status: ${apt.status}`,
+        badgeColor: apt.status === 'APPROVED' ? 'emerald' : apt.status === 'REJECTED' ? 'red' : 'amber',
+        data: apt
+      });
+    });
+
+    timeline.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+    res.status(200).json({
+      success: true,
+      patientUidn: uidn,
+      patient,
+      screenings,
+      prescriptions,
+      appointments,
+      timeline
+    });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+

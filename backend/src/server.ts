@@ -178,8 +178,9 @@ io.on('connection', (socket) => {
   });
 });
 
-// 3. API Routes
+// 3. API Routes (Supporting both /api/v1 and /api standard prefixes)
 app.use('/api/v1', apiV1Router);
+app.use('/api', apiV1Router);
 
 // Health & System Info
 app.get('/api/v1/health', (_req, res) => {

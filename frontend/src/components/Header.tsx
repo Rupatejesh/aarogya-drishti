@@ -14,6 +14,7 @@ import {
   Download
 } from 'lucide-react';
 import { Language, translations } from '../i18n/translations.ts';
+import { translateText } from '../i18n/translator.ts';
 
 export type ActiveRole = 'landing' | 'patient' | 'doctor' | 'admin';
 
@@ -64,9 +65,9 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="flex items-center space-x-2">
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
           <span className="font-bold tracking-wider text-blue-200 uppercase">
-            ITDA PADERU | ALLURI SITHARAMA RAJU DISTRICT
+            {translateText('ITDA PADERU | ALLURI SITHARAMA RAJU DISTRICT', lang)}
           </span>
-          <span className="opacity-60 hidden md:inline text-slate-300">• Integrated Tribal Healthcare Network (AP Govt)</span>
+          <span className="opacity-60 hidden md:inline text-slate-300">• {translateText('Integrated Tribal Healthcare Network (AP Govt)', lang)}</span>
         </div>
 
         <div className="flex items-center space-x-3">
@@ -103,14 +104,14 @@ export const Header: React.FC<HeaderProps> = ({
           <div>
             <div className="flex items-center space-x-2">
               <h1 className="text-xl font-extrabold tracking-tight text-slate-900">
-                AAROGYA DRISHTI
+                {t.appName}
               </h1>
               <span className="text-[10px] font-extrabold bg-yellow-100 text-slate-900 px-2.5 py-0.5 rounded-full border border-yellow-300 shadow-sm">
-                AAROHAN 2026
+                {t.pillBadge}
               </span>
             </div>
             <p className="text-[11px] text-slate-500 font-medium">
-              <span key={`header-sub-${currentRole}`}>{getRoleSubtitle()}</span>
+              <span key={`header-sub-${currentRole}`}>{translateText(getRoleSubtitle(), lang)}</span>
             </p>
           </div>
         </div>
@@ -196,7 +197,7 @@ export const Header: React.FC<HeaderProps> = ({
             title="Open and Download Application Image Flow Diagram for Clients (PNG, SVG, PDF)"
           >
             <Download className="w-3.5 h-3.5 text-royal-700" />
-            <span>Flow Diagram</span>
+            <span>{translateText('Flow Diagram', lang)}</span>
           </a>
 
           {/* AI Arogya Drawer Launcher (Only in Patient Portal) */}
